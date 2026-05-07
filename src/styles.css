@@ -15,14 +15,32 @@
     scroll-behavior: smooth;
   }
 
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
   body {
     margin: 0;
     min-width: 320px;
+    overflow-x: hidden;
     background:
       radial-gradient(circle at 10% 8%, rgba(186, 230, 253, 0.95), transparent 26rem),
       radial-gradient(circle at 82% 4%, rgba(125, 211, 252, 0.42), transparent 24rem),
       linear-gradient(135deg, rgba(14, 165, 233, 0.08) 25%, transparent 25%) 0 0 / 42px 42px,
       linear-gradient(180deg, #f7fbff 0%, #eef8ff 44%, #ffffff 100%);
+  }
+
+  #root {
+    display: flex;
+    min-height: 100dvh;
+    flex-direction: column;
+  }
+
+  img,
+  svg {
+    max-width: 100%;
   }
 
   a {
@@ -103,7 +121,7 @@
   }
 
   .button {
-    @apply inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border border-transparent px-5 py-3 text-sm font-black transition hover:-translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-cyan-300/70;
+    @apply inline-flex min-h-11 max-w-full cursor-pointer items-center justify-center whitespace-normal rounded-full border border-transparent px-5 py-3 text-center text-sm font-black transition hover:-translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-cyan-300/70;
   }
 
   .button-primary {
@@ -180,6 +198,7 @@
     font-size: clamp(1.75rem, 3vw, 2.85rem);
     line-height: 1.08;
     letter-spacing: 0;
+    overflow-wrap: break-word;
   }
 
   .section-heading-main {
@@ -260,8 +279,13 @@
     @apply mt-3 max-w-2xl text-sm leading-6 text-slate-600 md:text-base;
   }
 
-  .upi-card-grid {
-    @apply grid grid-cols-1 gap-6 lg:grid-cols-2;
+  .upi-card-grid,
+  .payment-option-grid {
+    @apply grid grid-cols-1 gap-6;
+  }
+
+  .payment-option-grid {
+    @apply md:grid-cols-2 lg:grid-cols-3;
   }
 
   .impact-preview article,
@@ -371,6 +395,10 @@
     @apply py-0;
   }
 
+  .section:has(> .cta-band):last-child {
+    @apply pb-12 md:pb-16;
+  }
+
   .split-band p,
   .cta-band p {
     @apply max-w-3xl text-sm leading-6 md:text-base;
@@ -397,7 +425,6 @@
   }
 
   .report-page-hero .section-heading h2 {
-    @apply whitespace-nowrap;
     font-size: clamp(1.45rem, 3.2vw, 3.05rem);
   }
 
@@ -443,10 +470,70 @@
   .kpi-card strong,
   .impact-card strong {
     @apply mt-3 block text-2xl font-black text-sky-950;
+    overflow-wrap: anywhere;
+  }
+
+  .fund-allocation-panel {
+    @apply rounded-3xl border border-sky-100 bg-white/85 p-5 shadow-xl shadow-sky-950/6 backdrop-blur md:p-6;
+  }
+
+  .fund-allocation-heading {
+    @apply mb-5 max-w-3xl;
+  }
+
+  .fund-allocation-heading h3 {
+    @apply m-0 text-2xl font-black text-sky-950 md:text-3xl;
+  }
+
+  .fund-allocation-heading p {
+    @apply mb-0 mt-2 text-sm leading-6 text-slate-600;
+  }
+
+  .fund-allocation-grid {
+    @apply grid grid-cols-1 gap-4 md:grid-cols-3;
+  }
+
+  .fund-allocation-grid article {
+    @apply min-w-0 rounded-3xl border border-sky-100 bg-sky-50/70 p-5;
+  }
+
+  .fund-allocation-grid span {
+    @apply block text-xs font-black uppercase tracking-normal text-slate-500;
+  }
+
+  .fund-allocation-grid strong {
+    @apply mt-2 block text-3xl font-black text-sky-950;
+  }
+
+  .fund-allocation-grid p {
+    @apply mb-0 mt-3 text-sm leading-6 text-slate-600;
+  }
+
+  .fund-progress {
+    @apply mt-4 h-3 overflow-hidden rounded-full bg-white shadow-inner shadow-sky-950/10;
+  }
+
+  .fund-progress i {
+    @apply block h-full rounded-full bg-sky-800;
+  }
+
+  .fund-progress.sadaqah i {
+    @apply bg-violet-500;
   }
 
   .chart-grid {
     @apply grid grid-cols-1 gap-4 lg:grid-cols-2;
+  }
+
+  .chart-grid > *,
+  .stats-dashboard,
+  .report-page-hero,
+  .report-info-panel,
+  .chart-card,
+  .case-card,
+  .feature-card,
+  .payment-card {
+    min-width: 0;
   }
 
   .chart-grid.one {
@@ -496,6 +583,11 @@
     @apply relative overflow-hidden bg-sky-50;
   }
 
+  .case-carousel:focus-visible,
+  .testimonial-carousel:focus-visible {
+    @apply outline-3 outline-offset-2 outline-cyan-300/70;
+  }
+
   .case-carousel-track {
     @apply aspect-[4/3];
   }
@@ -506,6 +598,10 @@
 
   .case-carousel-image {
     @apply h-full w-full shrink-0 object-cover;
+  }
+
+  .case-carousel-caption {
+    @apply m-0 bg-white/90 px-4 py-3 text-sm font-bold leading-6 text-slate-600;
   }
 
   .case-image-empty {
@@ -557,11 +653,11 @@
   }
 
   .filters label {
-    @apply grid gap-2 text-sm font-black text-slate-600;
+    @apply grid min-w-0 flex-1 gap-2 text-sm font-black text-slate-600;
   }
 
   .filters select {
-    @apply min-w-48 rounded-2xl border border-sky-100 bg-white px-3 py-2.5 shadow-sm focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-cyan-300/70;
+    @apply w-full min-w-0 rounded-2xl border border-sky-100 bg-white px-3 py-2.5 shadow-sm focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-cyan-300/70;
   }
 
   .two-col,
@@ -656,7 +752,9 @@
 
   .mentorship-audience-card,
   .mentor-tracks-panel,
-  .mentor-track-card {
+  .mentor-track-card,
+  .testimonials-section,
+  .testimonial-card {
     @apply rounded-3xl border border-sky-100 bg-white/85 shadow-xl shadow-sky-950/6 backdrop-blur;
   }
 
@@ -708,6 +806,50 @@
     @apply mb-0 mt-2 text-sm leading-6 text-slate-600;
   }
 
+  .testimonials-section {
+    @apply p-6 md:p-8;
+  }
+
+  .testimonial-carousel {
+    @apply relative mt-5 overflow-hidden rounded-3xl bg-sky-50;
+  }
+
+  .testimonial-track {
+    @apply flex transition-transform duration-500 ease-out;
+  }
+
+  .testimonial-card {
+    @apply grid w-full shrink-0 gap-5 border-0 bg-white/90 p-5 shadow-none md:grid-cols-[180px_1fr] md:p-6;
+  }
+
+  .testimonial-media {
+    @apply grid aspect-square w-full max-w-44 place-items-center overflow-hidden rounded-3xl bg-gradient-to-br from-sky-100 to-cyan-50 text-5xl font-black text-sky-900 md:max-w-none;
+  }
+
+  .testimonial-media img {
+    @apply h-full w-full object-cover;
+  }
+
+  .testimonial-content {
+    @apply min-w-0;
+  }
+
+  .testimonial-content h3 {
+    @apply mb-1 mt-4 text-2xl font-black text-sky-950;
+  }
+
+  .testimonial-outcome {
+    @apply text-sm font-bold leading-6 text-slate-600;
+  }
+
+  .testimonial-content blockquote {
+    @apply my-4 rounded-3xl border-l-4 border-l-cyan-400 bg-sky-50 p-4 text-base font-semibold leading-7 text-sky-950;
+  }
+
+  .testimonial-tagline {
+    @apply mb-0 text-sm font-black text-sky-800;
+  }
+
   .pill-grid,
   .clean-list {
     @apply flex flex-wrap gap-2.5;
@@ -715,7 +857,8 @@
 
   .pill-grid span,
   .clean-list li {
-    @apply rounded-full border border-sky-100 bg-white px-4 py-2.5 text-sm font-black text-slate-600 shadow-sm;
+    @apply max-w-full rounded-full border border-sky-100 bg-white px-4 py-2.5 text-sm font-black text-slate-600 shadow-sm;
+    overflow-wrap: anywhere;
   }
 
   .clean-list {
@@ -739,7 +882,8 @@
   }
 
   .report-table-wrap {
-    @apply overflow-x-auto p-5;
+    @apply max-w-full overflow-x-auto p-5;
+    -webkit-overflow-scrolling: touch;
   }
 
   .table-toolbar {
@@ -807,12 +951,24 @@
   }
 
   .community-card {
-    @apply lg:col-span-2;
+    @apply max-w-2xl;
   }
 
   .whatsapp-qr-image,
   .upi-qr-image {
     @apply my-4 w-full max-w-xs rounded-3xl border border-sky-100 bg-white object-cover shadow-xl shadow-sky-950/10;
+  }
+
+  .payment-option-grid .upi-qr-image {
+    @apply max-w-56;
+  }
+
+  .join-section {
+    @apply rounded-[2rem] border border-sky-100 bg-white/55 p-5 shadow-xl shadow-sky-950/5 backdrop-blur md:p-7;
+  }
+
+  .bank-card dl {
+    @apply mt-5;
   }
 
   .upi-card {
@@ -824,7 +980,24 @@
   }
 
   .upi-id-line {
-    @apply rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 font-black text-sky-950;
+    @apply mt-5 flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 font-black text-sky-950;
+  }
+
+  .upi-id-line span {
+    @apply min-w-0 flex-1;
+    overflow-wrap: anywhere;
+  }
+
+  .upi-pay-action {
+    @apply mt-4;
+  }
+
+  .copy-button {
+    @apply grid size-10 shrink-0 cursor-pointer place-items-center rounded-full border border-sky-200 bg-white text-sky-900 shadow-sm transition hover:bg-sky-50 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-cyan-300/70;
+  }
+
+  .copy-button svg {
+    @apply size-5 fill-current;
   }
 
   dt {
@@ -848,7 +1021,7 @@
   }
 
   .site-footer {
-    @apply mt-16 bg-sky-950 py-12 text-sky-50;
+    @apply mt-auto bg-sky-950 py-12 text-sky-50;
   }
 
   .footer-grid {
@@ -901,11 +1074,127 @@
     width: min(100% - 22px, 1180px);
   }
 
+  .hero,
+  .section,
+  .page {
+    @apply py-9;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.1rem, 12vw, 3.1rem);
+  }
+
+  .hero p,
+  .section-heading-support {
+    @apply text-base leading-7;
+  }
+
+  .section-heading h2,
+  .page h1 {
+    font-size: clamp(1.85rem, 9vw, 2.45rem);
+    line-height: 1.1;
+  }
+
+  .section-heading {
+    @apply mb-6;
+  }
+
+  .hero-actions .button,
+  .cta-actions .button,
+  .cta-list .button {
+    @apply w-full;
+  }
+
   .visual-card.large {
     @apply inset-x-5 top-5 p-5 text-xl;
   }
 
   .visual-card.small {
     @apply bottom-5 right-5 w-[calc(100%-40px)];
+  }
+
+  .impact-preview,
+  .feature-grid,
+  .founder-grid,
+  .kpi-grid,
+  .impact-grid,
+  .case-grid,
+  .three-col,
+  .donate-grid,
+  .home-category-grid,
+  .about-support-grid,
+  .mentorship-audience-grid,
+  .mentor-track-grid,
+  .fund-allocation-grid {
+    @apply gap-4;
+  }
+
+  .impact-preview article,
+  .feature-card,
+  .kpi-card,
+  .impact-card,
+  .payment-card,
+  .report-info-panel,
+  .about-info-panel,
+  .about-support-card,
+  .about-founder-section,
+  .about-values-panel,
+  .mentor-tracks-panel,
+  .mentorship-audience-card,
+  .fund-allocation-panel {
+    @apply rounded-[1.5rem] p-4;
+  }
+
+  .split-band,
+  .cta-band,
+  .about-summary-panel {
+    @apply rounded-[1.5rem] p-5;
+  }
+
+  .privacy-note {
+    @apply items-start;
+  }
+
+  .chart-card {
+    @apply rounded-[1.5rem] p-4;
+  }
+
+  .chart-wrap {
+    @apply min-h-[260px];
+  }
+
+  .report-table-wrap {
+    @apply rounded-[1.5rem] p-3;
+  }
+
+  .table-toolbar h3,
+  .report-info-panel h2 {
+    @apply text-xl;
+  }
+
+  .report-info-panel .clean-list {
+    @apply flex-col;
+  }
+
+  .report-info-panel .clean-list li {
+    @apply w-full rounded-2xl;
+  }
+
+  .timeline article,
+  .mentor-track-card {
+    @apply grid-cols-[44px_1fr] gap-3 p-4;
+  }
+
+  .timeline span,
+  .mentor-track-card span {
+    @apply size-11;
+  }
+
+  .footer-grid {
+    @apply gap-8;
+  }
+
+  .footer-links {
+    @apply grid-cols-1;
   }
 }

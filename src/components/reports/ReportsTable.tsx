@@ -11,7 +11,9 @@ export const ReportsTable = ({ rows }: ReportsTableProps) => {
   const sortedRows = useMemo(
     () =>
       [...rows].sort((a, b) =>
-        direction === "desc" ? b.period_sort - a.period_sort : a.period_sort - b.period_sort,
+        direction === "desc"
+          ? b.period_sort - a.period_sort
+          : a.period_sort - b.period_sort,
       ),
     [direction, rows],
   );
@@ -19,8 +21,13 @@ export const ReportsTable = ({ rows }: ReportsTableProps) => {
   return (
     <div className="report-table-wrap">
       <div className="table-toolbar">
-        <h3>Public report archive</h3>
-        <button type="button" onClick={() => setDirection((current) => (current === "desc" ? "asc" : "desc"))}>
+        <h3>Monthly statistics</h3>
+        <button
+          type="button"
+          onClick={() =>
+            setDirection((current) => (current === "desc" ? "asc" : "desc"))
+          }
+        >
           Sort {direction === "desc" ? "oldest first" : "newest first"}
         </button>
       </div>
@@ -58,7 +65,11 @@ export const ReportsTable = ({ rows }: ReportsTableProps) => {
                   <span className="badge gold">{row.status}</span>
                 </td>
                 <td>
-                  <Button href={row.download_report_url} variant="secondary" disabled={disabled}>
+                  <Button
+                    href={row.download_report_url}
+                    variant="secondary"
+                    disabled={disabled}
+                  >
                     {disabled ? "Coming soon" : "Download"}
                   </Button>
                 </td>

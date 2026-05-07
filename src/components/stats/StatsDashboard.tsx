@@ -1,8 +1,8 @@
-import { site } from "../../data/site";
 import { usePublicStats } from "../../hooks/usePublicStats";
-import { formatRupees, getMetricValue } from "../../utils";
+import { formatRupees, getMetricValue, toFiniteNumber } from "../../utils";
 import { PrivacyNote } from "../common/PrivacyNote";
 import { SectionHeading } from "../common/SectionHeading";
+import { FundAllocationSummary } from "./FundAllocationSummary";
 import { FundBreakdownChart } from "./FundBreakdownChart";
 import { ImpactSummaryCards } from "./ImpactSummaryCards";
 import { KpiStatCard } from "./KpiStatCard";
@@ -25,8 +25,10 @@ export const StatsDashboard = ({
   const { stats, loading, source, error } = usePublicStats();
   const isFull = variant === "full";
   const metric = (key: string) => getMetricValue(stats.impactSummary, key);
-  const zakatAmount = Number(metric("zakat_amount_disbursed"));
-  const sadaqahAmount = Number(metric("sadaqah_amount_disbursed"));
+  const zakatMetric = metric("zakat_amount_disbursed");
+  const sadaqahMetric = metric("sadaqah_amount_disbursed");
+  const zakatAmount = toFiniteNumber(zakatMetric);
+  const sadaqahAmount = toFiniteNumber(sadaqahMetric);
   const sourceLabel = source === "live" ? "Live" : source === "partial" ? "Live with saved backup" : "Saved public summary";
 
   return (
@@ -56,11 +58,6 @@ export const StatsDashboard = ({
               ? "Some live stats could not be loaded. Showing saved backup values where needed."
               : undefined
           }
-          detail={
-            source === "partial"
-              ? error
-              : error
-          }
         />
       ) : null}
       <PrivacyNote>
@@ -88,23 +85,28 @@ export const StatsDashboard = ({
         <KpiStatCard
           label="Zakat used"
           value={
-            Number.isFinite(zakatAmount)
+            zakatAmount > 0
               ? formatRupees(zakatAmount)
-              : String(metric("zakat_amount_disbursed"))
+              : String(zakatMetric)
           }
         />
         <KpiStatCard
           label="Sadaqah used"
           value={
-            Number.isFinite(sadaqahAmount)
+            sadaqahAmount > 0
               ? formatRupees(sadaqahAmount)
-              : String(metric("sadaqah_amount_disbursed"))
+              : String(sadaqahMetric)
           }
         />
       </div>
 
       {isFull ? (
         <>
+          <FundAllocationSummary
+            monthlyRows={stats.monthly}
+            zakatAmount={zakatMetric}
+            sadaqahAmount={sadaqahMetric}
+          />
           <div className="chart-grid">
             <MonthlyCasesChart rows={stats.monthly} />
             <FundBreakdownChart rows={stats.monthly} />

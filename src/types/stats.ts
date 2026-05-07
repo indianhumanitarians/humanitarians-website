@@ -82,11 +82,43 @@ export interface CaseStory {
   privacy_note: string;
   story_candidate: string;
   publish_status: string;
+  image_url_1?: string;
+  image_alt_1?: string;
+  image_caption_1?: string;
+  image_url_2?: string;
+  image_alt_2?: string;
+  image_caption_2?: string;
+  image_url_3?: string;
+  image_alt_3?: string;
+  image_caption_3?: string;
+  image_consent_status?: string;
+  image_publish_notes?: string;
 }
 
 export interface CaseStoryImage {
   src: string;
   alt: string;
+  caption?: string;
+}
+
+export interface MentorshipTestimonial {
+  testimonial_id: string;
+  display_order: number;
+  anonymized_name: string;
+  public_role: string;
+  mentorship_track: string;
+  mentee_stage: string;
+  public_location: string;
+  period_label: string;
+  outcome_summary: string;
+  testimonial_text: string;
+  profile_image_url?: string;
+  profile_image_alt?: string;
+  carousel_tagline: string;
+  consent_received: string;
+  publish_status: string;
+  privacy_note: string;
+  editing_note?: string;
 }
 
 export interface PublicStats {

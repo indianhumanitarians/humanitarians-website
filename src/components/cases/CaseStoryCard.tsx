@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getCaseStoryMedia } from "../../data/caseStoryMedia";
+import { getApprovedCaseStoryImages, getCaseStoryMedia, getFallbackCaseStoryMedia } from "../../data/caseStoryMedia";
 import type { CaseStory } from "../../types/stats";
 import { Button } from "../common/Button";
 import { CaseImageCarousel } from "./CaseImageCarousel";
@@ -12,10 +12,11 @@ export const CaseStoryCard = ({ story }: CaseStoryCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const isCandidate = String(story.story_candidate).toUpperCase() === "TRUE";
   const images = getCaseStoryMedia(story);
+  const fallbackImages = getApprovedCaseStoryImages(story).length > 0 ? getFallbackCaseStoryMedia(story) : [];
 
   return (
     <article className="case-card">
-      <CaseImageCarousel images={images} title={story.title} />
+      <CaseImageCarousel images={images} fallbackImages={fallbackImages} title={story.title} />
       <div className="case-card-body">
         <div className="badge-row">
           <span className="badge">{story.category}</span>

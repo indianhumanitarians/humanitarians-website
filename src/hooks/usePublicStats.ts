@@ -107,9 +107,7 @@ export const usePublicStats = (): PublicStatsState => {
         const [monthlyResult, supportTypesResult, impactSummaryResult, lastUpdatedResult] = results;
         const successfulFetches = results.filter((result) => result.status === "fulfilled").length;
         const source = successfulFetches === results.length ? "live" : successfulFetches > 0 ? "partial" : "fallback";
-        const errors = results
-          .filter((result): result is PromiseRejectedResult => result.status === "rejected")
-          .map((result) => (result.reason instanceof Error ? result.reason.message : "A public CSV could not be loaded."));
+        const failedFetches = results.filter((result) => result.status === "rejected").length;
 
         setState({
           stats: {
@@ -120,7 +118,7 @@ export const usePublicStats = (): PublicStatsState => {
           },
           loading: false,
           source,
-          error: errors.length > 0 ? errors.join(" ") : undefined,
+          error: failedFetches > 0 ? "One or more public CSV sheets could not be loaded." : undefined,
         });
       }
     };

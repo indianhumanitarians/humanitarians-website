@@ -14,6 +14,19 @@ const withCacheBuster = (url: string): string => {
   return `${url}${url.includes("?") ? "&" : "?"}v=${version}`;
 };
 
+const shouldRetryWithoutCacheBuster = (url: string, status: number): boolean =>
+  status === 400 && url.includes("docs.google.com/spreadsheets/");
+
+const fetchPublicCsv = async (url: string): Promise<Response> => {
+  const response = await fetch(withCacheBuster(url), { cache: "no-store" });
+
+  if (!response.ok && shouldRetryWithoutCacheBuster(url, response.status)) {
+    return fetch(url, { cache: "no-store" });
+  }
+
+  return response;
+};
+
 // Reads public-safe CSV tabs published from Humanitarians_Public_Impact_Stats.
 // A future backend could replace this with an authenticated reporting API for private admin workflows.
 const normalizeValue = (value: unknown): string | number => {
@@ -47,7 +60,7 @@ export const fetchCsv = async <T extends object>(
     throw new Error("CSV URL is not configured.");
   }
 
-  const response = await fetch(withCacheBuster(url));
+  const response = await fetchPublicCsv(url);
   if (!response.ok) {
     throw new Error(`Could not load public CSV (${response.status}).`);
   }

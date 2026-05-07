@@ -1,4 +1,5 @@
 import type { CaseStory, CaseStoryImage } from "../types/stats";
+import { normalizeImageUrl } from "../utils";
 
 export const caseStoryMedia: Record<string, CaseStoryImage[]> = {
   "CS-001": [
@@ -36,7 +37,13 @@ const storySearchText = (story: CaseStory): string =>
     .join(" ")
     .toLowerCase();
 
-export const getCaseStoryMedia = (story: CaseStory): CaseStoryImage[] => {
+const imageFields = [
+  ["image_url_1", "image_alt_1", "image_caption_1"],
+  ["image_url_2", "image_alt_2", "image_caption_2"],
+  ["image_url_3", "image_alt_3", "image_caption_3"],
+] as const;
+
+export const getFallbackCaseStoryMedia = (story: CaseStory): CaseStoryImage[] => {
   const directMatch = caseStoryMedia[story.case_id];
   if (directMatch?.length) {
     return directMatch;
@@ -57,4 +64,32 @@ export const getCaseStoryMedia = (story: CaseStory): CaseStoryImage[] => {
   }
 
   return defaultCaseStoryMedia;
+};
+
+export const getApprovedCaseStoryImages = (story: CaseStory): CaseStoryImage[] => {
+  if (String(story.image_consent_status ?? "").trim() !== "Consent received") {
+    return [];
+  }
+
+  return imageFields.reduce<CaseStoryImage[]>((images, [urlKey, altKey, captionKey], index) => {
+      const src = normalizeImageUrl(String(story[urlKey] ?? ""));
+      if (!src) {
+        return images;
+      }
+
+      images.push({
+        src,
+        alt:
+          String(story[altKey] ?? "").trim() ||
+          `Public case story image ${index + 1} for ${story.title}`,
+        caption: String(story[captionKey] ?? "").trim() || undefined,
+      });
+
+      return images;
+    }, []);
+};
+
+export const getCaseStoryMedia = (story: CaseStory): CaseStoryImage[] => {
+  const approvedImages = getApprovedCaseStoryImages(story);
+  return approvedImages.length > 0 ? approvedImages : getFallbackCaseStoryMedia(story);
 };

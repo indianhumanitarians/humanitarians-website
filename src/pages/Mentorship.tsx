@@ -1,6 +1,7 @@
 import { Button } from "../components/common/Button";
 import { CTASection } from "../components/common/CTASection";
 import { SectionHeading } from "../components/common/SectionHeading";
+import { MentorshipTestimonialsCarousel } from "../components/mentorship/MentorshipTestimonialsCarousel";
 import { contact } from "../data/contact";
 
 const tracks = [
@@ -95,6 +96,7 @@ export const Mentorship = () => (
         <Button to="/donate" variant="secondary">Sponsor a Course</Button>
       </div>
     </section>
+    <MentorshipTestimonialsCarousel />
     <CTASection />
   </main>
 );

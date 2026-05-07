@@ -4,7 +4,13 @@ import { SectionHeading } from "../components/common/SectionHeading";
 import { founders } from "../data/founders";
 import { site } from "../data/site";
 
-const values = ["Amanah", "Dignity", "Transparency", "Self-reliance", "Community"];
+const values = [
+  "Amanah",
+  "Dignity",
+  "Transparency",
+  "Self-reliance",
+  "Community",
+];
 const promise = [
   "Verified cases",
   "Zakat and Sadaqah fund separation",
@@ -36,17 +42,18 @@ export const About = () => (
   <main className="container page">
     <SectionHeading
       title="About Humanitarians"
-      content="Humanitarians is a Muslim charity community focused on verified Zakat and Sadaqah cases, with a strong emphasis on livelihood, skills, mentorship, and dignified self-reliance."
+      content="Humanitarians is a charity community focused on verified Zakat and Sadaqah cases, with a strong emphasis on livelihood, skills, mentorship, and dignified self-reliance."
     />
 
     <section className="section about-summary-panel">
       <div>
         <h2>What we do</h2>
         <p>
-          Humanitarians began as a small donor community and grew into a structured effort
-          to help verified families move from urgent need toward earning independently.
-          We do not want support to stop at one-time relief where a practical path to income
-          is possible. We try to fund the missing step: capital, tools, assets, courses,
+          Humanitarians began as a small donor community and grew into a
+          structured effort to help verified families move from urgent need
+          toward earning independently. We do not want support to stop at
+          one-time relief where a practical path to income is possible. We try
+          to fund the missing step: capital, tools, assets, courses,
           job-readiness, or mentorship.
         </p>
       </div>
@@ -88,7 +95,8 @@ export const About = () => (
         <h2>Founded by IIT Kanpur alumni</h2>
         <p>
           Humanitarians was started by four IIT Kanpur alumni who wanted to make
-          community giving more structured, transparent, and focused on self-reliance.
+          community giving more structured, transparent, and focused on
+          self-reliance.
         </p>
       </div>
       <div className="founder-grid">
