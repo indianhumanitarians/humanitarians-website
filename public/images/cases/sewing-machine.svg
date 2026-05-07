@@ -1,0 +1,9 @@
+<svg width="900" height="620" viewBox="0 0 900 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="900" height="620" rx="48" fill="#e0f2fe"/>
+  <rect x="110" y="120" width="680" height="360" rx="36" fill="#ffffff" stroke="#bae6fd" stroke-width="6"/>
+  <path d="M246 349h323c58 0 105-47 105-105v-24H457c-61 0-111 50-111 111v18H246Z" fill="#075985"/>
+  <path d="M245 349h410v57H245zM320 406h84v58h-84zM558 406h84v58h-84z" fill="#0ea5e9"/>
+  <circle cx="618" cy="275" r="36" fill="#f8fafc"/>
+  <path d="M447 222v179" stroke="#67e8f9" stroke-width="12" stroke-linecap="round"/>
+  <text x="450" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="800" fill="#075985">Replace with real sewing machine photo</text>
+</svg>

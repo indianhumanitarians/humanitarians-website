@@ -1,0 +1,8 @@
+<svg width="900" height="620" viewBox="0 0 900 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="900" height="620" rx="48" fill="#f0f9ff"/>
+  <rect x="135" y="126" width="630" height="360" rx="38" fill="white" stroke="#bae6fd" stroke-width="6"/>
+  <path d="m298 378 260-260 64 64-260 260c-18 18-47 18-64 0s-18-47 0-64Z" fill="#075985"/>
+  <path d="M546 164 622 88l80 80-76 76" stroke="#7c3aed" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="328" cy="410" r="18" fill="white"/>
+  <text x="450" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="800" fill="#075985">Replace with real tools photo</text>
+</svg>
