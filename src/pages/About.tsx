@@ -92,14 +92,14 @@ export const About = () => (
 
     <section className="section about-founder-section">
       <div className="about-section-title">
-        <h2>Founded by IIT Kanpur alumni</h2>
+        <h2>An Initiative by IIT Kanpur Alumni</h2>
         <p>
           Humanitarians was started by four IIT Kanpur alumni who wanted to make
           community giving more structured, transparent, and focused on
           self-reliance.
         </p>
       </div>
-      <div className="founder-grid">
+      {/* <div className="founder-grid">
         {founders.map((founder) => (
           <article className="feature-card" key={founder.name}>
             <span aria-hidden="true">◇</span>
@@ -107,7 +107,7 @@ export const About = () => (
             <p>{founder.role}</p>
           </article>
         ))}
-      </div>
+      </div> */}
     </section>
 
     <section className="section about-values-panel">
