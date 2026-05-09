@@ -1,4 +1,4 @@
-export type DataSourceState = "live" | "partial" | "fallback";
+export type DataSourceState = "live" | "partial" | "error";
 
 export interface MonthlyStat {
   period_label: string;
@@ -61,6 +61,7 @@ export interface ReportRow {
   download_report_url: string;
   source_notes: string;
   status: string;
+  published: string;
 }
 
 export interface CaseStory {
@@ -80,7 +81,6 @@ export interface CaseStory {
   quote_placeholder?: string;
   verified_quote?: string;
   privacy_note: string;
-  story_candidate: string;
   published: string;
   publish_status: string;
   image_url_1?: string;

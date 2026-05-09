@@ -27,7 +27,8 @@ export const StatsDashboard = ({
   const sadaqahMetric = metric("sadaqah_amount_disbursed");
   const totalAmountMetric = metric("total_amount_disbursed");
   const totalAmount = toFiniteNumber(totalAmountMetric);
-  const sourceLabel = source === "live" ? "Live" : source === "partial" ? "Live with saved backup" : "Saved public summary";
+  const sourceLabel = source === "live" ? "Live" : source === "partial" ? "Live data partial" : "Live data unavailable";
+  const hasStats = stats.impactSummary.length > 0 || stats.monthly.length > 0 || stats.supportTypes.length > 0;
 
   return (
     <section className="stats-dashboard">
@@ -53,12 +54,15 @@ export const StatsDashboard = ({
         <StatsError
           title={
             source === "partial"
-              ? "Some live stats could not be loaded. Showing saved backup values where needed."
+              ? "Some live stats could not be loaded."
               : undefined
           }
         />
       ) : null}
-      <div className="kpi-grid">
+      {!loading && !hasStats ? (
+        <p className="empty-state">Live public stats are not available right now.</p>
+      ) : null}
+      {hasStats ? <div className="kpi-grid">
         <KpiStatCard
           label="Active donor community"
           value={String(metric("active_donor_community"))}
@@ -75,9 +79,9 @@ export const StatsDashboard = ({
               : String(totalAmountMetric)
           }
         />
-      </div>
+      </div> : null}
 
-      {isFull ? (
+      {hasStats && isFull ? (
         <>
           <FundAllocationSummary
             monthlyRows={stats.monthly}
@@ -90,16 +94,16 @@ export const StatsDashboard = ({
             <SupportTypeChart rows={stats.supportTypes} />
           </div>
         </>
-      ) : (
+      ) : hasStats ? (
         <div className="chart-grid one">
           <MonthlyCasesChart rows={stats.monthly.slice(-8)} />
         </div>
-      )}
+      ) : null}
 
-      <div className="last-updated">
+      {stats.lastUpdated.last_updated || stats.lastUpdated.data_through ? <div className="last-updated">
         <strong>Last updated:</strong> {stats.lastUpdated.last_updated} · Data
         through {stats.lastUpdated.data_through}
-      </div>
+      </div> : null}
     </section>
   );
 };

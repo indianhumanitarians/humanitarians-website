@@ -3,15 +3,13 @@ import type { CaseStoryImage } from "../../types/stats";
 
 interface CaseImageCarouselProps {
   images: CaseStoryImage[];
-  fallbackImages?: CaseStoryImage[];
   title: string;
 }
 
-export const CaseImageCarousel = ({ images, fallbackImages = [], title }: CaseImageCarouselProps) => {
+export const CaseImageCarousel = ({ images, title }: CaseImageCarouselProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
-  const visibleImages = images.filter((image) => !failedImages.has(image.src));
-  const displayImages = visibleImages.length > 0 ? visibleImages : fallbackImages;
+  const displayImages = images.filter((image) => !failedImages.has(image.src));
   const activeImage = displayImages[activeIndex];
   const hasMultipleImages = displayImages.length > 1;
 

@@ -25,11 +25,7 @@ const privateItems = [
 
 export const Reports = () => {
   const { rows, loading, source, error } = useReports();
-  const {
-    stats,
-    loading: statsLoading,
-    error: statsError,
-  } = usePublicStats();
+  const { stats, loading: statsLoading, error: statsError } = usePublicStats();
 
   return (
     <main className="container page">
@@ -38,10 +34,8 @@ export const Reports = () => {
           title="Public Zakat & Sadaqah case reports"
           content="Every month, we share privacy-safe public summaries of handled Zakat and Sadaqah cases with the donor community."
         />
-        <span
-          className={`data-badge ${source === "live" ? "live" : "fallback"}`}
-        >
-          {source === "live" ? "Live archive" : "Saved public summary"}
+        <span className={`data-badge ${source === "live" ? "live" : "error"}`}>
+          {source === "live" ? "Live archive" : "Live data unavailable"}
         </span>
       </div>
       {loading ? (
@@ -49,22 +43,17 @@ export const Reports = () => {
       ) : null}
       {error ? (
         <p className="soft-status">
-          Live reports could not be loaded right now. Showing latest saved
-          public summary.
+          Live reports could not be loaded right now.
         </p>
       ) : null}
       {statsLoading ? (
         <p className="soft-status">Loading public impact stats...</p>
       ) : null}
       {statsError ? (
-        <p className="soft-status">
-          Some live stats could not be loaded. Showing saved public summary
-          where needed.
-        </p>
+        <p className="soft-status">Some live stats could not be loaded.</p>
       ) : null}
       <PrivacyNote>
-        Report data comes from the public sheet only. Recipient dignity and
-        donor privacy stay protected.
+        Recipient dignity and donor privacy are protected.
       </PrivacyNote>
       <StatsDashboard
         variant="full"

@@ -71,9 +71,14 @@ export const About = () => (
           from urgent need toward earning independently through capital, tools,
           assets, courses, job-readiness, and mentorship.
         </p>
-        <Button href={site.aboutProfileDownload} variant="secondary" download>
-          Click here to know more about us.
-        </Button>
+        <div className="about-work-actions">
+          <Button href={site.aboutProfileDownload} variant="secondary" download>
+            Click here to know more about us.
+          </Button>
+          <Button to="/contact" variant="secondary">
+            Contact us
+          </Button>
+        </div>
       </div>
       <div className="about-work-categories">
         {supportAreas.map((area) => (

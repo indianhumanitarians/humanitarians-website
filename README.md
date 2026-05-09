@@ -67,7 +67,7 @@ VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL="..."
 
 Do not commit `.env`. Only `.env.example` should be committed.
 
-If CSV URLs are missing or a Google Sheet is temporarily unavailable, the website uses saved fallback data and shows a saved-summary status instead of crashing.
+If CSV URLs are missing or a Google Sheet is temporarily unavailable, the website shows a live-data-unavailable message instead of saved public data.
 
 ## Public Google Sheet stats
 
@@ -107,11 +107,11 @@ Public-safe tabs:
    - `MentorshipTestimonials`
 6. Paste the CSV URLs into the matching `VITE_` environment variables.
 7. Do not publish `CaseLedger` directly unless it is fully privacy reviewed.
-8. For case stories, set `published = Yes` and `publish_status = Publish` before a case appears publicly.
+8. For case stories, set `published = Yes` before a case appears publicly.
 9. For images, set `image_consent_status = Consent received` before images appear publicly.
 10. Google Drive images must be shared as “Anyone with the link can view”.
 
-Formula-generated blank rows in public tabs are ignored by the frontend. For example, rows without `period_label` are ignored in `MonthlyStats` and `Reports`, rows without `case_id` or `title` are ignored in `CaseStorySeeds`, and rows without `testimonial_id` are ignored in `MentorshipTestimonials`.
+Formula-generated blank rows in public tabs are ignored by the frontend. For example, rows without `period_label` are ignored in `MonthlyStats` and `Reports`, rows without `case_id` are ignored in `CaseStorySeeds`, and rows without `testimonial_id` are ignored in `MentorshipTestimonials`.
 
 For the new mentorship testimonials tab:
 
@@ -240,12 +240,9 @@ Case stories are shown only when:
 ```txt
 case_id is not blank
 published = Yes
-publish_status = Publish
 ```
 
-If an older CSV does not contain the `published` column, the website falls back to `publish_status = Publish`.
-
-If no approved image exists, the website uses the existing safe illustration fallback.
+If no approved image exists, the website shows an image placeholder. Case-story images should come from public Google Drive URLs in `CaseStorySeeds`.
 
 ### 4. Case image privacy checklist
 
@@ -377,22 +374,12 @@ Mentee testimonials will appear here after consent and verification.
 
 - Public WhatsApp, email, UPI, bank, and CTA links live in `src/data/contact.ts`.
 - Founder names live in `src/data/founders.ts`.
-- Case story image galleries live in `src/data/caseStoryMedia.ts`.
+- Case story image galleries are built from public Google Drive URLs in `CaseStorySeeds`.
 - General site copy and the About page profile download path live in `src/data/site.ts`.
 - The About page profile PDF currently lives at `public/docs/humanitarians-impact-profile.pdf`.
-- Public fallback stats and fallback case stories live in `src/data/statsFallback.ts`.
+- The website is live-data-only. Do not add saved public summary data.
 
-When adding case images, put public-safe images in:
-
-```txt
-public/images/cases/
-```
-
-Then wire them in:
-
-```txt
-src/data/caseStoryMedia.ts
-```
+When adding case images, add public Google Drive image URLs to `CaseStorySeeds` after consent and privacy review.
 
 ## GitHub setup
 
@@ -509,7 +496,7 @@ Also test:
 - Donate / Join QR images load.
 - Case story carousel images load.
 - About page profile PDF downloads.
-- Google Sheet stats show `Live`, `Live with saved backup`, or `Saved public summary`.
+- Google Sheet stats show live data or a live-data-unavailable message.
 - Mentorship testimonials appear only after `consent_received` is `Yes` and `publish_status` is `Publish`.
 - Case story Google Drive images appear only when `image_consent_status` is `Consent received`.
 - Direct refresh on `/about` and `/reports` works.

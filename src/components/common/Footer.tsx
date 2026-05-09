@@ -4,35 +4,43 @@ import { navLinks, site } from "../../data/site";
 
 export const Footer = () => (
   <footer className="site-footer">
-    <div className="container footer-grid">
+    <div className="footer-inner">
       <div>
-        <h2>Humanitarians</h2>
-        <p>{site.mission}</p>
-      </div>
-      <div>
-        <h3>Quick links</h3>
-        <ul className="footer-links">
-          {[...navLinks, { label: "Contact", to: "/contact" }].map((link) => (
-            <li key={link.to}>
-              <Link to={link.to}>{link.label}</Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        <h3>Contact</h3>
-        <p>
-          WhatsApp: New Members community link is available on{" "}
-          <Link className="footer-inline-link" to="/donate">
-            Donate / Join
-          </Link>
-          .
+        <div className="footer-logo">
+          <img src="/images/logo.jpeg" alt="" aria-hidden="true" />
+          <span>Humanitarians</span>
+        </div>
+        <p className="footer-desc">{site.mission}</p>
+        <p className="privacy-note">
+          Public stats are aggregated and anonymized. No private recipient, donor,
+          payment, or document details are published.
         </p>
-        <p>Email: {contact.email}</p>
-        <p className="footer-note">
-          Privacy note: no private recipient, donor, payment, or document details are published.
-        </p>
+        <div className="footer-contact">
+          <p>Email: <a href={`mailto:${contact.email}`}>{contact.email}</a></p>
+          <p>
+            WhatsApp link available on{" "}
+            <Link className="footer-inline-link" to="/donate">
+              Donate / Join
+            </Link>
+          </p>
+        </div>
       </div>
+      <div className="footer-col">
+        <h4>Pages</h4>
+        {navLinks.slice(0, 5).map((link) => (
+          <Link key={link.to} to={link.to}>{link.label}</Link>
+        ))}
+      </div>
+      <div className="footer-col">
+        <h4>Resources</h4>
+        {[...navLinks.slice(5), { label: "Contact", to: "/contact" }].map((link) => (
+          <Link key={link.to} to={link.to}>{link.label}</Link>
+        ))}
+      </div>
+    </div>
+    <div className="footer-bottom">
+      <span>© 2026 Humanitarians. All rights reserved.</span>
+      <span>Privacy-first public reporting</span>
     </div>
   </footer>
 );

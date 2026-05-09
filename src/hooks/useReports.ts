@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { fallbackReports } from "../data/statsFallback";
 import { fetchCsv } from "../services/googleSheets";
 import type { DataSourceState, ReportRow } from "../types/stats";
 
@@ -16,9 +15,16 @@ const reportColumns = [
   "download_report_url",
   "source_notes",
   "status",
+  "published",
 ];
 
 const isPresent = (value: unknown): boolean => String(value ?? "").trim().length > 0;
+
+const matches = (value: unknown, expected: string): boolean =>
+  String(value ?? "").trim().toLowerCase() === expected.toLowerCase();
+
+const isPublicReport = (row: ReportRow): boolean =>
+  isPresent(row.period_label) && matches(row.published, "TRUE");
 
 const toNumber = (value: unknown): number => {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -41,9 +47,9 @@ const normalizeReport = (row: ReportRow): ReportRow => ({
 });
 
 export const useReports = () => {
-  const [rows, setRows] = useState<ReportRow[]>(fallbackReports);
+  const [rows, setRows] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [source, setSource] = useState<DataSourceState>("fallback");
+  const [source, setSource] = useState<DataSourceState>("error");
   const [error, setError] = useState<string | undefined>();
 
   useEffect(() => {
@@ -55,7 +61,7 @@ export const useReports = () => {
           requiredColumns: reportColumns,
         });
         const publicReports = reports
-          .filter((row) => isPresent(row.period_label))
+          .filter(isPublicReport)
           .map(normalizeReport);
 
         if (isMounted) {
@@ -65,8 +71,8 @@ export const useReports = () => {
         }
       } catch (fetchError) {
         if (isMounted) {
-          setRows(fallbackReports);
-          setSource("fallback");
+          setRows([]);
+          setSource("error");
           setError(fetchError instanceof Error ? fetchError.message : "Reports could not be loaded.");
           setLoading(false);
         }

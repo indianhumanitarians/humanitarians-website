@@ -26,9 +26,9 @@ export const Contact = () => (
         <Button href={contact.whatsapp.mentorVolunteer} variant="secondary">Volunteer</Button>
       </article>
     </section>
-    <section className="section split-band">
+    <section className="section split-band referral-privacy-note">
       <div>
-        <h2>Referral privacy</h2>
+        <h2>Help a needy family</h2>
         <p>Please do not send sensitive documents until a Humanitarians volunteer confirms the secure process.</p>
       </div>
       <Button href={contact.links.caseReferral} variant="secondary">Refer a Case</Button>

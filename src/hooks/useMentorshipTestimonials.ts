@@ -46,7 +46,7 @@ export const useMentorshipTestimonials = (): MentorshipTestimonialsState => {
   const [state, setState] = useState<MentorshipTestimonialsState>({
     testimonials: [],
     loading: true,
-    source: "fallback",
+    source: "error",
   });
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export const useMentorshipTestimonials = (): MentorshipTestimonialsState => {
           setState({
             testimonials: [],
             loading: false,
-            source: "fallback",
+            source: "error",
           });
         }
       }

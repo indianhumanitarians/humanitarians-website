@@ -1,10 +1,4 @@
 import { useEffect, useState } from "react";
-import {
-  fallbackImpactSummary,
-  fallbackLastUpdated,
-  fallbackMonthlyStats,
-  fallbackSupportTypes,
-} from "../data/statsFallback";
 import { fetchCsv } from "../services/googleSheets";
 import type { DataSourceState, ImpactSummaryStat, LastUpdatedStat, MonthlyStat, PublicStats, SupportTypeStat } from "../types/stats";
 
@@ -33,11 +27,16 @@ interface PublicStatsState {
   error?: string;
 }
 
-const fallbackStats: PublicStats = {
-  monthly: fallbackMonthlyStats,
-  supportTypes: fallbackSupportTypes,
-  impactSummary: fallbackImpactSummary,
-  lastUpdated: fallbackLastUpdated,
+const emptyStats: PublicStats = {
+  monthly: [],
+  supportTypes: [],
+  impactSummary: [],
+  lastUpdated: {
+    last_updated: "",
+    data_through: "",
+    note: "",
+    source_workbook: "",
+  },
 };
 
 const toNumber = (value: unknown): number => {
@@ -54,6 +53,9 @@ const toNumber = (value: unknown): number => {
 };
 
 const isPresent = (value: unknown): boolean => String(value ?? "").trim().length > 0;
+
+const matches = (value: unknown, expected: string): boolean =>
+  String(value ?? "").trim().toLowerCase() === expected.toLowerCase();
 
 const normalizeMonthlyRow = (row: MonthlyStat): MonthlyStat => ({
   ...row,
@@ -77,7 +79,7 @@ const normalizeMonthlyRow = (row: MonthlyStat): MonthlyStat => ({
 
 const sortMonthly = (rows: MonthlyStat[]): MonthlyStat[] =>
   rows
-    .filter((row) => isPresent(row.period_label) && String(row.include_in_public).trim().toUpperCase() === "TRUE")
+    .filter((row) => isPresent(row.period_label) && matches(row.include_in_public, "TRUE"))
     .map(normalizeMonthlyRow)
     .sort((a, b) => a.period_sort - b.period_sort);
 
@@ -97,7 +99,7 @@ const normalizeSupportType = (row: SupportTypeStat): SupportTypeStat => ({
 
 const sortSupportTypes = (rows: SupportTypeStat[]): SupportTypeStat[] =>
   rows
-    .filter((row) => isPresent(row.support_type) || isPresent(row.public_label))
+    .filter((row) => isPresent(row.support_type))
     .map(normalizeSupportType)
     .filter((row) => row.cases > 0 || row.total_amount > 0);
 
@@ -109,9 +111,9 @@ const isFulfilled = <T,>(result: PromiseSettledResult<T>): result is PromiseFulf
 
 export const usePublicStats = (): PublicStatsState => {
   const [state, setState] = useState<PublicStatsState>({
-    stats: fallbackStats,
+    stats: emptyStats,
     loading: true,
-    source: "fallback",
+    source: "error",
   });
 
   useEffect(() => {
@@ -128,19 +130,19 @@ export const usePublicStats = (): PublicStatsState => {
       if (isMounted) {
         const [monthlyResult, supportTypesResult, impactSummaryResult, lastUpdatedResult] = results;
         const successfulFetches = results.filter((result) => result.status === "fulfilled").length;
-        const source = successfulFetches === results.length ? "live" : successfulFetches > 0 ? "partial" : "fallback";
+        const source = successfulFetches === results.length ? "live" : successfulFetches > 0 ? "partial" : "error";
         const failedFetches = results.filter((result) => result.status === "rejected").length;
 
         setState({
           stats: {
-            monthly: isFulfilled(monthlyResult) ? sortMonthly(monthlyResult.value) : fallbackMonthlyStats,
-            supportTypes: isFulfilled(supportTypesResult) ? sortSupportTypes(supportTypesResult.value) : fallbackSupportTypes,
-            impactSummary: isFulfilled(impactSummaryResult) ? sortImpact(impactSummaryResult.value) : fallbackImpactSummary,
-            lastUpdated: isFulfilled(lastUpdatedResult) ? firstLastUpdated(lastUpdatedResult.value) ?? fallbackLastUpdated : fallbackLastUpdated,
+            monthly: isFulfilled(monthlyResult) ? sortMonthly(monthlyResult.value) : [],
+            supportTypes: isFulfilled(supportTypesResult) ? sortSupportTypes(supportTypesResult.value) : [],
+            impactSummary: isFulfilled(impactSummaryResult) ? sortImpact(impactSummaryResult.value) : [],
+            lastUpdated: isFulfilled(lastUpdatedResult) ? firstLastUpdated(lastUpdatedResult.value) ?? emptyStats.lastUpdated : emptyStats.lastUpdated,
           },
           loading: false,
           source,
-          error: failedFetches > 0 ? "One or more public CSV sheets could not be loaded." : undefined,
+          error: failedFetches > 0 ? "One or more live public CSV sheets could not be loaded." : undefined,
         });
       }
     };

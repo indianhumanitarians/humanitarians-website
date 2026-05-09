@@ -12,7 +12,7 @@ const steps = [
 ];
 
 export const OurModel = () => (
-  <main className="container page">
+  <main className="container page our-model-page">
     <SectionHeading
       title="Our model"
       content="We support people in a way that helps them stand on their own feet, with a focus on livelihood generation instead of blind one-time giving."
@@ -25,8 +25,9 @@ export const OurModel = () => (
         </article>
       ))}
     </section>
-    <section className="section split-band">
+    <section className="section split-band editorial-band">
       <div>
+        <div className="tag">Support design</div>
         <h2>Support designed for earning, not dependency.</h2>
         <p>
           Sewing machines, e-rickshaw or auto livelihood support, shop setup, tool kits, equipment,

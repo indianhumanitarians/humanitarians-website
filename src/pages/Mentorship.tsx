@@ -82,7 +82,7 @@ export const Mentorship = () => (
       </div>
     </section>
 
-    <section className="section split-band">
+    <section className="section split-band editorial-band matching-band">
       <div>
         <h2>How matching works</h2>
         <p>

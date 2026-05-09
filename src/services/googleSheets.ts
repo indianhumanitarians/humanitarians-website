@@ -45,9 +45,11 @@ const normalizeValue = (value: unknown): string | number => {
   return trimmed;
 };
 
+const normalizeKey = (key: string): string => key.trim().toLowerCase();
+
 const normalizeRow = (row: Record<string, unknown>): Record<string, string | number> =>
   Object.entries(row).reduce<Record<string, string | number>>((accumulator, [rawKey, rawValue]) => {
-    const key = rawKey.trim();
+    const key = normalizeKey(rawKey);
     if (key) {
       accumulator[key] = normalizeValue(rawValue);
     }
@@ -77,7 +79,7 @@ export const fetchCsv = async <T extends object>(
     throw new Error(parsed.errors[0]?.message ?? "The public CSV could not be parsed.");
   }
 
-  const fields = (parsed.meta.fields ?? []).map((field) => field.trim());
+  const fields = (parsed.meta.fields ?? []).map(normalizeKey);
   const missingColumns = options.requiredColumns.filter((column) => !fields.includes(column));
   if (missingColumns.length > 0) {
     throw new Error(`The public sheet is missing required column(s): ${missingColumns.join(", ")}.`);
