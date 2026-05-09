@@ -25,7 +25,7 @@ export const OurModel = () => (
         </article>
       ))}
     </section>
-    <section className="section split-band editorial-band">
+    <section className="section split-band editorial-band support-design-section">
       <div>
         <div className="tag">Support design</div>
         <h2>Support designed for earning, not dependency.</h2>
