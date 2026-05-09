@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
+import {
+  caseLedgerColumns,
+  deriveCaseStoriesFromLedger,
+} from "../services/caseLedgerStats";
 import { fetchCsv } from "../services/googleSheets";
-import type { CaseStory, DataSourceState } from "../types/stats";
+import type { CaseLedgerRow, CaseStory, DataSourceState } from "../types/stats";
 
 const caseStoryColumns = [
-  "case_id",
+  ...caseLedgerColumns,
   "title",
   "anonymized_name",
-  "category",
-  "support_type",
-  "fund_type",
-  "period_label",
   "public_location",
   "amount_range",
   "need",
@@ -18,22 +18,7 @@ const caseStoryColumns = [
   "follow_up",
   "quote_placeholder",
   "privacy_note",
-  "published",
-  "publish_status",
 ];
-
-const isPresent = (value: unknown): boolean => String(value ?? "").trim().length > 0;
-
-const matches = (value: unknown, expected: string): boolean =>
-  String(value ?? "").trim().toLowerCase() === expected.toLowerCase();
-
-const isPublishableCaseStory = (row: CaseStory): boolean => {
-  if (!isPresent(row.case_id)) {
-    return false;
-  }
-
-  return matches(row.published, "Yes");
-};
 
 export const useCaseStories = () => {
   const [stories, setStories] = useState<CaseStory[]>([]);
@@ -46,13 +31,13 @@ export const useCaseStories = () => {
 
     const load = async (): Promise<void> => {
       try {
-        const rows = await fetchCsv<CaseStory>(import.meta.env.VITE_STATS_CASE_STORIES_CSV_URL, {
-          requiredColumns: caseStoryColumns,
-        });
-        const publicRows = rows.filter(isPublishableCaseStory);
+        const rows = await fetchCsv<CaseLedgerRow>(
+          import.meta.env.VITE_STATS_CASE_LEDGER_CSV_URL,
+          { requiredColumns: caseStoryColumns },
+        );
 
         if (isMounted) {
-          setStories(publicRows);
+          setStories(deriveCaseStoriesFromLedger(rows));
           setSource("live");
           setLoading(false);
         }
@@ -60,7 +45,11 @@ export const useCaseStories = () => {
         if (isMounted) {
           setStories([]);
           setSource("error");
-          setError(fetchError instanceof Error ? fetchError.message : "Case stories could not be loaded.");
+          setError(
+            fetchError instanceof Error
+              ? fetchError.message
+              : "Case stories could not be derived from CaseLedger.",
+          );
           setLoading(false);
         }
       }

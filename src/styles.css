@@ -447,7 +447,7 @@
   }
 
   .fund-allocation-grid {
-    @apply grid-cols-1 md:grid-cols-2;
+    @apply grid-cols-1 md:grid-cols-3;
   }
 
   .fund-allocation-grid article {
@@ -476,6 +476,10 @@
 
   .fund-progress.sadaqah i {
     @apply bg-red-700;
+  }
+
+  .fund-progress.other i {
+    @apply bg-teal-700;
   }
 
   .chart-grid {
@@ -517,6 +521,14 @@
 
   .chart-wrap {
     @apply min-h-[300px] w-full;
+  }
+
+  .chart-tooltip {
+    @apply grid max-w-72 gap-1 border border-stone-300 bg-white px-3 py-2 text-xs leading-5 text-stone-700 shadow-lg;
+  }
+
+  .chart-tooltip strong {
+    @apply text-sm text-stone-950;
   }
 
   .sr-summary,
@@ -1808,10 +1820,21 @@
     color: var(--white);
   }
 
+  .hero .button-primary {
+    border-color: var(--paper);
+    background: var(--paper);
+    color: var(--green);
+  }
+
   .button-primary:hover {
     background: #a0721e;
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
     transform: translateY(-2px);
+  }
+
+  .hero .button-primary:hover {
+    background: var(--cream);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
   }
 
   .button-secondary {
@@ -1934,7 +1957,7 @@
 
   .marquee-strip {
     overflow: hidden;
-    background: var(--gold);
+    background: var(--paper);
     padding: 12px 0;
     white-space: nowrap;
   }
@@ -1945,7 +1968,7 @@
   }
 
   .marquee-inner span {
-    color: var(--white);
+    color: var(--green);
     font-size: 0.82rem;
     font-weight: 600;
     letter-spacing: 1px;
@@ -2271,7 +2294,24 @@
 
   .fund-bar-card {
     margin-top: 28px;
-    padding: 24px;
+    padding: 34px 36px;
+  }
+
+  .fund-bar-card h3 {
+    color: var(--ink);
+    font-family: "Cormorant Garamond", serif;
+    font-size: clamp(1.9rem, 3vw, 3rem);
+    font-weight: 700;
+    line-height: 1.08;
+    margin: 0;
+  }
+
+  .fund-bar-card p {
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.6;
+    margin: 10px 0 30px;
   }
 
   .fund-bar {
@@ -2294,6 +2334,68 @@
 
   .fund-fill-gold {
     background: var(--gold);
+  }
+
+  .fund-stack-bar {
+    display: flex;
+    height: 44px;
+    overflow: hidden;
+    border-radius: 14px;
+    background: var(--cream);
+  }
+
+  .fund-stack-segment {
+    display: block;
+    min-width: 0;
+    height: 100%;
+  }
+
+  .fund-stack-segment.zakat {
+    background: var(--green);
+  }
+
+  .fund-stack-segment.sadaqah {
+    background: #c99a37;
+  }
+
+  .fund-stack-segment.others {
+    background: #d8cbb8;
+  }
+
+  .fund-stack-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 30px;
+    margin-top: 24px;
+  }
+
+  .fund-legend-item {
+    display: inline-flex;
+    align-items: center;
+    color: var(--ink);
+    font-size: 1rem;
+    gap: 8px;
+    line-height: 1.35;
+  }
+
+  .fund-legend-item i {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+  }
+
+  .fund-legend-item.zakat i {
+    background: var(--green);
+  }
+
+  .fund-legend-item.sadaqah i {
+    background: #c99a37;
+  }
+
+  .fund-legend-item.others i {
+    background: #d8cbb8;
+    border: 1px solid var(--border);
   }
 
   .chart-card {

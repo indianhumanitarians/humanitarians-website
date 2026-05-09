@@ -1,50 +1,10 @@
 import { useEffect, useState } from "react";
+import {
+  caseLedgerColumns,
+  deriveReportsFromLedger,
+} from "../services/caseLedgerStats";
 import { fetchCsv } from "../services/googleSheets";
-import type { DataSourceState, ReportRow } from "../types/stats";
-
-const reportColumns = [
-  "period_label",
-  "period_sort",
-  "zakat_cases_count",
-  "sadaqah_cases_count",
-  "mixed_cases_count",
-  "livelihood_cases_count",
-  "skill_or_education_cases_count",
-  "emergency_community_cases_count",
-  "total_public_summary",
-  "download_report_url",
-  "source_notes",
-  "status",
-  "published",
-];
-
-const isPresent = (value: unknown): boolean => String(value ?? "").trim().length > 0;
-
-const matches = (value: unknown, expected: string): boolean =>
-  String(value ?? "").trim().toLowerCase() === expected.toLowerCase();
-
-const isPublicReport = (row: ReportRow): boolean =>
-  isPresent(row.period_label) && matches(row.published, "TRUE");
-
-const toNumber = (value: unknown): number => {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value;
-  }
-
-  const numericValue = Number(String(value ?? "").replace(/[₹,\s]/g, ""));
-  return Number.isFinite(numericValue) ? numericValue : 0;
-};
-
-const normalizeReport = (row: ReportRow): ReportRow => ({
-  ...row,
-  period_sort: toNumber(row.period_sort),
-  zakat_cases_count: toNumber(row.zakat_cases_count),
-  sadaqah_cases_count: toNumber(row.sadaqah_cases_count),
-  mixed_cases_count: toNumber(row.mixed_cases_count),
-  livelihood_cases_count: toNumber(row.livelihood_cases_count),
-  skill_or_education_cases_count: toNumber(row.skill_or_education_cases_count),
-  emergency_community_cases_count: toNumber(row.emergency_community_cases_count),
-});
+import type { CaseLedgerRow, DataSourceState, ReportRow } from "../types/stats";
 
 export const useReports = () => {
   const [rows, setRows] = useState<ReportRow[]>([]);
@@ -57,15 +17,13 @@ export const useReports = () => {
 
     const load = async (): Promise<void> => {
       try {
-        const reports = await fetchCsv<ReportRow>(import.meta.env.VITE_STATS_REPORTS_CSV_URL, {
-          requiredColumns: reportColumns,
-        });
-        const publicReports = reports
-          .filter(isPublicReport)
-          .map(normalizeReport);
+        const ledgerRows = await fetchCsv<CaseLedgerRow>(
+          import.meta.env.VITE_STATS_CASE_LEDGER_CSV_URL,
+          { requiredColumns: caseLedgerColumns },
+        );
 
         if (isMounted) {
-          setRows(publicReports);
+          setRows(deriveReportsFromLedger(ledgerRows));
           setSource("live");
           setLoading(false);
         }
@@ -73,7 +31,11 @@ export const useReports = () => {
         if (isMounted) {
           setRows([]);
           setSource("error");
-          setError(fetchError instanceof Error ? fetchError.message : "Reports could not be loaded.");
+          setError(
+            fetchError instanceof Error
+              ? fetchError.message
+              : "Reports could not be derived from CaseLedger.",
+          );
           setLoading(false);
         }
       }

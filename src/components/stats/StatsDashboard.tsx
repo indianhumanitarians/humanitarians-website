@@ -27,8 +27,16 @@ export const StatsDashboard = ({
   const sadaqahMetric = metric("sadaqah_amount_disbursed");
   const totalAmountMetric = metric("total_amount_disbursed");
   const totalAmount = toFiniteNumber(totalAmountMetric);
-  const sourceLabel = source === "live" ? "Live" : source === "partial" ? "Live data partial" : "Live data unavailable";
-  const hasStats = stats.impactSummary.length > 0 || stats.monthly.length > 0 || stats.supportTypes.length > 0;
+  const sourceLabel =
+    source === "live"
+      ? "Live"
+      : source === "partial"
+        ? "Live data partial"
+        : "Live data unavailable";
+  const hasStats =
+    stats.impactSummary.length > 0 ||
+    stats.monthly.length > 0 ||
+    stats.supportTypes.length > 0;
 
   return (
     <section className="stats-dashboard">
@@ -41,11 +49,7 @@ export const StatsDashboard = ({
             />
           ) : null}
           {showSourceBadge ? (
-            <span
-              className={`data-badge ${source}`}
-            >
-              {sourceLabel}
-            </span>
+            <span className={`data-badge ${source}`}>{sourceLabel}</span>
           ) : null}
         </div>
       ) : null}
@@ -60,26 +64,30 @@ export const StatsDashboard = ({
         />
       ) : null}
       {!loading && !hasStats ? (
-        <p className="empty-state">Live public stats are not available right now.</p>
+        <p className="empty-state">
+          Live public stats are not available right now.
+        </p>
       ) : null}
-      {hasStats ? <div className="kpi-grid">
-        <KpiStatCard
-          label="Active donor community"
-          value={String(metric("active_donor_community"))}
-        />
-        <KpiStatCard
-          label="Families publicly tracked"
-          value={String(metric("total_public_cases"))}
-        />
-        <KpiStatCard
-          label="Total support delivered"
-          value={
-            totalAmount > 0
-              ? formatRupees(totalAmount)
-              : String(totalAmountMetric)
-          }
-        />
-      </div> : null}
+      {hasStats ? (
+        <div className="kpi-grid">
+          <KpiStatCard
+            label="Active donor community"
+            value={String(metric("active_donor_community"))}
+          />
+          <KpiStatCard
+            label="Families publicly tracked"
+            value={String(metric("total_public_cases"))}
+          />
+          <KpiStatCard
+            label="Total donation amount"
+            value={
+              totalAmount > 0
+                ? formatRupees(totalAmount)
+                : String(totalAmountMetric)
+            }
+          />
+        </div>
+      ) : null}
 
       {hasStats && isFull ? (
         <>
@@ -100,10 +108,12 @@ export const StatsDashboard = ({
         </div>
       ) : null}
 
-      {stats.lastUpdated.last_updated || stats.lastUpdated.data_through ? <div className="last-updated">
-        <strong>Last updated:</strong> {stats.lastUpdated.last_updated} · Data
-        through {stats.lastUpdated.data_through}
-      </div> : null}
+      {stats.lastUpdated.last_updated || stats.lastUpdated.data_through ? (
+        <div className="last-updated">
+          <strong>Last updated:</strong> {stats.lastUpdated.last_updated} · Data
+          through {stats.lastUpdated.data_through}
+        </div>
+      ) : null}
     </section>
   );
 };

@@ -37,9 +37,7 @@ export const ReportsTable = ({ rows }: ReportsTableProps) => {
             <th>Zakat</th>
             <th>Sadaqah</th>
             <th>Mixed</th>
-            <th>Livelihood</th>
-            <th>Skills</th>
-            <th>Emergency / community</th>
+            <th>Other funds</th>
           </tr>
         </thead>
         <tbody>
@@ -53,9 +51,7 @@ export const ReportsTable = ({ rows }: ReportsTableProps) => {
               <td>{row.zakat_cases_count}</td>
               <td>{row.sadaqah_cases_count}</td>
               <td>{row.mixed_cases_count}</td>
-              <td>{row.livelihood_cases_count}</td>
-              <td>{row.skill_or_education_cases_count}</td>
-              <td>{row.emergency_community_cases_count}</td>
+              <td>{row.other_fund_cases_count ?? 0}</td>
             </tr>
           ))}
         </tbody>
