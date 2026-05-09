@@ -1,19 +1,45 @@
 # Humanitarians Public Website
 
-Production-ready MVP for **Humanitarians**, a community-driven charity started by IIT Kanpur alumni. The site explains the livelihood-first model, anonymized case stories, Zakat and Sadaqah handling, mentorship, donation placeholders, and public transparency reporting.
+Production-ready public website for **Humanitarians**, a community-driven charity started by IIT Kanpur alumni. The site presents the livelihood-first model, donation and joining options, anonymized case stories, Zakat and Sadaqah handling, mentorship, public reporting, and privacy-safe impact stats.
 
-Brand focus: “From support to self-reliance.” “Charity with dignity.” “Livelihood, skills, and mentorship.” “Transparent monthly reporting.”
+Core message:
 
-Tech stack: React, TypeScript, Vite, React Router, Recharts, PapaParse, and Tailwind CSS.
+- From support to self-reliance
+- Charity with dignity
+- Livelihood, skills, and mentorship
+- Transparent monthly reporting
 
-## Development setup
+## Tech Stack
+
+- React 19
+- TypeScript
+- Vite
+- React Router
+- Recharts
+- PapaParse
+- Tailwind CSS v4
+
+## Main Pages
+
+Routes are defined in `src/App.tsx`.
+
+- `/` - Home
+- `/donate` - Donate / Join
+- `/our-model` - Operating model
+- `/case-stories` - Anonymized public case stories
+- `/mentorship` - Mentorship program and testimonials
+- `/reports` - Monthly public reports derived from CaseLedger
+- `/zakat-sadaqah` - Zakat and Sadaqah handling
+- `/about` - About and profile PDF
+- `/contact` - Contact details
+
+## Development Setup
 
 Requirements:
 
 - Node.js 20+ recommended
 - npm
 - Git
-- A GitHub account for deployment workflow
 
 Install dependencies:
 
@@ -21,13 +47,19 @@ Install dependencies:
 npm install
 ```
 
-Run locally:
+Create a local environment file:
+
+```bash
+cp .env.example .env
+```
+
+Run the local dev server:
 
 ```bash
 npm run dev
 ```
 
-The local development server will print a URL such as:
+Vite will print a local URL, usually:
 
 ```txt
 http://localhost:5173
@@ -39,236 +71,95 @@ Build for production:
 npm run build
 ```
 
-Preview the production build locally:
+Preview the production build:
 
 ```bash
 npm run preview
 ```
 
-## Environment variables
+## Environment Variables
 
-Create a local `.env` file from `.env.example`:
+The app has no backend. It fetches public, privacy-reviewed CSV data from Google Sheets.
 
-```bash
-cp .env.example .env
-```
-
-Paste the public Google Sheet CSV URLs into `.env`:
+Required local variables:
 
 ```txt
 VITE_STATS_CASE_LEDGER_CSV_URL="..."
 VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL="..."
 ```
 
-Do not commit `.env`. Only `.env.example` should be committed.
+Rules:
 
-If CSV URLs are missing or a Google Sheet is temporarily unavailable, the website shows a live-data-unavailable message instead of saved public data.
+- Keep real values in `.env`.
+- Commit only `.env.example`.
+- If a CSV URL is missing or unavailable, the site shows a live-data-unavailable state instead of using saved public data.
+- Add the same variables in Netlify or any other hosting provider.
 
-## Public Google Sheet stats
+## Public Data Source
 
-This MVP has no backend. Live stats are fetched directly from public CSV URLs published from a Google Sheet workbook named:
+The public Google Sheet workbook is expected to be named:
 
-`Humanitarians_Public_Impact_Stats_Linked`
+```txt
+Humanitarians_Public_Impact_Stats_Linked
+```
 
-The website reads only these published CSV tabs:
+The site currently reads these published CSV tabs:
 
 - `CaseLedger`
 - `MentorshipTestimonials`
 
-`CaseLedger` is the master table for public stats, reports, support-type charts, and case stories. Publish it only after privacy review because the frontend derives public data directly from this tab.
+`CaseLedger` is the master public-safe table. It drives:
 
-## Publishing CSV tabs from Google Sheets
+- Public stats
+- Monthly reports
+- Support-type charts
+- Fund-type charts
+- Case stories
+- Homepage impact numbers
 
-1. Upload `Humanitarians_Public_Impact_Stats_v3_Linked.xlsx` to Google Sheets.
-2. Rename the Google Sheet: `Humanitarians_Public_Impact_Stats_Linked`.
-3. Add new cases only in the `CaseLedger` tab.
-4. Publish `CaseLedger` as CSV after privacy review.
-5. Publish `MentorshipTestimonials` as CSV if live mentorship testimonials are needed.
-6. Paste the CSV URLs into the matching `VITE_` environment variables.
-7. For case stories, set `published = Yes` before a case appears publicly.
-8. For images, set `image_consent_status = Consent received` before images appear publicly.
-9. Google Drive images must be shared as “Anyone with the link can view”.
+Publish `CaseLedger` only after privacy review, because the frontend derives public information directly from this tab.
 
-Rows without `case_id` are ignored in `CaseLedger`, and rows without `testimonial_id` are ignored in `MentorshipTestimonials`.
+## CaseLedger Publishing Rules
 
-For the new mentorship testimonials tab:
-
-1. Publish `MentorshipTestimonials` as CSV.
-2. Paste the CSV URL into `VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL`.
-3. Testimonials appear only when `consent_received` is `Yes` and `publish_status` is `Publish`.
-4. Do not put full names, phone numbers, private notes, or internal review comments in public testimonial fields.
-
-For case-story images:
-
-1. Paste public image URLs into `image_url_1`, `image_url_2`, and `image_url_3` in `CaseLedger`.
-2. Use `image_alt_1`, `image_alt_2`, and `image_alt_3` for accessible alt text.
-3. Use `image_caption_1`, `image_caption_2`, and `image_caption_3` for optional public captions.
-4. Set `image_consent_status` to `Consent received` before images are shown.
-5. `image_publish_notes` is internal and is not rendered publicly.
-6. Google Drive images must be shared as “Anyone with the link can view” before they appear on the website.
-
-## Google Sheets operating precautions
-
-The public CSV URLs depend on the published Google Sheet and the internal `gid` of each tab. Be careful when changing the workbook.
-
-Best practice:
-
-1. Keep one permanent Google Sheet named `Humanitarians_Public_Impact_Stats_Linked`.
-2. Keep the existing public tabs alive.
-3. Update data by pasting values into existing tabs.
-4. Do not delete and recreate public tabs unless absolutely necessary.
-5. Do not import a full `.xlsx` over the existing published workbook unless you are ready to republish every tab.
-6. Do not rename public tabs unless you also update documentation and verify the published CSV URL.
-7. Keep private/raw tabs separate and never publish them.
-
-Safer update workflow:
-
-1. Make edits in a copy or temporary sheet.
-2. Review privacy-sensitive columns.
-3. Copy only public-safe values.
-4. Paste values into the existing public tab.
-5. Keep the same tab and same published CSV URL.
-6. Refresh the website and verify.
-
-If published CSV URLs break:
-
-1. Open the Google Sheet.
-2. Go to File > Share > Publish to web.
-3. Republish each public tab as CSV.
-4. Copy every new CSV URL.
-5. Update local `.env`.
-6. Restart `npm run dev`.
-7. Update Netlify environment variables.
-8. Trigger a redeploy.
-
-## Case image onboarding
-
-Use this process to add public case-story images to the website.
-
-### 1. Prepare images
-
-- Use only public-safe images.
-- Rename files clearly, for example:
+Rows are included in public stats only when:
 
 ```txt
-CS-001-image-1.jpg
-CS-001-image-2.jpg
-CS-001-image-3.jpg
+case_id is not blank
+include_in_public_stats = TRUE
 ```
 
-- Avoid images that reveal faces, full names, phone numbers, addresses, documents, IDs, bank details, UPI IDs, donor names, or private surroundings.
-- Prefer images of tools, sewing machines, shop stock, course material, equipment, or other support items.
-
-### 2. Upload images to Google Drive
-
-1. Open Google Drive.
-2. Create a folder such as:
-
-```txt
-Humanitarians Public Case Images
-```
-
-3. Upload the case images.
-4. Right-click each image.
-5. Click **Share**.
-6. Set access to:
-
-```txt
-Anyone with the link can view
-```
-
-7. Copy the image link.
-
-Google Drive images must be shared as “Anyone with the link can view” before they appear on the website.
-
-### 3. Add image URLs to `CaseLedger`
-
-For the matching case row, fill:
-
-```txt
-image_url_1
-image_alt_1
-image_caption_1
-image_url_2
-image_alt_2
-image_caption_2
-image_url_3
-image_alt_3
-image_caption_3
-image_consent_status
-```
-
-Example:
-
-```txt
-image_url_1: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
-image_alt_1: Sewing machine arranged for anonymized tailoring livelihood case
-image_caption_1: Sewing machine support for home-based tailoring
-image_consent_status: Consent received
-```
-
-Images are shown only when:
-
-```txt
-image_consent_status = Consent received
-```
-
-Case stories are shown only when:
+Rows appear as public case stories only when:
 
 ```txt
 case_id is not blank
 published = Yes
 ```
 
-If no approved image exists, the website shows an image placeholder. Case-story images should come from public Google Drive URLs in `CaseLedger`.
-
-### 4. Case image privacy checklist
-
-Before setting `image_consent_status` to `Consent received`, confirm:
-
-- Image is public-safe.
-- Consent for public website display has been received.
-- No full recipient name is visible.
-- No phone number is visible.
-- No exact address is visible.
-- No Aadhaar, PAN, bank, UPI, payment, or document detail is visible.
-- No donor identity is visible.
-- Google Drive sharing is set to “Anyone with the link can view.”
-
-Never publish `image_publish_notes`; it is internal and not rendered publicly.
-
-## Public privacy rules
-
-- Never show full recipient names.
-- Never show phone numbers.
-- Never show exact addresses.
-- Never show Aadhaar, PAN, bank details, UPI IDs, payment IDs, or private documents.
-- Never show donor names.
-- Never show `image_publish_notes`.
-- Never show draft cases.
-- Never show unpublished cases.
-- Never show images without consent.
-
-## Mentorship testimonials onboarding
-
-Use the `MentorshipTestimonials` tab for public mentee testimonials.
-
-### 1. Publish the tab
-
-1. Open `Humanitarians_Public_Impact_Stats_Linked`.
-2. Go to File > Share > Publish to web.
-3. Choose the `MentorshipTestimonials` tab.
-4. Choose CSV.
-5. Copy the URL.
-6. Paste it into:
+Case-story images appear only when:
 
 ```txt
-VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL
+image_consent_status = Consent received
 ```
 
-Add the same variable in Netlify when deployed.
+Important behavior:
 
-### 2. Fill testimonial fields
+- Rows without `case_id` are ignored.
+- `period_sort` is preferred for sorting when present.
+- If `period_sort` is missing, the app tries to parse `period_label`, for example `Jan 2026`.
+- `total_amount` is used when present; otherwise the app calculates it from `amount_zakat`, `amount_sadaqah`, and `other_amount`.
+- If `fund_type` is blank, the app derives it from the amount columns.
+- Reports are derived live from `CaseLedger`; there are no saved public report rows in the repo.
+
+## Mentorship Testimonials
+
+The `MentorshipTestimonials` tab is used for public mentee testimonials.
+
+Testimonials appear only when:
+
+```txt
+consent_received = Yes
+publish_status = Publish
+```
 
 Required public-safe fields:
 
@@ -297,153 +188,163 @@ Internal field:
 editing_note
 ```
 
-The website never renders `editing_note`.
+The website does not render `editing_note`.
 
-### 3. Publishing rules
+If there are no publishable testimonials, the mentorship page shows a safe empty state.
 
-Testimonials appear only when:
+## Case Images
 
-```txt
-consent_received = Yes
-publish_status = Publish
-```
+Case images are read from public URLs in `CaseLedger`.
 
-If either value is different, the testimonial is hidden.
-
-Do not publish placeholder rows. Replace placeholder copy with a real, approved testimonial before setting `publish_status` to `Publish`.
-
-### 4. Testimonial privacy checklist
-
-Before setting `publish_status` to `Publish`, confirm:
-
-- Consent has been received.
-- Testimonial is anonymized.
-- No full name is included.
-- No phone number is included.
-- No exact address is included.
-- No employer-sensitive/private detail is included.
-- No donor name is included.
-- No ID, document, payment, or bank detail is included.
-- `editing_note` contains no public-facing content and will remain internal.
-
-If there are no publishable testimonials, the website shows:
+Use these fields:
 
 ```txt
-Mentee testimonials will appear here after consent and verification.
+image_url_1
+image_alt_1
+image_caption_1
+image_url_2
+image_alt_2
+image_caption_2
+image_url_3
+image_alt_3
+image_caption_3
+image_consent_status
+image_publish_notes
 ```
 
-## Privacy checklist before publishing
+Rules:
 
-- Do not show real full recipient names.
-- Do not show phone numbers.
-- Do not show addresses below city/state level.
-- Do not show Aadhaar, PAN, bank details, UPI IDs, payment IDs, documents, medical documents, or private notes.
-- Do not show donor names.
-- Do not show testimonial `editing_note`.
-- Do not show case image `image_publish_notes`.
-- Do not show draft testimonials.
-- Do not show images without consent.
-- Public stories must stay anonymized to protect recipient dignity and privacy.
-- Zakat and Sadaqah must remain tracked separately in monthly reports.
-- Stats must be aggregated and privacy-safe.
-- Do not claim government registration, 80G, FCRA, tax exemption, scholar certification, or a 100% Zakat policy unless verified editable copy is added later.
+- Use only public-safe images.
+- Set Google Drive image sharing to `Anyone with the link can view`.
+- Use clear alt text for every image.
+- Do not publish images that show full names, phone numbers, addresses, IDs, payment details, bank details, UPI IDs, donor identities, or private documents.
+- `image_publish_notes` is internal and is never rendered publicly.
+- If no approved image is available, the site shows a placeholder.
 
-## Editable public content
+## Privacy Rules
 
-- Public WhatsApp, email, UPI, bank, and CTA links live in `src/data/contact.ts`.
-- Founder names live in `src/data/founders.ts`.
-- Case story image galleries are built from public Google Drive URLs in `CaseLedger`.
-- General site copy and the About page profile download path live in `src/data/site.ts`.
-- The About page profile PDF currently lives at `public/docs/humanitarians-impact-profile.pdf`.
-- The website is live-data-only. Do not add saved public summary data.
+Never publish:
 
-When adding case images, add public Google Drive image URLs to `CaseLedger` after consent and privacy review.
+- Full recipient names
+- Phone numbers
+- Exact addresses
+- Aadhaar, PAN, bank, UPI, payment, or document details
+- Donor names
+- Private notes
+- Draft cases
+- Draft testimonials
+- Images without consent
+- `editing_note`
+- `image_publish_notes`
 
-## GitHub setup
+Keep public reporting aggregated and anonymized. Do not claim government registration, 80G, FCRA, tax exemption, scholar certification, or a 100% Zakat policy unless verified public copy is added later.
 
-Create a GitHub repository:
+## Editable Website Content
 
-1. Go to GitHub.
-2. Click **New repository**.
-3. Name it, for example:
+Common editable content locations:
+
+- Contact, WhatsApp, UPI, bank, QR, and CTA links: `src/data/contact.ts`
+- Founder names: `src/data/founders.ts`
+- General site copy and profile PDF path: `src/data/site.ts`
+- FAQs: `src/data/faq.ts`
+- Case-story image handling: `src/components/cases/CaseImageCarousel.tsx`
+- Public stats derivation: `src/services/caseLedgerStats.ts`
+- CSV fetching and validation: `src/services/googleSheets.ts`
+
+Public assets:
+
+- Profile PDF: `public/docs/humanitarians-impact-profile.pdf`
+- Logo: `public/images/logo.jpeg`
+- WhatsApp QR: `public/images/humanitarians-new-members-whatsapp-qr.jpeg`
+- Zakat UPI QR: `public/images/upi-zakat-sahil-siddiqui.png`
+- Sadaqah UPI QR: `public/images/upi-sadaqah-mohammad-aqib.png`
+
+## Google Sheets Operating Precautions
+
+Published CSV URLs depend on the Google Sheet and each tab's internal `gid`.
+
+Best practice:
+
+1. Keep one permanent Google Sheet named `Humanitarians_Public_Impact_Stats_Linked`.
+2. Keep existing public tabs alive.
+3. Update data by pasting values into existing tabs.
+4. Do not delete and recreate public tabs unless necessary.
+5. Do not import a full `.xlsx` over the existing published workbook unless ready to republish every tab.
+6. Do not rename public tabs unless documentation and CSV URLs are updated.
+7. Keep private/raw tabs separate and never publish them.
+
+Safer update workflow:
+
+1. Make edits in a copy or temporary sheet.
+2. Review privacy-sensitive columns.
+3. Copy only public-safe values.
+4. Paste values into the existing public tab.
+5. Keep the same tab and published CSV URL.
+6. Refresh the website and verify.
+
+If published CSV URLs break:
+
+1. Open the Google Sheet.
+2. Go to File > Share > Publish to web.
+3. Republish each public tab as CSV.
+4. Copy the new CSV URLs.
+5. Update local `.env`.
+6. Restart `npm run dev`.
+7. Update hosting environment variables.
+8. Trigger a redeploy if needed.
+
+## Local-Only Files And Git Ignore
+
+The following files and folders are intentionally ignored:
 
 ```txt
-humanitarians-website
+.env
+.env.local
+.env.*.local
+Humanitarians_Public_Impact_Stats_Linked.xlsx
+/anas/
+/case-images/
 ```
 
-4. Choose **Public** or **Private**.
-5. Do not add a README, gitignore, or license on GitHub if this local project already has them.
-6. Click **Create repository**.
-
-Push this project:
+Important: `.gitignore` does not remove files that were already committed. If a local-only folder is already visible on GitHub, remove it from Git tracking while keeping it locally:
 
 ```bash
-cd /Users/daahmad/humanitarians
-git init
-git add .
-git commit -m "Initial Humanitarians website"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/humanitarians-website.git
-git push -u origin main
-```
-
-Replace `YOUR_USERNAME` with your GitHub username or organization name.
-
-For later updates:
-
-```bash
-git add .
-git commit -m "Update website"
+git rm --cached -r anas
+git commit -m "Stop tracking local anas folder"
 git push
 ```
 
-Netlify will automatically redeploy after each push once the repository is connected.
+After this, `anas/` remains on your machine but is deleted from the remote repository on the next push.
 
-## Free deployment on Netlify
+For this repo, `anas/index.html` has already been removed from Git tracking in the current working tree. Commit and push the staged deletion to remove it from GitHub.
 
-Netlify is the recommended free deployment path for this MVP because it supports static Vite sites, automatic GitHub deploys, environment variables, HTTPS, and later custom domains.
+## Deployment On Netlify
 
-1. Go to Netlify.
-2. Sign up or log in.
-3. Click **Add new site**.
-4. Choose **Import an existing project**.
-5. Select **GitHub**.
-6. Authorize Netlify if asked.
-7. Select the repository, for example:
+Netlify is the recommended free deployment path for this static Vite site.
 
-```txt
-humanitarians-website
-```
-
-8. Use these build settings:
+Build settings:
 
 ```txt
 Build command: npm run build
 Publish directory: dist
 ```
 
-9. Add environment variables in Netlify under **Site settings > Environment variables**:
+Add these environment variables in Netlify:
 
 ```txt
 VITE_STATS_CASE_LEDGER_CSV_URL
 VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL
 ```
 
-10. Click **Deploy site**.
+After Netlify is connected to GitHub, every push to `main` triggers a deployment.
 
-Netlify will give a free public URL like:
+If only Google Sheet data changes, a redeploy is usually not needed because the site fetches published CSV data on page load with light cache busting.
 
-```txt
-https://your-site-name.netlify.app
-```
+## Direct Route Support
 
-You can rename the free Netlify subdomain in **Site settings > Site details > Change site name**.
+This app uses React Router. Netlify needs `public/_redirects` so direct URLs work after deployment.
 
-## Direct route support
-
-This app uses React Router. The file `public/_redirects` is required for Netlify so direct URLs such as `/about`, `/reports`, and `/case-stories` work after deployment.
-
-The file contains:
+Required file content:
 
 ```txt
 /* /index.html 200
@@ -451,9 +352,9 @@ The file contains:
 
 Vite copies this file into `dist/_redirects` during `npm run build`.
 
-## Testing after deployment
+## Deployment Checklist
 
-Open the Netlify URL and test:
+After deployment, test:
 
 - `/`
 - `/about`
@@ -464,93 +365,30 @@ Open the Netlify URL and test:
 - `/zakat-sadaqah`
 - `/contact`
 
-Also test:
+Also verify:
 
-- Donate / Join QR images load.
-- Case story carousel images load.
-- About page profile PDF downloads.
-- Google Sheet stats show live data or a live-data-unavailable message.
-- Mentorship testimonials appear only after `consent_received` is `Yes` and `publish_status` is `Publish`.
-- Case story Google Drive images appear only when `image_consent_status` is `Consent received`.
-- Direct refresh on `/about` and `/reports` works.
-- External WhatsApp links open correctly.
+- Donate and Join QR images load.
+- UPI buttons open correctly on supported devices.
+- WhatsApp links open correctly.
+- Case-story carousel images load or show placeholders.
+- Profile PDF downloads from the About page.
+- Google Sheet stats show live data or a clear unavailable state.
+- Mentorship testimonials appear only after consent and publish approval.
+- Direct refresh works on routes such as `/about` and `/reports`.
 
-## Updating the live website
+## Custom Domain Notes
 
-After Netlify is connected to GitHub, every push to `main` triggers a new deployment:
+The site can use Netlify's free subdomain or a custom domain.
 
-```bash
-git add .
-git commit -m "Describe the change"
-git push
-```
-
-If you update only Google Sheet data, you usually do not need to redeploy. The website fetches the public CSV URLs on page load with light cache busting.
-
-## Buying and connecting a custom domain
-
-First check whether the desired domain is available at a registrar such as:
-
-- Cloudflare Registrar
-- Namecheap
-- GoDaddy
-- Squarespace Domains
-- Netlify Domains
-
-Possible domain ideas:
-
-```txt
-humanitarians.com
-humanitarians.org
-humanitarians.in
-humanitariansindia.org
-indianhumanitarians.org
-```
-
-For a charity, `.org` or `.in` can be a strong choice if `.com` is unavailable.
-
-After buying a domain:
-
-1. Open the Netlify site dashboard.
-2. Go to **Domain management**.
-3. Click **Add a domain**.
-4. Add the domain you own, for example:
-
-```txt
-www.yourdomain.org
-```
-
-5. Also add the root domain:
-
-```txt
-yourdomain.org
-```
-
-6. Set the primary domain, usually the `www` version:
-
-```txt
-www.yourdomain.org
-```
-
-7. Netlify will show DNS records.
-8. Open the domain registrar dashboard.
-9. Add the DNS records exactly as Netlify provides them.
-10. Wait for DNS propagation. This can take a few minutes to 24-48 hours.
-11. Netlify will automatically provision HTTPS/SSL.
-
-Recommended final setup:
+Recommended setup for a custom domain:
 
 ```txt
 yourdomain.org -> redirects to www.yourdomain.org
 www.yourdomain.org -> primary website
 ```
 
-Keep the free Netlify URL as a backup preview/admin URL.
+After buying a domain, add it in Netlify under Domain management, copy the DNS records Netlify provides into the registrar, and wait for DNS and HTTPS provisioning.
 
-## Alternative deployment providers
+## No Backend In This MVP
 
-This is a static Vite site, so it can also be deployed on Vercel, Cloudflare Pages, GitHub Pages, or similar static hosting. Configure `VITE_STATS_CASE_LEDGER_CSV_URL` and `VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL` in the hosting dashboard.
-
-## No backend in this MVP
-
-This MVP has no backend. A backend is only needed later for admin login, private case applications, document uploads, donor records, payment reconciliation, or mentor/mentee matching dashboards.
+This MVP has no backend. A backend is only needed later for features such as admin login, private case applications, document uploads, donor records, payment reconciliation, or mentor/mentee matching dashboards.
