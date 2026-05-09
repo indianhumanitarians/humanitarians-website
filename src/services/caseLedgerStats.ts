@@ -321,6 +321,7 @@ const deriveImpactSummary = (
 ): ImpactSummaryStat[] => {
   const publicRows = rows.filter(isPublicStatsRow);
   const totalAmountDisbursed = monthly.reduce((sum, row) => sum + row.total_amount, 0);
+  const latestMonth = monthly[monthly.length - 1];
   const topSupportTypes = [...supportTypes]
     .sort((a, b) => b.cases - a.cases || b.total_amount - a.total_amount)
     .slice(0, 5);
@@ -347,20 +348,24 @@ const deriveImpactSummary = (
       ),
     ),
     metric("published_case_stories", rows.filter(isPublishableStory).length, "Case stories approved for website publishing", 17),
-    metric("data_through", monthly.at(-1)?.period_label ?? "", "Latest confirmed public stats period", 20),
+    metric("data_through", latestMonth?.period_label ?? "", "Latest confirmed public stats period", 20),
   ].sort((a, b) => a.display_order - b.display_order);
 };
 
-const deriveLastUpdated = (monthly: MonthlyStat[]): LastUpdatedStat => ({
-  last_updated: new Date().toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }),
-  data_through: monthly.at(-1)?.period_label ?? "",
-  note: "Derived live from CaseLedger.",
-  source_workbook: "CaseLedger",
-});
+const deriveLastUpdated = (monthly: MonthlyStat[]): LastUpdatedStat => {
+  const latestMonth = monthly[monthly.length - 1];
+
+  return {
+    last_updated: new Date().toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
+    data_through: latestMonth?.period_label ?? "",
+    note: "Derived live from CaseLedger.",
+    source_workbook: "CaseLedger",
+  };
+};
 
 export const derivePublicStatsFromLedger = (rows: CaseLedgerRow[]): PublicStats => {
   const monthly = deriveMonthly(rows);

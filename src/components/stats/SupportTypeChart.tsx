@@ -8,7 +8,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { TooltipProps } from "recharts";
 import type { SupportTypeStat } from "../../types/stats";
 
 interface SupportTypeChartProps {
@@ -29,6 +28,13 @@ interface CategorySupportSummary {
 interface DynamicSupportType {
   key: string;
   label: string;
+}
+
+interface SupportTypeTooltipProps {
+  active?: boolean;
+  payload?: {
+    payload?: CategorySupportSummary;
+  }[];
 }
 
 const SUPPORT_TYPE_PALETTE = [
@@ -53,12 +59,12 @@ const supportTypeKey = (supportType: string): string =>
 const SupportTypeTooltip = ({
   active,
   payload,
-}: TooltipProps<number, string>) => {
+}: SupportTypeTooltipProps) => {
   if (!active || !payload?.length) {
     return null;
   }
 
-  const row = payload[0]?.payload as CategorySupportSummary | undefined;
+  const row = payload[0]?.payload;
   if (!row) {
     return null;
   }
