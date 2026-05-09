@@ -1,9 +1,18 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
+
+# Local environment files
 .env
+.env.local
+.env.*.local
+
+# Local/private project assets
 Humanitarians_Public_Impact_Stats_Linked.xlsx
-anas/
-case-images/
+/anas/
+/case-images/

@@ -65,7 +65,7 @@ export const About = () => (
       <div className="about-work-header">
         <h2>An Initiative by IIT Kanpur Alumni</h2>
         <p>
-          Humanitarians was started by four IIT Kanpur alumni to make community
+          Humanitarians was started by IIT Kanpur alumni to make community
           giving more structured, transparent, and focused on self-reliance.
           What began as a small donor circle now helps verified families move
           from urgent need toward earning independently through capital, tools,
