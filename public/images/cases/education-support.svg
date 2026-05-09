@@ -1,7 +1,0 @@
-<svg width="900" height="620" viewBox="0 0 900 620" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="900" height="620" rx="48" fill="#f0f9ff"/>
-  <path d="M190 178h240c42 0 76 34 76 76v230H266c-42 0-76-34-76-76V178Z" fill="#075985"/>
-  <path d="M470 178h240v230c0 42-34 76-76 76H394V254c0-42 34-76 76-76Z" fill="#0891b2"/>
-  <path d="M270 260h132M270 320h132M498 260h132M498 320h132" stroke="white" stroke-width="16" stroke-linecap="round"/>
-  <text x="450" y="555" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="800" fill="#075985">Replace with real education support photo</text>
-</svg>

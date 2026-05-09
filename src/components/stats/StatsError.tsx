@@ -3,7 +3,7 @@ interface StatsErrorProps {
 }
 
 export const StatsError = ({
-  title = "Live stats could not be loaded right now. Showing latest saved public summary.",
+  title = "Live stats could not be loaded right now.",
 }: StatsErrorProps) => (
   <div className="stats-error" role="status">
     <strong>{title}</strong>

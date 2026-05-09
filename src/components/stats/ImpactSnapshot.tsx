@@ -10,7 +10,16 @@ const snapshotMetrics = [
 ];
 
 export const ImpactSnapshot = () => {
-  const { stats, source } = usePublicStats();
+  const { stats, loading, source } = usePublicStats();
+  const hasStats = stats.impactSummary.length > 0;
+
+  if (loading) {
+    return <p className="soft-status">Loading live public stats...</p>;
+  }
+
+  if (!hasStats) {
+    return <p className="empty-state">Live public stats are not available right now.</p>;
+  }
 
   return (
     <div className="impact-preview">
@@ -20,7 +29,7 @@ export const ImpactSnapshot = () => {
           <span>{item.label}</span>
         </article>
       ))}
-      <p className={`impact-source-pill ${source}`}>{source === "live" ? "Live stats" : source === "partial" ? "Live with saved backup" : "Saved public summary"}</p>
+      <p className={`impact-source-pill ${source}`}>{source === "live" ? "Live stats" : "Live data partial"}</p>
     </div>
   );
 };

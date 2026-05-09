@@ -56,45 +56,40 @@ cp .env.example .env
 Paste the public Google Sheet CSV URLs into `.env`:
 
 ```txt
-VITE_STATS_MONTHLY_CSV_URL="..."
-VITE_STATS_SUPPORT_TYPES_CSV_URL="..."
-VITE_STATS_IMPACT_SUMMARY_CSV_URL="..."
-VITE_STATS_LAST_UPDATED_CSV_URL="..."
-VITE_STATS_REPORTS_CSV_URL="..."
-VITE_STATS_CASE_STORIES_CSV_URL="..."
+VITE_STATS_CASE_LEDGER_CSV_URL="..."
 VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL="..."
 ```
 
 Do not commit `.env`. Only `.env.example` should be committed.
 
-If CSV URLs are missing or a Google Sheet is temporarily unavailable, the website uses saved fallback data and shows a saved-summary status instead of crashing.
+If CSV URLs are missing or a Google Sheet is temporarily unavailable, the website shows a live-data-unavailable message instead of saved public data.
 
 ## Public Google Sheet stats
 
 This MVP has no backend. Live stats are fetched directly from public CSV URLs published from a Google Sheet workbook named:
 
-`Humanitarians_Public_Impact_Stats`
+`Humanitarians_Public_Impact_Stats_Linked`
 
-Public-safe tabs:
+The website reads only these published CSV tabs:
 
-- `MonthlyStats`
-- `SupportTypes`
-- `ImpactSummary`
-- `LastUpdated`
-- `Reports`
-- `CaseStorySeeds`
+- `CaseLedger`
 - `MentorshipTestimonials`
+
+`CaseLedger` is the master table for public stats, reports, support-type charts, and case stories. Publish it only after privacy review because the frontend derives public data directly from this tab.
 
 ## Publishing CSV tabs from Google Sheets
 
-1. Upload `Humanitarians_Public_Impact_Stats.xlsx` to Google Sheets.
-2. Name the Google Sheet: `Humanitarians_Public_Impact_Stats`.
-3. For each public tab, go to File > Share > Publish to web.
-4. Choose the specific tab.
-5. Choose CSV.
-6. Copy the CSV URL.
-7. Paste each CSV URL into the matching `VITE_` environment variable.
-8. Do not publish raw private sheets containing names, Aadhaar numbers, phone numbers, addresses, UPI IDs, donor names, payment IDs, or private case notes.
+1. Upload `Humanitarians_Public_Impact_Stats_v3_Linked.xlsx` to Google Sheets.
+2. Rename the Google Sheet: `Humanitarians_Public_Impact_Stats_Linked`.
+3. Add new cases only in the `CaseLedger` tab.
+4. Publish `CaseLedger` as CSV after privacy review.
+5. Publish `MentorshipTestimonials` as CSV if live mentorship testimonials are needed.
+6. Paste the CSV URLs into the matching `VITE_` environment variables.
+7. For case stories, set `published = Yes` before a case appears publicly.
+8. For images, set `image_consent_status = Consent received` before images appear publicly.
+9. Google Drive images must be shared as “Anyone with the link can view”.
+
+Rows without `case_id` are ignored in `CaseLedger`, and rows without `testimonial_id` are ignored in `MentorshipTestimonials`.
 
 For the new mentorship testimonials tab:
 
@@ -105,7 +100,7 @@ For the new mentorship testimonials tab:
 
 For case-story images:
 
-1. Paste public image URLs into `image_url_1`, `image_url_2`, and `image_url_3` in `CaseStorySeeds`.
+1. Paste public image URLs into `image_url_1`, `image_url_2`, and `image_url_3` in `CaseLedger`.
 2. Use `image_alt_1`, `image_alt_2`, and `image_alt_3` for accessible alt text.
 3. Use `image_caption_1`, `image_caption_2`, and `image_caption_3` for optional public captions.
 4. Set `image_consent_status` to `Consent received` before images are shown.
@@ -118,7 +113,7 @@ The public CSV URLs depend on the published Google Sheet and the internal `gid` 
 
 Best practice:
 
-1. Keep one permanent Google Sheet named `Humanitarians_Public_Impact_Stats`.
+1. Keep one permanent Google Sheet named `Humanitarians_Public_Impact_Stats_Linked`.
 2. Keep the existing public tabs alive.
 3. Update data by pasting values into existing tabs.
 4. Do not delete and recreate public tabs unless absolutely necessary.
@@ -186,7 +181,7 @@ Anyone with the link can view
 
 Google Drive images must be shared as “Anyone with the link can view” before they appear on the website.
 
-### 3. Add image URLs to `CaseStorySeeds`
+### 3. Add image URLs to `CaseLedger`
 
 For the matching case row, fill:
 
@@ -218,7 +213,14 @@ Images are shown only when:
 image_consent_status = Consent received
 ```
 
-If no approved image exists, the website uses the existing safe illustration fallback.
+Case stories are shown only when:
+
+```txt
+case_id is not blank
+published = Yes
+```
+
+If no approved image exists, the website shows an image placeholder. Case-story images should come from public Google Drive URLs in `CaseLedger`.
 
 ### 4. Case image privacy checklist
 
@@ -235,13 +237,25 @@ Before setting `image_consent_status` to `Consent received`, confirm:
 
 Never publish `image_publish_notes`; it is internal and not rendered publicly.
 
+## Public privacy rules
+
+- Never show full recipient names.
+- Never show phone numbers.
+- Never show exact addresses.
+- Never show Aadhaar, PAN, bank details, UPI IDs, payment IDs, or private documents.
+- Never show donor names.
+- Never show `image_publish_notes`.
+- Never show draft cases.
+- Never show unpublished cases.
+- Never show images without consent.
+
 ## Mentorship testimonials onboarding
 
 Use the `MentorshipTestimonials` tab for public mentee testimonials.
 
 ### 1. Publish the tab
 
-1. Open `Humanitarians_Public_Impact_Stats`.
+1. Open `Humanitarians_Public_Impact_Stats_Linked`.
 2. Go to File > Share > Publish to web.
 3. Choose the `MentorshipTestimonials` tab.
 4. Choose CSV.
@@ -338,22 +352,12 @@ Mentee testimonials will appear here after consent and verification.
 
 - Public WhatsApp, email, UPI, bank, and CTA links live in `src/data/contact.ts`.
 - Founder names live in `src/data/founders.ts`.
-- Case story image galleries live in `src/data/caseStoryMedia.ts`.
+- Case story image galleries are built from public Google Drive URLs in `CaseLedger`.
 - General site copy and the About page profile download path live in `src/data/site.ts`.
 - The About page profile PDF currently lives at `public/docs/humanitarians-impact-profile.pdf`.
-- Public fallback stats and fallback case stories live in `src/data/statsFallback.ts`.
+- The website is live-data-only. Do not add saved public summary data.
 
-When adding case images, put public-safe images in:
-
-```txt
-public/images/cases/
-```
-
-Then wire them in:
-
-```txt
-src/data/caseStoryMedia.ts
-```
+When adding case images, add public Google Drive image URLs to `CaseLedger` after consent and privacy review.
 
 ## GitHub setup
 
@@ -421,12 +425,7 @@ Publish directory: dist
 9. Add environment variables in Netlify under **Site settings > Environment variables**:
 
 ```txt
-VITE_STATS_MONTHLY_CSV_URL
-VITE_STATS_SUPPORT_TYPES_CSV_URL
-VITE_STATS_IMPACT_SUMMARY_CSV_URL
-VITE_STATS_LAST_UPDATED_CSV_URL
-VITE_STATS_REPORTS_CSV_URL
-VITE_STATS_CASE_STORIES_CSV_URL
+VITE_STATS_CASE_LEDGER_CSV_URL
 VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL
 ```
 
@@ -470,7 +469,7 @@ Also test:
 - Donate / Join QR images load.
 - Case story carousel images load.
 - About page profile PDF downloads.
-- Google Sheet stats show `Live`, `Live with saved backup`, or `Saved public summary`.
+- Google Sheet stats show live data or a live-data-unavailable message.
 - Mentorship testimonials appear only after `consent_received` is `Yes` and `publish_status` is `Publish`.
 - Case story Google Drive images appear only when `image_consent_status` is `Consent received`.
 - Direct refresh on `/about` and `/reports` works.
@@ -550,7 +549,7 @@ Keep the free Netlify URL as a backup preview/admin URL.
 
 ## Alternative deployment providers
 
-This is a static Vite site, so it can also be deployed on Vercel, Cloudflare Pages, GitHub Pages, or similar static hosting. Configure the same `VITE_STATS_*_CSV_URL` environment variables in the hosting dashboard.
+This is a static Vite site, so it can also be deployed on Vercel, Cloudflare Pages, GitHub Pages, or similar static hosting. Configure `VITE_STATS_CASE_LEDGER_CSV_URL` and `VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL` in the hosting dashboard.
 
 ## No backend in this MVP
 

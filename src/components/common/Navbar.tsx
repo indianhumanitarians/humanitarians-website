@@ -9,10 +9,8 @@ export const Navbar = () => {
     <header className="site-header">
       <nav className="navbar container" aria-label="Primary navigation">
         <NavLink className="brand" to="/" onClick={() => setIsOpen(false)}>
-          <span className="brand-mark" aria-hidden="true">
-            H
-          </span>
-          Humanitarians
+          <img src="/images/logo.jpeg" alt="" className="brand-logo" aria-hidden="true" />
+          <span>Humanitarians</span>
         </NavLink>
         <button
           className="nav-toggle"

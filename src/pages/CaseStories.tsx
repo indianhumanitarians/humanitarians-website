@@ -9,7 +9,7 @@ import { useCaseStories } from "../hooks/useCaseStories";
 const initialStoryLimit = 9;
 
 export const CaseStories = () => {
-  const { stories, loading, source, error } = useCaseStories();
+  const { stories, loading, error } = useCaseStories();
   const [category, setCategory] = useState("all");
   const [fundType, setFundType] = useState("all");
   const [supportType, setSupportType] = useState("all");
@@ -54,17 +54,27 @@ export const CaseStories = () => {
       <PrivacyNote>
         Public stories are anonymized to protect recipient dignity and privacy.
       </PrivacyNote>
-      <CaseStoryFilters
-        stories={stories}
-        category={category}
-        fundType={fundType}
-        supportType={supportType}
-        onCategoryChange={handleCategoryChange}
-        onFundTypeChange={handleFundTypeChange}
-        onSupportTypeChange={handleSupportTypeChange}
-      />
-      <div className="case-grid">
-        {visibleStories.length > 0 ? (
+      {loading ? (
+        <p className="soft-status">Loading public case stories from the live sheet...</p>
+      ) : null}
+      {!loading && error ? (
+        <p className="soft-status">Live case stories could not be loaded right now.</p>
+      ) : null}
+      {!loading && stories.length > 0 ? (
+        <CaseStoryFilters
+          stories={stories}
+          category={category}
+          fundType={fundType}
+          supportType={supportType}
+          onCategoryChange={handleCategoryChange}
+          onFundTypeChange={handleFundTypeChange}
+          onSupportTypeChange={handleSupportTypeChange}
+        />
+      ) : null}
+      <div className="case-grid case-grid-compact">
+        {loading ? (
+          <p className="empty-state">Fetching published stories from the live public sheet...</p>
+        ) : visibleStories.length > 0 ? (
           visibleStories.map((story) => (
             <CaseStoryCard key={story.case_id} story={story} />
           ))

@@ -2,7 +2,7 @@ export const site = {
   name: "Humanitarians",
   mission:
     "A charity community helping verified families move from urgent support toward dignified self-reliance through livelihood, skills, and mentorship.",
-  workbookName: "Humanitarians_Public_Impact_Stats",
+  workbookName: "Humanitarians_Public_Impact_Stats_Linked",
   privacyLine:
     "Stats are fetched from a public, privacy-safe Google Sheet. No private recipient or donor data is published.",
   anonymizedStoriesLine:

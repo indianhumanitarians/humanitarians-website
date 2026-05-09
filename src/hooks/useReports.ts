@@ -1,27 +1,15 @@
 import { useEffect, useState } from "react";
-import { fallbackReports } from "../data/statsFallback";
+import {
+  caseLedgerColumns,
+  deriveReportsFromLedger,
+} from "../services/caseLedgerStats";
 import { fetchCsv } from "../services/googleSheets";
-import type { DataSourceState, ReportRow } from "../types/stats";
-
-const reportColumns = [
-  "period_label",
-  "period_sort",
-  "zakat_cases_count",
-  "sadaqah_cases_count",
-  "mixed_cases_count",
-  "livelihood_cases_count",
-  "skill_or_education_cases_count",
-  "emergency_community_cases_count",
-  "total_public_summary",
-  "download_report_url",
-  "source_notes",
-  "status",
-];
+import type { CaseLedgerRow, DataSourceState, ReportRow } from "../types/stats";
 
 export const useReports = () => {
-  const [rows, setRows] = useState<ReportRow[]>(fallbackReports);
+  const [rows, setRows] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [source, setSource] = useState<DataSourceState>("fallback");
+  const [source, setSource] = useState<DataSourceState>("error");
   const [error, setError] = useState<string | undefined>();
 
   useEffect(() => {
@@ -29,20 +17,25 @@ export const useReports = () => {
 
     const load = async (): Promise<void> => {
       try {
-        const reports = await fetchCsv<ReportRow>(import.meta.env.VITE_STATS_REPORTS_CSV_URL, {
-          requiredColumns: reportColumns,
-        });
+        const ledgerRows = await fetchCsv<CaseLedgerRow>(
+          import.meta.env.VITE_STATS_CASE_LEDGER_CSV_URL,
+          { requiredColumns: caseLedgerColumns },
+        );
 
         if (isMounted) {
-          setRows(reports);
+          setRows(deriveReportsFromLedger(ledgerRows));
           setSource("live");
           setLoading(false);
         }
       } catch (fetchError) {
         if (isMounted) {
-          setRows(fallbackReports);
-          setSource("fallback");
-          setError(fetchError instanceof Error ? fetchError.message : "Reports could not be loaded.");
+          setRows([]);
+          setSource("error");
+          setError(
+            fetchError instanceof Error
+              ? fetchError.message
+              : "Reports could not be derived from CaseLedger.",
+          );
           setLoading(false);
         }
       }
