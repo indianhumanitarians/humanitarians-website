@@ -171,7 +171,10 @@ const HomeImpactSnapshot = () => {
   const zakatAmount = toFiniteNumber(metric("zakat_amount_disbursed"));
   const sadaqahAmount = toFiniteNumber(metric("sadaqah_amount_disbursed"));
   const allocationTotal = Math.max(amount, zakatAmount + sadaqahAmount);
-  const otherAmount = Math.max(allocationTotal - zakatAmount - sadaqahAmount, 0);
+  const otherAmount = Math.max(
+    allocationTotal - zakatAmount - sadaqahAmount,
+    0,
+  );
   const allocationItems = [
     {
       className: "zakat",
@@ -183,7 +186,8 @@ const HomeImpactSnapshot = () => {
       className: "sadaqah",
       label: "Sadaqah",
       amount: sadaqahAmount,
-      percent: allocationTotal > 0 ? (sadaqahAmount / allocationTotal) * 100 : 0,
+      percent:
+        allocationTotal > 0 ? (sadaqahAmount / allocationTotal) * 100 : 0,
     },
     {
       className: "others",
@@ -272,7 +276,10 @@ const HomeImpactSnapshot = () => {
             </div>
             <div className="fund-stack-legend">
               {allocationItems.map((item) => (
-                <span className={`fund-legend-item ${item.className}`} key={item.label}>
+                <span
+                  className={`fund-legend-item ${item.className}`}
+                  key={item.label}
+                >
                   <i aria-hidden="true" />
                   <strong>{item.label}</strong> - {formatRupees(item.amount)} (
                   {item.percent.toFixed(1)}%)
@@ -388,7 +395,7 @@ export const Home = () => {
                 </div>
                 <p className="stories-cta">
                   <Button to="/case-stories" variant="primary">
-                    View all anonymized stories
+                    View case stories
                   </Button>
                 </p>
               </>
