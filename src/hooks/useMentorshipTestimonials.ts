@@ -28,9 +28,13 @@ interface MentorshipTestimonialsState {
   source: DataSourceState;
 }
 
+const matches = (value: unknown, expected: string): boolean =>
+  String(value ?? "").trim().toLowerCase() === expected.toLowerCase();
+
 const isPublishable = (row: MentorshipTestimonial): boolean =>
-  String(row.consent_received).trim() === "Yes" &&
-  String(row.publish_status).trim() === "Publish";
+  String(row.testimonial_id ?? "").trim().length > 0 &&
+  matches(row.consent_received, "Yes") &&
+  matches(row.publish_status, "Publish");
 
 const normalizeTestimonial = (row: MentorshipTestimonial): MentorshipTestimonial => ({
   ...row,

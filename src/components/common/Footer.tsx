@@ -8,7 +8,6 @@ export const Footer = () => (
       <div>
         <h2>Humanitarians</h2>
         <p>{site.mission}</p>
-        <p className="footer-note">Public stats are aggregated and anonymized.</p>
       </div>
       <div>
         <h3>Quick links</h3>

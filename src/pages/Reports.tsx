@@ -1,7 +1,9 @@
 import { PrivacyNote } from "../components/common/PrivacyNote";
 import { SectionHeading } from "../components/common/SectionHeading";
 import { ReportsTable } from "../components/reports/ReportsTable";
+import { ReportInsightsCharts } from "../components/stats/ReportInsightsCharts";
 import { StatsDashboard } from "../components/stats/StatsDashboard";
+import { usePublicStats } from "../hooks/usePublicStats";
 import { useReports } from "../hooks/useReports";
 
 const reportItems = [
@@ -23,18 +25,23 @@ const privateItems = [
 
 export const Reports = () => {
   const { rows, loading, source, error } = useReports();
+  const {
+    stats,
+    loading: statsLoading,
+    error: statsError,
+  } = usePublicStats();
 
   return (
     <main className="container page">
       <div className="report-page-hero">
         <SectionHeading
           title="Public Zakat & Sadaqah case reports"
-          content="Every month, we share a public summary of handled Zakat and Sadaqah cases with our donor community."
+          content="Every month, we share privacy-safe public summaries of handled Zakat and Sadaqah cases with the donor community."
         />
         <span
           className={`data-badge ${source === "live" ? "live" : "fallback"}`}
         >
-          {source === "live" ? "Live" : "Saved public summary"}
+          {source === "live" ? "Live archive" : "Saved public summary"}
         </span>
       </div>
       {loading ? (
@@ -46,11 +53,25 @@ export const Reports = () => {
           public summary.
         </p>
       ) : null}
+      {statsLoading ? (
+        <p className="soft-status">Loading public impact stats...</p>
+      ) : null}
+      {statsError ? (
+        <p className="soft-status">
+          Some live stats could not be loaded. Showing saved public summary
+          where needed.
+        </p>
+      ) : null}
+      <PrivacyNote>
+        Report data comes from the public sheet only. Recipient dignity and
+        donor privacy stay protected.
+      </PrivacyNote>
       <StatsDashboard
         variant="full"
         showHeader={false}
         showSourceBadge={false}
       />
+      <ReportInsightsCharts stats={stats} />
       <ReportsTable rows={rows} />
       <section className="section two-col">
         <div className="report-info-panel">

@@ -55,8 +55,8 @@ export const fallbackMonthlyStats: MonthlyStat[] = [
 export const fallbackLastUpdated: LastUpdatedStat = {
   last_updated: "Saved summary",
   data_through: "Apr 2026",
-  note: "Fallback public summary from Humanitarians_Public_Impact_Stats.",
-  source_workbook: "Humanitarians_Public_Impact_Stats",
+  note: "Fallback public summary from Humanitarians_Public_Impact_Stats_Linked.",
+  source_workbook: "Humanitarians_Public_Impact_Stats_Linked",
 };
 
 export const fallbackReports: ReportRow[] = [
@@ -94,7 +94,8 @@ export const fallbackCaseStories: CaseStory[] = [
     quote_placeholder: "",
     privacy_note: "Public stories are anonymized to protect recipient dignity and privacy.",
     story_candidate: "TRUE",
-    publish_status: "published",
+    published: "Yes",
+    publish_status: "Publish",
   },
   {
     case_id: "CS-002",
@@ -113,7 +114,8 @@ export const fallbackCaseStories: CaseStory[] = [
     quote_placeholder: "",
     privacy_note: "Stories are anonymized because dignity is part of the work.",
     story_candidate: "TRUE",
-    publish_status: "published",
+    published: "Yes",
+    publish_status: "Publish",
   },
   {
     case_id: "CS-003",
@@ -132,6 +134,7 @@ export const fallbackCaseStories: CaseStory[] = [
     quote_placeholder: "",
     privacy_note: "Public stories are anonymized to protect recipient dignity and privacy.",
     story_candidate: "FALSE",
-    publish_status: "published",
+    published: "Yes",
+    publish_status: "Publish",
   },
 ];

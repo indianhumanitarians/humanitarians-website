@@ -23,6 +23,26 @@ const caseStoryColumns = [
   "publish_status",
 ];
 
+const isPresent = (value: unknown): boolean => String(value ?? "").trim().length > 0;
+
+const matches = (value: unknown, expected: string): boolean =>
+  String(value ?? "").trim().toLowerCase() === expected.toLowerCase();
+
+const hasPublishedColumn = (row: CaseStory): boolean =>
+  Object.prototype.hasOwnProperty.call(row, "published");
+
+const isPublishableCaseStory = (row: CaseStory): boolean => {
+  if (!isPresent(row.case_id) || !isPresent(row.title)) {
+    return false;
+  }
+
+  if (hasPublishedColumn(row)) {
+    return matches(row.published, "Yes") && matches(row.publish_status, "Publish");
+  }
+
+  return matches(row.publish_status, "Publish");
+};
+
 export const useCaseStories = () => {
   const [stories, setStories] = useState<CaseStory[]>(fallbackCaseStories);
   const [loading, setLoading] = useState(true);
@@ -37,7 +57,7 @@ export const useCaseStories = () => {
         const rows = await fetchCsv<CaseStory>(import.meta.env.VITE_STATS_CASE_STORIES_CSV_URL, {
           requiredColumns: caseStoryColumns,
         });
-        const publicRows = rows.filter((row) => String(row.publish_status).toLowerCase() !== "private");
+        const publicRows = rows.filter(isPublishableCaseStory);
 
         if (isMounted) {
           setStories(publicRows);

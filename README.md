@@ -73,7 +73,13 @@ If CSV URLs are missing or a Google Sheet is temporarily unavailable, the websit
 
 This MVP has no backend. Live stats are fetched directly from public CSV URLs published from a Google Sheet workbook named:
 
-`Humanitarians_Public_Impact_Stats`
+`Humanitarians_Public_Impact_Stats_Linked`
+
+The workbook source-of-truth tab is:
+
+- `CaseLedger`
+
+Do not publish or fetch `CaseLedger` directly in the frontend. It may contain private or review-stage data. The website should fetch only the public CSV tabs listed below.
 
 Public-safe tabs:
 
@@ -87,14 +93,25 @@ Public-safe tabs:
 
 ## Publishing CSV tabs from Google Sheets
 
-1. Upload `Humanitarians_Public_Impact_Stats.xlsx` to Google Sheets.
-2. Name the Google Sheet: `Humanitarians_Public_Impact_Stats`.
-3. For each public tab, go to File > Share > Publish to web.
-4. Choose the specific tab.
-5. Choose CSV.
-6. Copy the CSV URL.
-7. Paste each CSV URL into the matching `VITE_` environment variable.
-8. Do not publish raw private sheets containing names, Aadhaar numbers, phone numbers, addresses, UPI IDs, donor names, payment IDs, or private case notes.
+1. Upload `Humanitarians_Public_Impact_Stats_v3_Linked.xlsx` to Google Sheets.
+2. Rename the Google Sheet: `Humanitarians_Public_Impact_Stats_Linked`.
+3. Add new cases only in the `CaseLedger` tab.
+4. Do not edit formula-driven website tabs directly.
+5. Publish these public tabs as CSV:
+   - `MonthlyStats`
+   - `SupportTypes`
+   - `ImpactSummary`
+   - `LastUpdated`
+   - `Reports`
+   - `CaseStorySeeds`
+   - `MentorshipTestimonials`
+6. Paste the CSV URLs into the matching `VITE_` environment variables.
+7. Do not publish `CaseLedger` directly unless it is fully privacy reviewed.
+8. For case stories, set `published = Yes` and `publish_status = Publish` before a case appears publicly.
+9. For images, set `image_consent_status = Consent received` before images appear publicly.
+10. Google Drive images must be shared as “Anyone with the link can view”.
+
+Formula-generated blank rows in public tabs are ignored by the frontend. For example, rows without `period_label` are ignored in `MonthlyStats` and `Reports`, rows without `case_id` or `title` are ignored in `CaseStorySeeds`, and rows without `testimonial_id` are ignored in `MentorshipTestimonials`.
 
 For the new mentorship testimonials tab:
 
@@ -118,7 +135,7 @@ The public CSV URLs depend on the published Google Sheet and the internal `gid` 
 
 Best practice:
 
-1. Keep one permanent Google Sheet named `Humanitarians_Public_Impact_Stats`.
+1. Keep one permanent Google Sheet named `Humanitarians_Public_Impact_Stats_Linked`.
 2. Keep the existing public tabs alive.
 3. Update data by pasting values into existing tabs.
 4. Do not delete and recreate public tabs unless absolutely necessary.
@@ -218,6 +235,16 @@ Images are shown only when:
 image_consent_status = Consent received
 ```
 
+Case stories are shown only when:
+
+```txt
+case_id is not blank
+published = Yes
+publish_status = Publish
+```
+
+If an older CSV does not contain the `published` column, the website falls back to `publish_status = Publish`.
+
 If no approved image exists, the website uses the existing safe illustration fallback.
 
 ### 4. Case image privacy checklist
@@ -235,13 +262,25 @@ Before setting `image_consent_status` to `Consent received`, confirm:
 
 Never publish `image_publish_notes`; it is internal and not rendered publicly.
 
+## Public privacy rules
+
+- Never show full recipient names.
+- Never show phone numbers.
+- Never show exact addresses.
+- Never show Aadhaar, PAN, bank details, UPI IDs, payment IDs, or private documents.
+- Never show donor names.
+- Never show `image_publish_notes`.
+- Never show draft cases.
+- Never show unpublished cases.
+- Never show images without consent.
+
 ## Mentorship testimonials onboarding
 
 Use the `MentorshipTestimonials` tab for public mentee testimonials.
 
 ### 1. Publish the tab
 
-1. Open `Humanitarians_Public_Impact_Stats`.
+1. Open `Humanitarians_Public_Impact_Stats_Linked`.
 2. Go to File > Share > Publish to web.
 3. Choose the `MentorshipTestimonials` tab.
 4. Choose CSV.

@@ -1,10 +1,8 @@
 import { usePublicStats } from "../../hooks/usePublicStats";
 import { formatRupees, getMetricValue, toFiniteNumber } from "../../utils";
-import { PrivacyNote } from "../common/PrivacyNote";
 import { SectionHeading } from "../common/SectionHeading";
 import { FundAllocationSummary } from "./FundAllocationSummary";
 import { FundBreakdownChart } from "./FundBreakdownChart";
-import { ImpactSummaryCards } from "./ImpactSummaryCards";
 import { KpiStatCard } from "./KpiStatCard";
 import { MonthlyCasesChart } from "./MonthlyCasesChart";
 import { StatsError } from "./StatsError";
@@ -27,8 +25,8 @@ export const StatsDashboard = ({
   const metric = (key: string) => getMetricValue(stats.impactSummary, key);
   const zakatMetric = metric("zakat_amount_disbursed");
   const sadaqahMetric = metric("sadaqah_amount_disbursed");
-  const zakatAmount = toFiniteNumber(zakatMetric);
-  const sadaqahAmount = toFiniteNumber(sadaqahMetric);
+  const totalAmountMetric = metric("total_amount_disbursed");
+  const totalAmount = toFiniteNumber(totalAmountMetric);
   const sourceLabel = source === "live" ? "Live" : source === "partial" ? "Live with saved backup" : "Saved public summary";
 
   return (
@@ -60,11 +58,6 @@ export const StatsDashboard = ({
           }
         />
       ) : null}
-      <PrivacyNote>
-        Public stats are aggregated. Recipient dignity and privacy are
-        protected.
-      </PrivacyNote>
-
       <div className="kpi-grid">
         <KpiStatCard
           label="Active donor community"
@@ -75,27 +68,11 @@ export const StatsDashboard = ({
           value={String(metric("total_public_cases"))}
         />
         <KpiStatCard
-          label="Income support cases"
-          value={String(metric("livelihood_cases"))}
-        />
-        <KpiStatCard
-          label="Education / skills cases"
-          value={String(metric("skill_education_cases"))}
-        />
-        <KpiStatCard
-          label="Zakat used"
+          label="Total support delivered"
           value={
-            zakatAmount > 0
-              ? formatRupees(zakatAmount)
-              : String(zakatMetric)
-          }
-        />
-        <KpiStatCard
-          label="Sadaqah used"
-          value={
-            sadaqahAmount > 0
-              ? formatRupees(sadaqahAmount)
-              : String(sadaqahMetric)
+            totalAmount > 0
+              ? formatRupees(totalAmount)
+              : String(totalAmountMetric)
           }
         />
       </div>
@@ -112,7 +89,6 @@ export const StatsDashboard = ({
             <FundBreakdownChart rows={stats.monthly} />
             <SupportTypeChart rows={stats.supportTypes} />
           </div>
-          <ImpactSummaryCards rows={stats.impactSummary.filter((row) => row.metric !== "data_through")} />
         </>
       ) : (
         <div className="chart-grid one">

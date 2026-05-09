@@ -48,11 +48,6 @@ export const FundAllocationSummary = ({
           </div>
           <p>{formatRupees(sadaqah)} tracked as Sadaqah support.</p>
         </article>
-        <article>
-          <span>Total public allocation</span>
-          <strong>{formatRupees(total)}</strong>
-          <p>Zakat and Sadaqah are tracked separately in monthly reports.</p>
-        </article>
       </div>
     </section>
   );

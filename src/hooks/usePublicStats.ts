@@ -53,6 +53,8 @@ const toNumber = (value: unknown): number => {
   return 0;
 };
 
+const isPresent = (value: unknown): boolean => String(value ?? "").trim().length > 0;
+
 const normalizeMonthlyRow = (row: MonthlyStat): MonthlyStat => ({
   ...row,
   period_sort: toNumber(row.period_sort),
@@ -75,12 +77,32 @@ const normalizeMonthlyRow = (row: MonthlyStat): MonthlyStat => ({
 
 const sortMonthly = (rows: MonthlyStat[]): MonthlyStat[] =>
   rows
-    .filter((row) => String(row.include_in_public).toUpperCase() === "TRUE")
+    .filter((row) => isPresent(row.period_label) && String(row.include_in_public).trim().toUpperCase() === "TRUE")
     .map(normalizeMonthlyRow)
     .sort((a, b) => a.period_sort - b.period_sort);
 
 const sortImpact = (rows: ImpactSummaryStat[]): ImpactSummaryStat[] =>
-  [...rows].sort((a, b) => a.display_order - b.display_order);
+  rows
+    .filter((row) => isPresent(row.metric) && isPresent(row.label))
+    .sort((a, b) => toNumber(a.display_order) - toNumber(b.display_order));
+
+const normalizeSupportType = (row: SupportTypeStat): SupportTypeStat => ({
+  ...row,
+  cases: toNumber(row.cases),
+  total_amount: toNumber(row.total_amount),
+  zakat_amount: toNumber(row.zakat_amount),
+  sadaqah_amount: toNumber(row.sadaqah_amount),
+  mixed_cases: toNumber(row.mixed_cases),
+});
+
+const sortSupportTypes = (rows: SupportTypeStat[]): SupportTypeStat[] =>
+  rows
+    .filter((row) => isPresent(row.support_type) || isPresent(row.public_label))
+    .map(normalizeSupportType)
+    .filter((row) => row.cases > 0 || row.total_amount > 0);
+
+const firstLastUpdated = (rows: LastUpdatedStat[]): LastUpdatedStat | undefined =>
+  rows.find((row) => isPresent(row.last_updated) || isPresent(row.data_through));
 
 const isFulfilled = <T,>(result: PromiseSettledResult<T>): result is PromiseFulfilledResult<T> =>
   result.status === "fulfilled";
@@ -112,9 +134,9 @@ export const usePublicStats = (): PublicStatsState => {
         setState({
           stats: {
             monthly: isFulfilled(monthlyResult) ? sortMonthly(monthlyResult.value) : fallbackMonthlyStats,
-            supportTypes: isFulfilled(supportTypesResult) ? supportTypesResult.value : fallbackSupportTypes,
+            supportTypes: isFulfilled(supportTypesResult) ? sortSupportTypes(supportTypesResult.value) : fallbackSupportTypes,
             impactSummary: isFulfilled(impactSummaryResult) ? sortImpact(impactSummaryResult.value) : fallbackImpactSummary,
-            lastUpdated: isFulfilled(lastUpdatedResult) ? lastUpdatedResult.value[0] ?? fallbackLastUpdated : fallbackLastUpdated,
+            lastUpdated: isFulfilled(lastUpdatedResult) ? firstLastUpdated(lastUpdatedResult.value) ?? fallbackLastUpdated : fallbackLastUpdated,
           },
           loading: false,
           source,

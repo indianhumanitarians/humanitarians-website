@@ -27,7 +27,9 @@ const fetchPublicCsv = async (url: string): Promise<Response> => {
   return response;
 };
 
-// Reads public-safe CSV tabs published from Humanitarians_Public_Impact_Stats.
+// Reads public-safe CSV tabs published from Humanitarians_Public_Impact_Stats_Linked.
+// The private CaseLedger tab is the source of truth in the workbook, but it is
+// never fetched by the frontend.
 // A future backend could replace this with an authenticated reporting API for private admin workflows.
 const normalizeValue = (value: unknown): string | number => {
   if (typeof value !== "string") {

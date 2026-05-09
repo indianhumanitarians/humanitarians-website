@@ -81,6 +81,7 @@ export interface CaseStory {
   verified_quote?: string;
   privacy_note: string;
   story_candidate: string;
+  published: string;
   publish_status: string;
   image_url_1?: string;
   image_alt_1?: string;

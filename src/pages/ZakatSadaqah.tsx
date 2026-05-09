@@ -27,8 +27,14 @@ export const ZakatSadaqah = () => (
       </article>
     </section>
     <PrivacyNote>{site.fundTrackingLine}</PrivacyNote>
-    <section className="section">
-      <h2>Common questions</h2>
+    <section className="section zakat-faq-section">
+      <div className="zakat-faq-heading">
+        <h2>Common questions</h2>
+        <p>
+          Short answers on eligibility, fund separation, and how public
+          reporting protects donor intent and recipient dignity.
+        </p>
+      </div>
       <FAQAccordion items={zakatFaq} />
     </section>
     <section className="disclaimer">

@@ -10,7 +10,6 @@ interface CaseStoryCardProps {
 
 export const CaseStoryCard = ({ story }: CaseStoryCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const isCandidate = String(story.story_candidate).toUpperCase() === "TRUE";
   const images = getCaseStoryMedia(story);
   const fallbackImages = getApprovedCaseStoryImages(story).length > 0 ? getFallbackCaseStoryMedia(story) : [];
 
@@ -21,7 +20,6 @@ export const CaseStoryCard = ({ story }: CaseStoryCardProps) => {
         <div className="badge-row">
           <span className="badge">{story.category}</span>
           <span className="badge muted">{story.fund_type}</span>
-          {isCandidate ? <span className="badge gold">Story candidate</span> : null}
         </div>
         <h3>{story.title}</h3>
         <p className="case-meta">

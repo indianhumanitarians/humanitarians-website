@@ -13,7 +13,7 @@ export const MonthlyCasesChart = ({ rows }: MonthlyCasesChartProps) => {
 
   return (
     <article className="chart-card">
-      <h3>How many families were helped each month</h3>
+      <h3>Cases taken month wise</h3>
       <div className="chart-wrap" aria-hidden="true">
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={chartRows} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>

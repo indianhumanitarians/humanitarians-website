@@ -67,7 +67,7 @@ export const getFallbackCaseStoryMedia = (story: CaseStory): CaseStoryImage[] =>
 };
 
 export const getApprovedCaseStoryImages = (story: CaseStory): CaseStoryImage[] => {
-  if (String(story.image_consent_status ?? "").trim() !== "Consent received") {
+  if (String(story.image_consent_status ?? "").trim().toLowerCase() !== "consent received") {
     return [];
   }
 
