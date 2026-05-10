@@ -523,6 +523,10 @@
     @apply min-h-[300px] w-full;
   }
 
+  .support-type-mobile-bars {
+    display: none;
+  }
+
   .chart-tooltip {
     @apply grid max-w-72 gap-1 border border-stone-300 bg-white px-3 py-2 text-xs leading-5 text-stone-700 shadow-lg;
   }
@@ -2606,6 +2610,11 @@
     margin-bottom: 0;
   }
 
+  main:has(> .cta-section:last-child),
+  .page:has(> .cta-section:last-child) {
+    padding-bottom: 0;
+  }
+
   main:has(> .cta-section:last-child) + .site-footer,
   .page:has(> .cta-section:last-child) + .site-footer {
     margin-top: 0;
@@ -2934,6 +2943,29 @@
     color: var(--green);
   }
 
+  .upi-pay-action {
+    display: grid;
+    justify-items: center;
+  }
+
+  .upi-app-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .upi-app-options a {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--green);
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0.55rem 0.8rem;
+  }
+
   .join-section .community-card {
     max-width: 520px;
   }
@@ -3231,6 +3263,69 @@
     width: 100%;
     min-height: 52px;
     padding-inline: 18px;
+  }
+
+  .support-type-chart .chart-wrap {
+    display: none;
+  }
+
+  .support-type-mobile-bars {
+    display: grid;
+    gap: 16px;
+    margin-top: 22px;
+  }
+
+  .support-type-mobile-row {
+    display: grid;
+    gap: 8px;
+  }
+
+  .support-type-mobile-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--ink);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .support-type-mobile-label strong {
+    color: var(--green);
+    font-size: 1rem;
+  }
+
+  .support-type-mobile-stack {
+    display: flex;
+    height: 14px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--paper);
+  }
+
+  .support-type-mobile-stack span {
+    min-width: 8px;
+  }
+
+  .support-type-mobile-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.45;
+  }
+
+  .upi-pay-action .button,
+  .upi-app-options a {
+    width: 100%;
+  }
+
+  .upi-app-options {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .footer-inner {

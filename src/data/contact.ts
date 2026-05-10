@@ -1,7 +1,24 @@
 const email = "indianhumanitarians@gmail.com";
 const newMembersGroup = "https://chat.whatsapp.com/ICHmOfadrBnAReSB568crd?mode=gi_t";
+
+const buildUpiQuery = (upiId: string, name: string, note: string): string =>
+  `pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&tn=${encodeURIComponent(note)}&cu=INR`;
+
 const buildUpiLink = (upiId: string, name: string, note: string): string =>
-  `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&tn=${encodeURIComponent(note)}&cu=INR`;
+  `upi://pay?${buildUpiQuery(upiId, name, note)}`;
+
+const buildUpiIntentLink = (upiId: string, name: string, note: string): string =>
+  `intent://pay?${buildUpiQuery(upiId, name, note)}#Intent;scheme=upi;category=android.intent.category.BROWSABLE;end`;
+
+const buildUpiAppLinks = (upiId: string, name: string, note: string) => {
+  const query = buildUpiQuery(upiId, name, note);
+
+  return [
+    { label: "Google Pay", href: `tez://upi/pay?${query}` },
+    { label: "PhonePe", href: `phonepe://pay?${query}` },
+    { label: "Paytm", href: `paytmmp://pay?${query}` },
+  ];
+};
 
 export const contact = {
   email,
@@ -29,6 +46,8 @@ export const contact = {
       purpose: "Use Aqib's QR for Sadaqah support.",
       upiId: "8957768755@jupiteraxis",
       upiLink: buildUpiLink("8957768755@jupiteraxis", "Mohammad Aqib", "Humanitarians Sadaqah support"),
+      upiIntentLink: buildUpiIntentLink("8957768755@jupiteraxis", "Mohammad Aqib", "Humanitarians Sadaqah support"),
+      upiAppLinks: buildUpiAppLinks("8957768755@jupiteraxis", "Mohammad Aqib", "Humanitarians Sadaqah support"),
       qrImage: "/images/upi-sadaqah-mohammad-aqib.png",
     },
     {
@@ -38,6 +57,8 @@ export const contact = {
       purpose: "Use Sahil's QR for Zakat support.",
       upiId: "9565596161@jupiteraxis",
       upiLink: buildUpiLink("9565596161@jupiteraxis", "Sahil Siddiqui", "Humanitarians Zakat support"),
+      upiIntentLink: buildUpiIntentLink("9565596161@jupiteraxis", "Sahil Siddiqui", "Humanitarians Zakat support"),
+      upiAppLinks: buildUpiAppLinks("9565596161@jupiteraxis", "Sahil Siddiqui", "Humanitarians Zakat support"),
       qrImage: "/images/upi-zakat-sahil-siddiqui.png",
     },
   ],
