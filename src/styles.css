@@ -131,7 +131,6 @@
 
   .button {
     @apply inline-flex min-h-11 max-w-full cursor-pointer items-center justify-center whitespace-normal border px-5 py-3 text-center text-sm font-black transition focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-teal-400/70;
-    border-radius: 3px;
   }
 
   .button-primary {
@@ -427,7 +426,6 @@
 
   .shield {
     @apply grid size-9 shrink-0 place-items-center bg-teal-900 text-white;
-    border-radius: 3px;
   }
 
   .fund-allocation-panel {
@@ -645,7 +643,6 @@
 
   .filters select {
     @apply w-full min-w-0 border border-stone-300 bg-white px-3 py-2.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
-    border-radius: 3px;
   }
 
   .about-summary-panel,
@@ -687,15 +684,9 @@
   }
 
   .about-work-actions {
-    display: flex;
     flex-wrap: wrap;
     gap: 12px;
     margin-top: 28px;
-  }
-
-  .about-work-actions .button {
-    width: fit-content;
-    min-width: 0;
   }
 
   .about-work-categories {
@@ -804,7 +795,6 @@
 
   .mentor-track-card span {
     @apply grid size-12 place-items-center bg-teal-900 text-sm font-black text-white;
-    border-radius: 3px;
   }
 
   .testimonials-section {
@@ -876,7 +866,6 @@
 
   .timeline span {
     @apply grid size-12 place-items-center bg-teal-900 font-black text-white;
-    border-radius: 3px;
   }
 
   .timeline h2 {
@@ -1523,6 +1512,13 @@
     --border: #e0d9ce;
     --muted: #6b6560;
     --white: #ffffff;
+    --font-display: "Cormorant Garamond", serif;
+    --shell-width: 1080px;
+    --shell-gutter: 48px;
+    --hero-pattern: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1'%3E%3Cpolygon points='40,4 76,22 76,58 40,76 4,58 4,22'/%3E%3Cpolygon points='40,16 66,29 66,51 40,64 14,51 14,29'/%3E%3C/g%3E%3C/svg%3E");
+    --gold-glow: radial-gradient(circle, rgba(184, 131, 42, 0.18), transparent 70%);
+    --panel-reset-bg: transparent;
+    --panel-reset-shadow: none;
   }
 
   body {
@@ -1533,7 +1529,7 @@
 
   .container,
   .s-inner {
-    width: min(1080px, calc(100% - 48px));
+    width: min(var(--shell-width), calc(100% - var(--shell-gutter)));
     margin-inline: auto;
   }
 
@@ -1561,7 +1557,7 @@
   .model-card h3,
   .transp-card h3,
   .footer-logo {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-display);
     letter-spacing: 0;
   }
 
@@ -1621,28 +1617,35 @@
     max-width: none;
     overflow: hidden;
     background: var(--green);
-    padding: 118px max(24px, calc((100vw - 1080px) / 2)) 88px;
+    padding: 118px max(24px, calc((100vw - var(--shell-width)) / 2)) 88px;
   }
 
   .page > .section-heading:first-child::before,
-  .report-page-hero::before {
+  .report-page-hero::before,
+  .hero::before,
+  .cta-section::before {
     content: "";
     position: absolute;
     inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1'%3E%3Cpolygon points='40,4 76,22 76,58 40,76 4,58 4,22'/%3E%3Cpolygon points='40,16 66,29 66,51 40,64 14,51 14,29'/%3E%3C/g%3E%3C/svg%3E");
+    background-image: var(--hero-pattern);
     background-size: 80px 80px;
   }
 
   .page > .section-heading:first-child::after,
-  .report-page-hero::after {
+  .report-page-hero::after,
+  .hero::after {
     content: "";
     position: absolute;
-    right: -160px;
-    top: -180px;
     width: 520px;
     height: 520px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(184, 131, 42, 0.18), transparent 70%);
+    background: var(--gold-glow);
+  }
+
+  .page > .section-heading:first-child::after,
+  .report-page-hero::after {
+    right: -160px;
+    top: -180px;
   }
 
   .page > .section-heading:first-child > *,
@@ -1709,24 +1712,9 @@
     padding-top: 62px;
   }
 
-  .hero::before,
-  .cta-section::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1'%3E%3Cpolygon points='40,4 76,22 76,58 40,76 4,58 4,22'/%3E%3Cpolygon points='40,16 66,29 66,51 40,64 14,51 14,29'/%3E%3C/g%3E%3C/svg%3E");
-    background-size: 80px 80px;
-  }
-
   .hero::after {
-    content: "";
-    position: absolute;
     top: -120px;
     right: -120px;
-    width: 520px;
-    height: 520px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(184, 131, 42, 0.18), transparent 70%);
   }
 
   .hero-left,
@@ -1857,7 +1845,7 @@
   .hero-tagline {
     border-top: 1px solid rgba(255, 255, 255, 0.12);
     color: rgba(255, 255, 255, 0.54);
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-display);
     font-size: 1.1rem;
     font-style: italic;
     line-height: 1.6;
@@ -1909,7 +1897,7 @@
   .snum,
   .istat strong,
   .m-stat strong {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-display);
     font-weight: 700;
   }
 
@@ -2080,14 +2068,8 @@
   }
 
   .stories-cta {
-    display: flex;
     justify-content: center;
     margin-top: 30px;
-  }
-
-  .stories-cta .button {
-    width: fit-content;
-    min-width: 0;
   }
 
   .case-card,
@@ -2331,7 +2313,7 @@
 
   .fund-bar-card h3 {
     color: var(--ink);
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-display);
     font-size: clamp(1.9rem, 3vw, 3rem);
     font-weight: 700;
     line-height: 1.08;
@@ -2506,7 +2488,7 @@
   .mentor-quote {
     border-left: 3px solid var(--gold);
     color: var(--green);
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-display);
     font-size: 1.32rem;
     font-style: italic;
     line-height: 1.65;
@@ -2583,13 +2565,23 @@
   }
 
   .transp-action {
-    display: flex;
     justify-content: center;
     margin-top: 48px;
   }
 
+  .about-work-actions,
+  .stories-cta,
+  .transp-action,
+  .cta-section .cta-actions,
+  .cta-section .cta-btns {
+    display: flex;
+  }
+
+  .about-work-actions .button,
+  .stories-cta .button,
   .transp-action .button {
     width: fit-content;
+    min-width: 0;
   }
 
   .cta-section {
@@ -2610,7 +2602,6 @@
     margin-bottom: 0;
   }
 
-  .page:has(> .cta-section:last-child),
   .about-page {
     padding-bottom: 0;
   }
@@ -2656,7 +2647,6 @@
 
   .cta-section .cta-actions,
   .cta-section .cta-btns {
-    display: flex;
     justify-content: center;
     margin-inline: auto;
     margin-top: 0;
@@ -2709,12 +2699,24 @@
     margin-top: 0;
   }
 
-  .editorial-band {
-    display: block;
+  .editorial-band,
+  .our-model-page .timeline,
+  .disclaimer,
+  .mentor-tracks-panel,
+  .testimonials-section,
+  .donate-payment-section,
+  .join-section,
+  .site-footer .privacy-note,
+  .referral-privacy-note,
+  aside.privacy-note {
     border: 0;
     border-radius: 0;
-    background: transparent;
-    box-shadow: none;
+    background: var(--panel-reset-bg);
+    box-shadow: var(--panel-reset-shadow);
+  }
+
+  .editorial-band {
+    display: block;
     padding: 88px 0;
     margin-block: 0;
   }
@@ -2722,7 +2724,7 @@
   .editorial-band h2 {
     max-width: none;
     color: var(--ink);
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-display);
     font-size: clamp(2rem, 3.5vw, 3.6rem);
     font-weight: 700;
     line-height: 1.12;
@@ -2752,12 +2754,8 @@
   }
 
   .our-model-page .timeline {
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
     clip-path: none;
-    margin-bottom: 0;
+    margin-bottom: clamp(48px, 6vw, 88px);
     padding: 0;
   }
 
@@ -2766,7 +2764,7 @@
     box-shadow: 0 0 0 100vmax var(--cream);
     clip-path: inset(0 -100vmax);
     margin-block: 0;
-    padding: clamp(84px, 9vw, 132px) 0 clamp(96px, 10vw, 150px);
+    padding: clamp(72px, 8vw, 112px) 0 clamp(96px, 10vw, 150px);
   }
 
   .page.our-model-page > .support-design-section > div {
@@ -2796,10 +2794,6 @@
 
   .disclaimer {
     position: relative;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
     margin-block: 28px;
     padding: 0 0 0 24px;
   }
@@ -2838,10 +2832,6 @@
 
   .mentor-tracks-panel,
   .testimonials-section {
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
     padding-block: 72px;
   }
 
@@ -2861,7 +2851,7 @@
   .mentorship-audience-card h2,
   .donate-section-heading h2,
   .payment-card h2 {
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-display);
     font-weight: 700;
     letter-spacing: 0;
   }
@@ -2878,10 +2868,6 @@
 
   .donate-payment-section,
   .join-section {
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
     padding-block: 56px;
   }
 
@@ -3034,9 +3020,6 @@
   }
 
   .site-footer .privacy-note {
-    border: 0;
-    border-radius: 0;
-    background: transparent;
     color: rgba(255, 255, 255, 0.48);
     display: block;
     max-width: 340px;
@@ -3400,14 +3383,14 @@
 
 @layer components {
   @media (min-width: 1024px) {
-    .container,
-    .s-inner {
-      width: min(100% - 64px, 1840px);
+    :root {
+      --shell-width: 1840px;
+      --shell-gutter: 64px;
     }
 
     .page > .section-heading:first-child,
     .report-page-hero {
-      padding-inline: max(32px, calc((100vw - 1840px) / 2));
+      padding-inline: max(32px, calc((100vw - var(--shell-width)) / 2));
     }
   }
 
@@ -3521,10 +3504,6 @@
     position: relative;
     display: flex;
     align-items: center;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
     gap: 28px;
     margin-block: 34px;
     padding: 56px 0;
@@ -3536,7 +3515,7 @@
 
   .referral-privacy-note h2 {
     color: var(--ink);
-    font-family: "Cormorant Garamond", serif;
+    font-family: var(--font-display);
     font-size: clamp(2.4rem, 4vw, 4.2rem);
     font-weight: 700;
     line-height: 1.08;
@@ -3558,10 +3537,6 @@
   aside.privacy-note {
     position: relative;
     display: block;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
     margin-block: 28px;
     padding: 0 0 0 24px;
   }
