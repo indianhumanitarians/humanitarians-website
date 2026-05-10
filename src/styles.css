@@ -2990,6 +2990,12 @@
     padding-block: 28px;
   }
 
+  .cta-list + aside.privacy-note {
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
   .footer-inner {
     display: grid;
     grid-template-columns: 2.2fr 1fr 1fr;
