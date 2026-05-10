@@ -2,9 +2,8 @@ import { PrivacyNote } from "../components/common/PrivacyNote";
 import { SectionHeading } from "../components/common/SectionHeading";
 import { ReportsTable } from "../components/reports/ReportsTable";
 import { ReportInsightsCharts } from "../components/stats/ReportInsightsCharts";
-import { StatsDashboard } from "../components/stats/StatsDashboard";
-import { usePublicStats } from "../hooks/usePublicStats";
-import { useReports } from "../hooks/useReports";
+import { StatsDashboardContent } from "../components/stats/StatsDashboard";
+import { useReportPageData } from "../hooks/useReportPageData";
 
 const reportItems = [
   "Case type",
@@ -24,8 +23,7 @@ const privateItems = [
 ];
 
 export const Reports = () => {
-  const { rows, loading, source, error } = useReports();
-  const { stats, loading: statsLoading, error: statsError } = usePublicStats();
+  const { rows, stats, loading, source, error } = useReportPageData();
 
   return (
     <main className="container page">
@@ -46,19 +44,14 @@ export const Reports = () => {
           Live reports could not be loaded right now.
         </p>
       ) : null}
-      {statsLoading ? (
-        <p className="soft-status">Loading public impact stats...</p>
-      ) : null}
-      {statsError ? (
-        <p className="soft-status">Some live stats could not be loaded.</p>
-      ) : null}
       <PrivacyNote>
         Recipient dignity and donor privacy are protected.
       </PrivacyNote>
-      <StatsDashboard
+      <StatsDashboardContent
         variant="full"
         showHeader={false}
         showSourceBadge={false}
+        statsState={{ stats, loading, source, error }}
       />
       <ReportInsightsCharts stats={stats} />
       <ReportsTable rows={rows} />

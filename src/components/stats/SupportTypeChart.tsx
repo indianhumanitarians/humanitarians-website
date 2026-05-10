@@ -129,14 +129,26 @@ export const SupportTypeChart = ({ rows }: SupportTypeChartProps) => {
       return accumulator;
     }, {}),
   )
-    .map((row) => ({
+    .map<CategorySupportSummary>((row) => ({
       ...row,
       supportTypes: row.supportTypes.sort((a, b) => b.cases - a.cases),
     }))
     .sort((a, b) => b.cases - a.cases || b.total_amount - a.total_amount);
+  const maxCategoryCases = Math.max(
+    ...categoryRows.map((row) => row.cases),
+    0,
+  );
+  const supportTypeColors = new Map(
+    supportTypes.map((supportType, index) => [
+      supportType.label,
+      SUPPORT_TYPE_PALETTE[index % SUPPORT_TYPE_PALETTE.length],
+    ]),
+  );
+  const getSupportTypeColor = (supportType: string): string =>
+    supportTypeColors.get(supportType) ?? SUPPORT_TYPE_PALETTE[0];
 
   return (
-    <article className="chart-card">
+    <article className="chart-card support-type-chart">
       <h3>What kind of help was given most</h3>
       <div className="chart-wrap" aria-hidden="true">
         <ResponsiveContainer width="100%" height={320}>
@@ -166,6 +178,64 @@ export const SupportTypeChart = ({ rows }: SupportTypeChartProps) => {
             ))}
           </BarChart>
         </ResponsiveContainer>
+      </div>
+      <div className="support-type-mobile-bars" aria-label="Support types by category">
+        {categoryRows.map((row) => (
+          <div className="support-type-mobile-row" key={row.category}>
+            <div className="support-type-mobile-label">
+              <span>{row.category}</span>
+              <strong>{row.cases}</strong>
+            </div>
+            <div className="support-type-mobile-stack-track">
+              <div
+                className="support-type-mobile-stack"
+                style={{
+                  width:
+                    maxCategoryCases > 0
+                      ? `${(row.cases / maxCategoryCases) * 100}%`
+                      : "0%",
+                }}
+              >
+                {supportTypes.map((supportType, index) => {
+                  const cases = Number(row[supportType.key]) || 0;
+
+                  if (cases <= 0 || row.cases <= 0) {
+                    return null;
+                  }
+
+                  return (
+                    <span
+                      key={supportType.key}
+                      style={{
+                        backgroundColor:
+                          SUPPORT_TYPE_PALETTE[index % SUPPORT_TYPE_PALETTE.length],
+                        width: `${(cases / row.cases) * 100}%`,
+                      }}
+                      title={`${supportType.label}: ${cases}`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+            <div className="support-type-mobile-legend">
+              {row.supportTypes
+                .filter((supportType) => supportType.cases > 0)
+                .map((supportType) => (
+                  <span key={supportType.support_type}>
+                    <i
+                      aria-hidden="true"
+                      style={{
+                        backgroundColor: getSupportTypeColor(
+                          supportType.support_type,
+                        ),
+                      }}
+                    />
+                    {supportType.support_type}: {supportType.cases}
+                  </span>
+                ))}
+            </div>
+          </div>
+        ))}
       </div>
     </article>
   );

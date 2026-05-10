@@ -12,7 +12,7 @@ import { CaseStoryCard } from "../components/cases/CaseStoryCard";
 import { Button } from "../components/common/Button";
 import { CTASection } from "../components/common/CTASection";
 import { useCaseStories } from "../hooks/useCaseStories";
-import { usePublicStats } from "../hooks/usePublicStats";
+import { usePublicStats, type PublicStatsState } from "../hooks/usePublicStats";
 import { formatRupees, getMetricValue, toFiniteNumber } from "../utils";
 
 const modelCards = [
@@ -67,8 +67,12 @@ const transparencyCards = [
   },
 ];
 
-const HomeHeroStats = () => {
-  const { stats, source } = usePublicStats();
+interface HomeStatsProps {
+  statsState: PublicStatsState;
+}
+
+const HomeHeroStats = ({ statsState }: HomeStatsProps) => {
+  const { stats, source } = statsState;
   const metric = (key: string) => getMetricValue(stats.impactSummary, key);
   const community = String(metric("active_donor_community"));
   const cases = String(metric("total_public_cases"));
@@ -133,8 +137,8 @@ const formatCompactRupees = (value: string | number): string => {
   return amount > 0 ? formatRupees(amount) : String(value);
 };
 
-const HomeMarquee = () => {
-  const { stats } = usePublicStats();
+const HomeMarquee = ({ statsState }: HomeStatsProps) => {
+  const { stats } = statsState;
   const metric = (key: string) => getMetricValue(stats.impactSummary, key);
   const hasStats = stats.impactSummary.length > 0;
   const community = String(metric("active_donor_community"));
@@ -164,8 +168,8 @@ const HomeMarquee = () => {
   );
 };
 
-const HomeImpactSnapshot = () => {
-  const { stats, source } = usePublicStats();
+const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
+  const { stats, source } = statsState;
   const metric = (key: string) => getMetricValue(stats.impactSummary, key);
   const amount = toFiniteNumber(metric("total_amount_disbursed"));
   const zakatAmount = toFiniteNumber(metric("zakat_amount_disbursed"));
@@ -328,6 +332,7 @@ const HomeImpactSnapshot = () => {
 
 export const Home = () => {
   const { stories, loading: storiesLoading } = useCaseStories();
+  const statsState = usePublicStats();
   const featuredStories = stories.slice(0, 3);
 
   return (
@@ -366,11 +371,11 @@ export const Home = () => {
           </div>
         </div>
         <div className="hero-right">
-          <HomeHeroStats />
+          <HomeHeroStats statsState={statsState} />
         </div>
       </section>
 
-      <HomeMarquee />
+      <HomeMarquee statsState={statsState} />
 
       <main>
         <section className="section stories-section">
@@ -409,7 +414,7 @@ export const Home = () => {
 
         <section className="section impact-section">
           <div className="s-inner">
-            <HomeImpactSnapshot />
+            <HomeImpactSnapshot statsState={statsState} />
           </div>
         </section>
 

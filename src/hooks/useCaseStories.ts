@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
 import {
   caseLedgerColumns,
   deriveCaseStoriesFromLedger,
 } from "../services/caseLedgerStats";
-import { fetchCsv } from "../services/googleSheets";
+import { useCsvData } from "./useCsvData";
 import type { CaseLedgerRow, CaseStory, DataSourceState } from "../types/stats";
 
 const caseStoryColumns = [
@@ -20,46 +19,23 @@ const caseStoryColumns = [
   "privacy_note",
 ];
 
-export const useCaseStories = () => {
-  const [stories, setStories] = useState<CaseStory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [source, setSource] = useState<DataSourceState>("error");
-  const [error, setError] = useState<string | undefined>();
+interface CaseStoriesState {
+  stories: CaseStory[];
+  loading: boolean;
+  source: DataSourceState;
+  error?: string;
+}
 
-  useEffect(() => {
-    let isMounted = true;
+const emptyStories: CaseStory[] = [];
 
-    const load = async (): Promise<void> => {
-      try {
-        const rows = await fetchCsv<CaseLedgerRow>(
-          import.meta.env.VITE_STATS_CASE_LEDGER_CSV_URL,
-          { requiredColumns: caseStoryColumns },
-        );
-
-        if (isMounted) {
-          setStories(deriveCaseStoriesFromLedger(rows));
-          setSource("live");
-          setLoading(false);
-        }
-      } catch (fetchError) {
-        if (isMounted) {
-          setStories([]);
-          setSource("error");
-          setError(
-            fetchError instanceof Error
-              ? fetchError.message
-              : "Case stories could not be derived from CaseLedger.",
-          );
-          setLoading(false);
-        }
-      }
-    };
-
-    void load();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+export const useCaseStories = (): CaseStoriesState => {
+  const { data: stories, loading, source, error } = useCsvData<CaseLedgerRow, CaseStory[]>({
+    url: import.meta.env.VITE_STATS_CASE_LEDGER_CSV_URL,
+    requiredColumns: caseStoryColumns,
+    initialData: emptyStories,
+    deriveData: deriveCaseStoriesFromLedger,
+    fallbackError: "Case stories could not be derived from CaseLedger.",
+  });
 
   return { stories, loading, source, error };
 };

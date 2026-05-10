@@ -1,4 +1,5 @@
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { useState } from "react";
+import { useCarousel } from "../../hooks/useCarousel";
 import { useMentorshipTestimonials } from "../../hooks/useMentorshipTestimonials";
 import type { MentorshipTestimonial } from "../../types/stats";
 import { PrivacyNote } from "../common/PrivacyNote";
@@ -42,32 +43,18 @@ const TestimonialCard = ({ testimonial }: { testimonial: MentorshipTestimonial }
 
 export const MentorshipTestimonialsCarousel = () => {
   const { testimonials, loading } = useMentorshipTestimonials();
-  const [activeIndex, setActiveIndex] = useState(0);
-  const hasMultipleTestimonials = testimonials.length > 1;
-
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [testimonials]);
-
-  const showPrevious = () => {
-    setActiveIndex((currentIndex) => (currentIndex - 1 + testimonials.length) % testimonials.length);
-  };
-
-  const showNext = () => {
-    setActiveIndex((currentIndex) => (currentIndex + 1) % testimonials.length);
-  };
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "ArrowLeft" && hasMultipleTestimonials) {
-      event.preventDefault();
-      showPrevious();
-    }
-
-    if (event.key === "ArrowRight" && hasMultipleTestimonials) {
-      event.preventDefault();
-      showNext();
-    }
-  };
+  const testimonialKey = testimonials.map((testimonial) => testimonial.testimonial_id).join("|");
+  const {
+    activeIndex,
+    setActiveIndex,
+    hasMultipleItems: hasMultipleTestimonials,
+    showPrevious,
+    showNext,
+    handleKeyDown,
+  } = useCarousel({
+    itemCount: testimonials.length,
+    resetKey: testimonialKey,
+  });
 
   return (
     <section className="section testimonials-section">
@@ -94,10 +81,20 @@ export const MentorshipTestimonialsCarousel = () => {
 
           {hasMultipleTestimonials ? (
             <>
-              <button className="case-carousel-button previous" type="button" onClick={showPrevious} aria-label="Show previous testimonial">
+              <button
+                className="case-carousel-button previous"
+                type="button"
+                onClick={showPrevious}
+                aria-label="Show previous testimonial"
+              >
                 ‹
               </button>
-              <button className="case-carousel-button next" type="button" onClick={showNext} aria-label="Show next testimonial">
+              <button
+                className="case-carousel-button next"
+                type="button"
+                onClick={showNext}
+                aria-label="Show next testimonial"
+              >
                 ›
               </button>
               <div className="case-carousel-dots" aria-label="Mentorship testimonial selector">

@@ -37,9 +37,19 @@ export const Donate = () => (
               />
             </div>
             <div className="upi-pay-action">
-              <Button href={payment.upiLink} variant="secondary">
-                Click here to pay with UPI app
-              </Button>
+              <p className="upi-pay-helper">
+                Pay directly using any of these UPI apps:
+              </p>
+              <div
+                className="upi-app-options"
+                aria-label={`${payment.fundType} UPI app shortcuts`}
+              >
+                {payment.upiAppLinks.map((appLink) => (
+                  <a href={appLink.href} key={appLink.label}>
+                    {appLink.label}
+                  </a>
+                ))}
+              </div>
             </div>
           </article>
         ))}
