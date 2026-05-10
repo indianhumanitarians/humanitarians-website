@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-import { fetchCsv } from "../services/googleSheets";
 import type { DataSourceState, MentorshipTestimonial } from "../types/stats";
 import { normalizeImageUrl, toFiniteNumber } from "../utils";
+import { useCsvData } from "./useCsvData";
 
 const testimonialColumns = [
   "testimonial_id",
@@ -42,51 +41,25 @@ const normalizeTestimonial = (row: MentorshipTestimonial): MentorshipTestimonial
   profile_image_url: normalizeImageUrl(String(row.profile_image_url ?? "")),
 });
 
+const deriveTestimonials = (rows: MentorshipTestimonial[]): MentorshipTestimonial[] =>
+  rows
+    .filter(isPublishable)
+    .map(normalizeTestimonial)
+    .sort((a, b) => a.display_order - b.display_order);
+
+const emptyTestimonials: MentorshipTestimonial[] = [];
+
 export const useMentorshipTestimonials = (): MentorshipTestimonialsState => {
-  const [state, setState] = useState<MentorshipTestimonialsState>({
-    testimonials: [],
-    loading: true,
-    source: "error",
+  const { data: testimonials, loading, source } = useCsvData<
+    MentorshipTestimonial,
+    MentorshipTestimonial[]
+  >({
+    url: import.meta.env.VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL,
+    requiredColumns: testimonialColumns,
+    initialData: emptyTestimonials,
+    deriveData: deriveTestimonials,
+    fallbackError: "Mentorship testimonials could not be loaded.",
   });
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const load = async (): Promise<void> => {
-      try {
-        const rows = await fetchCsv<MentorshipTestimonial>(
-          import.meta.env.VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL,
-          { requiredColumns: testimonialColumns },
-        );
-        const testimonials = rows
-          .filter(isPublishable)
-          .map(normalizeTestimonial)
-          .sort((a, b) => a.display_order - b.display_order);
-
-        if (isMounted) {
-          setState({
-            testimonials,
-            loading: false,
-            source: "live",
-          });
-        }
-      } catch (fetchError) {
-        if (isMounted) {
-          setState({
-            testimonials: [],
-            loading: false,
-            source: "error",
-          });
-        }
-      }
-    };
-
-    void load();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  return state;
+  return { testimonials, loading, source };
 };

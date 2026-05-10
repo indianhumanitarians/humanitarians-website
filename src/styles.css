@@ -2610,6 +2610,15 @@
     margin-bottom: 0;
   }
 
+  .page:has(> .cta-section:last-child),
+  .about-page {
+    padding-bottom: 0;
+  }
+
+  .about-page + .site-footer {
+    margin-top: 0;
+  }
+
   main:has(> .cta-section:last-child),
   .page:has(> .cta-section:last-child) {
     padding-bottom: 0;
@@ -2938,22 +2947,26 @@
     font-size: 0.95rem;
   }
 
-  .upi-pay-action .button {
-    border-color: rgba(26, 92, 56, 0.18);
-    color: var(--green);
-  }
-
   .upi-pay-action {
     display: grid;
     justify-items: center;
   }
 
+  .upi-pay-helper {
+    color: var(--muted);
+    font-size: 0.86rem;
+    font-weight: 700;
+    margin: 0;
+    text-align: center;
+  }
+
   .upi-app-options {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
     gap: 8px;
     margin-top: 12px;
+    width: 100%;
   }
 
   .upi-app-options a {
@@ -2964,6 +2977,8 @@
     font-weight: 700;
     line-height: 1;
     padding: 0.55rem 0.8rem;
+    text-align: center;
+    white-space: nowrap;
   }
 
   .join-section .community-card {
@@ -3296,16 +3311,23 @@
     font-size: 1rem;
   }
 
-  .support-type-mobile-stack {
-    display: flex;
+  .support-type-mobile-stack-track {
     height: 14px;
     overflow: hidden;
     border-radius: 999px;
     background: var(--paper);
   }
 
+  .support-type-mobile-stack {
+    display: flex;
+    height: 100%;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: inherit;
+  }
+
   .support-type-mobile-stack span {
-    min-width: 8px;
+    flex: 0 0 auto;
   }
 
   .support-type-mobile-legend {
@@ -3318,14 +3340,31 @@
     line-height: 1.45;
   }
 
-  .upi-pay-action .button,
+  .support-type-mobile-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .support-type-mobile-legend i {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 auto;
+    border-radius: 999px;
+  }
+
   .upi-app-options a {
     width: 100%;
   }
 
   .upi-app-options {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .upi-app-options a {
+    font-size: 0.68rem;
+    padding-inline: 0.35rem;
   }
 
   .footer-inner {

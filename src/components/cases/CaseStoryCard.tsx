@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { getCaseStoryMedia } from "../../data/caseStoryMedia";
 import type { CaseStory } from "../../types/stats";
 import { Button } from "../common/Button";
@@ -10,7 +10,7 @@ interface CaseStoryCardProps {
 
 export const CaseStoryCard = ({ story }: CaseStoryCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const images = getCaseStoryMedia(story);
+  const images = useMemo(() => getCaseStoryMedia(story), [story]);
 
   return (
     <article className="case-card">
@@ -25,7 +25,11 @@ export const CaseStoryCard = ({ story }: CaseStoryCardProps) => {
           {story.anonymized_name} · {story.public_location} · {story.amount_range}
         </p>
         <p>{story.need}</p>
-        <Button variant="ghost" ariaLabel={`Read details for ${story.title}`} onClick={() => setIsOpen((current) => !current)}>
+        <Button
+          variant="ghost"
+          ariaLabel={`Read details for ${story.title}`}
+          onClick={() => setIsOpen((current) => !current)}
+        >
           {isOpen ? "Hide details" : "Read details"}
         </Button>
         {isOpen ? (

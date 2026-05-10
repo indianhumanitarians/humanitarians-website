@@ -320,24 +320,60 @@ const deriveImpactSummary = (
   supportTypes: SupportTypeStat[],
 ): ImpactSummaryStat[] => {
   const publicRows = rows.filter(isPublicStatsRow);
+  const publicFundTypes = publicRows.map(normalizedFundType);
   const totalAmountDisbursed = monthly.reduce((sum, row) => sum + row.total_amount, 0);
   const latestMonth = monthly[monthly.length - 1];
   const topSupportTypes = [...supportTypes]
     .sort((a, b) => b.cases - a.cases || b.total_amount - a.total_amount)
     .slice(0, 5);
+  const publicRowCount = (predicate: (row: CaseLedgerRow) => boolean): number =>
+    publicRows.filter(predicate).length;
+  const fundTypeCount = (fundTypeName: string): number =>
+    publicFundTypes.filter((fundType) => matches(fundType, fundTypeName)).length;
 
   return [
-    metric("active_donor_community", ACTIVE_DONOR_COMMUNITY, "Active WhatsApp donor community", 1, "Configured in website code."),
+    metric(
+      "active_donor_community",
+      ACTIVE_DONOR_COMMUNITY,
+      "Active WhatsApp donor community",
+      1,
+      "Configured in website code.",
+    ),
     metric("total_public_cases", publicRows.length, "Anonymized public cases tracked", 2),
     metric("total_amount_disbursed", totalAmountDisbursed, "Total support amount in public-safe summary", 3),
-    metric("livelihood_cases", publicRows.filter((row) => matches(row.category, "Livelihood")).length, "Livelihood generation cases", 4),
-    metric("skill_education_cases", publicRows.filter((row) => isSkillOrEducation(text(row.category))).length, "Skill / education / course cases", 5),
-    metric("emergency_community_cases", publicRows.filter((row) => isEmergencyOrCommunity(text(row.category))).length, "Emergency and community cases", 6),
-    metric("zakat_only_cases", publicRows.filter((row) => matches(normalizedFundType(row), "Zakat")).length, "Zakat-only cases", 7),
-    metric("sadaqah_only_cases", publicRows.filter((row) => matches(normalizedFundType(row), "Sadaqah")).length, "Sadaqah-only cases", 8),
-    metric("mixed_fund_cases", publicRows.filter((row) => matches(normalizedFundType(row), "Mixed")).length, "Mixed fund cases", 9),
-    metric("zakat_amount_disbursed", monthly.reduce((sum, row) => sum + row.amount_zakat, 0), "Zakat amount allocated", 10),
-    metric("sadaqah_amount_disbursed", monthly.reduce((sum, row) => sum + row.amount_sadaqah, 0), "Sadaqah amount allocated", 11),
+    metric(
+      "livelihood_cases",
+      publicRowCount((row) => matches(row.category, "Livelihood")),
+      "Livelihood generation cases",
+      4,
+    ),
+    metric(
+      "skill_education_cases",
+      publicRowCount((row) => isSkillOrEducation(text(row.category))),
+      "Skill / education / course cases",
+      5,
+    ),
+    metric(
+      "emergency_community_cases",
+      publicRowCount((row) => isEmergencyOrCommunity(text(row.category))),
+      "Emergency and community cases",
+      6,
+    ),
+    metric("zakat_only_cases", fundTypeCount("Zakat"), "Zakat-only cases", 7),
+    metric("sadaqah_only_cases", fundTypeCount("Sadaqah"), "Sadaqah-only cases", 8),
+    metric("mixed_fund_cases", fundTypeCount("Mixed"), "Mixed fund cases", 9),
+    metric(
+      "zakat_amount_disbursed",
+      monthly.reduce((sum, row) => sum + row.amount_zakat, 0),
+      "Zakat amount allocated",
+      10,
+    ),
+    metric(
+      "sadaqah_amount_disbursed",
+      monthly.reduce((sum, row) => sum + row.amount_sadaqah, 0),
+      "Sadaqah amount allocated",
+      11,
+    ),
     ...topSupportTypes.map((row, index) =>
       metric(
         `top_support_type_${index + 1}`,
@@ -347,7 +383,12 @@ const deriveImpactSummary = (
         "Top support types by public case count from CaseLedger.",
       ),
     ),
-    metric("published_case_stories", rows.filter(isPublishableStory).length, "Case stories approved for website publishing", 17),
+    metric(
+      "published_case_stories",
+      rows.filter(isPublishableStory).length,
+      "Case stories approved for website publishing",
+      17,
+    ),
     metric("data_through", latestMonth?.period_label ?? "", "Latest confirmed public stats period", 20),
   ].sort((a, b) => a.display_order - b.display_order);
 };
@@ -382,26 +423,49 @@ export const derivePublicStatsFromLedger = (rows: CaseLedgerRow[]): PublicStats 
   };
 };
 
-export const deriveReportsFromLedger = (rows: CaseLedgerRow[]): ReportRow[] =>
-  deriveMonthly(rows)
+const groupPublicRowsByPeriod = (rows: CaseLedgerRow[]): Map<number, CaseLedgerRow[]> =>
+  rows.filter(isPublicStatsRow).reduce((periodRows, row) => {
+    const periodSort = parsePeriodSort(row);
+    if (!periodSort) {
+      return periodRows;
+    }
+
+    const existingRows = periodRows.get(periodSort);
+    if (existingRows) {
+      existingRows.push(row);
+    } else {
+      periodRows.set(periodSort, [row]);
+    }
+
+    return periodRows;
+  }, new Map<number, CaseLedgerRow[]>());
+
+export const deriveReportsFromLedger = (rows: CaseLedgerRow[]): ReportRow[] => {
+  const publicRowsByPeriod = groupPublicRowsByPeriod(rows);
+
+  return deriveMonthly(rows)
     .filter((row) => row.total_cases > 0)
     .map((row) => {
-      const monthRows = rows.filter(
-        (ledgerRow) =>
-          isPublicStatsRow(ledgerRow) && parsePeriodSort(ledgerRow) === row.period_sort,
-      );
+      const monthRows = publicRowsByPeriod.get(row.period_sort) ?? [];
+      const fundTypes = monthRows.map(normalizedFundType);
 
       return {
         period_label: row.period_label,
         period_sort: row.period_sort,
-        zakat_cases_count: monthRows.filter((ledgerRow) => matches(normalizedFundType(ledgerRow), "Zakat")).length,
-        sadaqah_cases_count: monthRows.filter((ledgerRow) => matches(normalizedFundType(ledgerRow), "Sadaqah")).length,
-        mixed_cases_count: monthRows.filter((ledgerRow) => matches(normalizedFundType(ledgerRow), "Mixed")).length,
-        other_fund_cases_count: monthRows.filter((ledgerRow) => isOtherFund(normalizedFundType(ledgerRow))).length,
+        zakat_cases_count: fundTypes.filter((fundType) => matches(fundType, "Zakat")).length,
+        sadaqah_cases_count: fundTypes.filter((fundType) => matches(fundType, "Sadaqah")).length,
+        mixed_cases_count: fundTypes.filter((fundType) => matches(fundType, "Mixed")).length,
+        other_fund_cases_count: fundTypes.filter(isOtherFund).length,
         livelihood_cases_count: monthRows.filter((ledgerRow) => matches(ledgerRow.category, "Livelihood")).length,
-        skill_or_education_cases_count: monthRows.filter((ledgerRow) => isSkillOrEducation(text(ledgerRow.category))).length,
-        emergency_community_cases_count: monthRows.filter((ledgerRow) => isEmergencyOrCommunity(text(ledgerRow.category))).length,
-        total_public_summary: `₹${Math.round(row.total_amount).toLocaleString("en-IN")} public summary; ${row.total_cases} cases`,
+        skill_or_education_cases_count: monthRows.filter((ledgerRow) =>
+          isSkillOrEducation(text(ledgerRow.category)),
+        ).length,
+        emergency_community_cases_count: monthRows.filter((ledgerRow) =>
+          isEmergencyOrCommunity(text(ledgerRow.category)),
+        ).length,
+        total_public_summary: `₹${Math.round(row.total_amount).toLocaleString(
+          "en-IN",
+        )} public summary; ${row.total_cases} cases`,
         download_report_url: "#",
         source_notes: "Derived from CaseLedger",
         status: "Derived",
@@ -409,6 +473,7 @@ export const deriveReportsFromLedger = (rows: CaseLedgerRow[]): ReportRow[] =>
       };
     })
     .sort((a, b) => a.period_sort - b.period_sort);
+};
 
 export const deriveCaseStoriesFromLedger = (rows: CaseLedgerRow[]): CaseStory[] =>
   rows

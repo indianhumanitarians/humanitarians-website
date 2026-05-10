@@ -1,4 +1,7 @@
-import { usePublicStats } from "../../hooks/usePublicStats";
+import {
+  usePublicStats,
+  type PublicStatsState,
+} from "../../hooks/usePublicStats";
 import { formatRupees, getMetricValue, toFiniteNumber } from "../../utils";
 import { SectionHeading } from "../common/SectionHeading";
 import { FundAllocationSummary } from "./FundAllocationSummary";
@@ -15,12 +18,17 @@ interface StatsDashboardProps {
   showSourceBadge?: boolean;
 }
 
-export const StatsDashboard = ({
+interface StatsDashboardContentProps extends StatsDashboardProps {
+  statsState: PublicStatsState;
+}
+
+export const StatsDashboardContent = ({
   variant,
   showHeader = true,
   showSourceBadge = true,
-}: StatsDashboardProps) => {
-  const { stats, loading, source, error } = usePublicStats();
+  statsState,
+}: StatsDashboardContentProps) => {
+  const { stats, loading, source, error } = statsState;
   const isFull = variant === "full";
   const metric = (key: string) => getMetricValue(stats.impactSummary, key);
   const zakatMetric = metric("zakat_amount_disbursed");
@@ -116,4 +124,10 @@ export const StatsDashboard = ({
       ) : null}
     </section>
   );
+};
+
+export const StatsDashboard = (props: StatsDashboardProps) => {
+  const statsState = usePublicStats();
+
+  return <StatsDashboardContent {...props} statsState={statsState} />;
 };

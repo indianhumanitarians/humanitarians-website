@@ -3,17 +3,6 @@ import { CopyButton } from "../components/common/CopyButton";
 import { PrivacyNote } from "../components/common/PrivacyNote";
 import { SectionHeading } from "../components/common/SectionHeading";
 import { contact } from "../data/contact";
-import type { MouseEvent } from "react";
-
-const openUpiChooser =
-  (upiIntentLink: string) => (event: MouseEvent<HTMLAnchorElement>) => {
-    if (!/Android/i.test(window.navigator.userAgent)) {
-      return;
-    }
-
-    event.preventDefault();
-    window.location.href = upiIntentLink;
-  };
 
 export const Donate = () => (
   <main className="container page">
@@ -48,14 +37,13 @@ export const Donate = () => (
               />
             </div>
             <div className="upi-pay-action">
-              <a
-                className="button button-secondary"
-                href={payment.upiLink}
-                onClick={openUpiChooser(payment.upiIntentLink)}
+              <p className="upi-pay-helper">
+                Pay directly using any of these UPI apps:
+              </p>
+              <div
+                className="upi-app-options"
+                aria-label={`${payment.fundType} UPI app shortcuts`}
               >
-                Click here to pay with any UPI app
-              </a>
-              <div className="upi-app-options" aria-label={`${payment.fundType} UPI app shortcuts`}>
                 {payment.upiAppLinks.map((appLink) => (
                   <a href={appLink.href} key={appLink.label}>
                     {appLink.label}
