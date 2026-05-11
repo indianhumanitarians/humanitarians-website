@@ -71,6 +71,18 @@ Build for production:
 npm run build
 ```
 
+Before each production build, `npm run build` automatically runs:
+
+```bash
+npm run refresh:fallback
+```
+
+That command fetches the latest published CaseLedger and MentorshipTestimonials
+CSV tabs and rewrites `src/data/fallbackSheets.ts`, so the bundled fallback
+snapshot stays current for deployments. If Google Sheets is temporarily
+unavailable during a build, the refresh step logs a warning and keeps the
+existing committed fallback snapshot so the build can still complete.
+
 Preview the production build:
 
 ```bash
@@ -336,6 +348,8 @@ VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL
 ```
 
 After Netlify is connected to GitHub, every push to `main` triggers a deployment.
+Because the build command is `npm run build`, Netlify refreshes the bundled
+fallback data from the published Google Sheet tabs before compiling the site.
 
 If only Google Sheet data changes, a redeploy is usually not needed because the site fetches published CSV data on page load with light cache busting.
 
