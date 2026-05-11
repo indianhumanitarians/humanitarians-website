@@ -1,4 +1,9 @@
 import {
+  fallbackCaseLedgerRows,
+  fallbackSnapshotLabel,
+  fallbackSnapshotLastUpdated,
+} from "../data/fallbackSheets";
+import {
   caseLedgerColumns,
   derivePublicStatsFromLedger,
   deriveReportsFromLedger,
@@ -33,6 +38,19 @@ const deriveReportPageData = (rows: CaseLedgerRow[]): ReportPageData => ({
   stats: derivePublicStatsFromLedger(rows),
 });
 
+const fallbackReportPageData: ReportPageData = {
+  ...deriveReportPageData(fallbackCaseLedgerRows),
+  stats: {
+    ...derivePublicStatsFromLedger(fallbackCaseLedgerRows),
+    lastUpdated: {
+      last_updated: fallbackSnapshotLastUpdated,
+      data_through: "May 2026",
+      note: fallbackSnapshotLabel,
+      source_workbook: "Bundled CaseLedger snapshot",
+    },
+  },
+};
+
 export const useReportPageData = (): ReportPageDataState => {
   const { data, loading, source, error } = useCsvData<
     CaseLedgerRow,
@@ -42,6 +60,7 @@ export const useReportPageData = (): ReportPageDataState => {
     requiredColumns: caseLedgerColumns,
     initialData: emptyReportPageData,
     deriveData: deriveReportPageData,
+    fallbackData: fallbackReportPageData,
     fallbackError: "Reports could not be derived from CaseLedger.",
   });
 

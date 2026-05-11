@@ -42,7 +42,7 @@ const TestimonialCard = ({ testimonial }: { testimonial: MentorshipTestimonial }
 };
 
 export const MentorshipTestimonialsCarousel = () => {
-  const { testimonials, loading } = useMentorshipTestimonials();
+  const { testimonials, loading, source } = useMentorshipTestimonials();
   const testimonialKey = testimonials.map((testimonial) => testimonial.testimonial_id).join("|");
   const {
     activeIndex,
@@ -65,6 +65,9 @@ export const MentorshipTestimonialsCarousel = () => {
       <PrivacyNote>Testimonials are anonymized and shown only after consent.</PrivacyNote>
 
       {loading ? <p className="soft-status">Loading mentorship testimonials...</p> : null}
+      {source === "fallback" ? (
+        <p className="soft-status">Showing fallback snapshot data through May 2026.</p>
+      ) : null}
 
       {testimonials.length > 0 ? (
         <div

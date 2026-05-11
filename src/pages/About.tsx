@@ -72,7 +72,7 @@ export const About = () => (
           assets, courses, job-readiness, and mentorship.
         </p>
         <div className="about-work-actions">
-          <Button href={site.aboutProfileDownload} variant="secondary" download>
+          <Button href={site.aboutProfileUrl} variant="secondary">
             Click here to know more about us.
           </Button>
           <Button to="/contact" variant="secondary">

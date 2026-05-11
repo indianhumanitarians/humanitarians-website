@@ -321,6 +321,11 @@
     @apply border-amber-200 bg-amber-50 text-amber-900;
   }
 
+  .impact-source-pill.fallback,
+  .data-badge.fallback {
+    @apply border-sky-200 bg-sky-50 text-sky-950;
+  }
+
   .feature-card,
   .about-support-card,
   .about-info-panel,
@@ -575,10 +580,6 @@
 
   .case-carousel-image {
     @apply h-full w-full shrink-0 object-cover;
-  }
-
-  .case-carousel-caption {
-    @apply m-0 border-t border-stone-200 bg-white px-4 py-3 text-sm font-bold leading-6 text-stone-600;
   }
 
   .case-image-empty {
@@ -1914,6 +1915,10 @@
     margin-top: 4px;
   }
 
+  .hero-source-pill.fallback {
+    color: rgba(219, 234, 254, 0.92);
+  }
+
   .mini-card {
     display: flex;
     align-items: center;
@@ -2161,12 +2166,6 @@
     aspect-ratio: 16 / 9;
   }
 
-  .case-grid-compact .case-carousel-caption {
-    padding: 8px 12px;
-    font-size: 0.75rem;
-    line-height: 1.35;
-  }
-
   .case-grid-compact .case-carousel-button {
     width: 30px;
     height: 30px;
@@ -2219,7 +2218,7 @@
     line-height: 1.45;
   }
 
-  .case-grid-compact .case-card p:not(.case-meta):not(.case-carousel-caption) {
+  .case-grid-compact .case-card p:not(.case-meta) {
     font-size: 0.82rem;
     line-height: 1.55;
   }

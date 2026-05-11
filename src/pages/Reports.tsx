@@ -4,6 +4,7 @@ import { ReportsTable } from "../components/reports/ReportsTable";
 import { ReportInsightsCharts } from "../components/stats/ReportInsightsCharts";
 import { StatsDashboardContent } from "../components/stats/StatsDashboard";
 import { useReportPageData } from "../hooks/useReportPageData";
+import { getDataSourceLabel } from "../utils";
 
 const reportItems = [
   "Case type",
@@ -32,8 +33,8 @@ export const Reports = () => {
           title="Public Zakat & Sadaqah case reports"
           content="Every month, we share privacy-safe public summaries of handled Zakat and Sadaqah cases with the donor community."
         />
-        <span className={`data-badge ${source === "live" ? "live" : "error"}`}>
-          {source === "live" ? "Live archive" : "Live data unavailable"}
+        <span className={`data-badge ${source}`}>
+          {getDataSourceLabel(source, "Live archive")}
         </span>
       </div>
       {loading ? (

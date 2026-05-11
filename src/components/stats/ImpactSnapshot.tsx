@@ -1,5 +1,5 @@
 import { usePublicStats } from "../../hooks/usePublicStats";
-import { getMetricValue } from "../../utils";
+import { getDataSourceLabel, getMetricValue } from "../../utils";
 
 const snapshotMetrics = [
   { metric: "active_donor_community", label: "Active donor community" },
@@ -14,22 +14,28 @@ export const ImpactSnapshot = () => {
   const hasStats = stats.impactSummary.length > 0;
 
   if (loading) {
-    return <p className="soft-status">Loading live public stats...</p>;
+    return <p className="soft-status">Loading live stats...</p>;
   }
 
   if (!hasStats) {
-    return <p className="empty-state">Live public stats are not available right now.</p>;
+    return (
+      <p className="empty-state">Live stats are not available right now.</p>
+    );
   }
 
   return (
     <div className="impact-preview">
       {snapshotMetrics.map((item) => (
         <article key={item.metric}>
-          <strong>{String(getMetricValue(stats.impactSummary, item.metric))}</strong>
+          <strong>
+            {String(getMetricValue(stats.impactSummary, item.metric))}
+          </strong>
           <span>{item.label}</span>
         </article>
       ))}
-      <p className={`impact-source-pill ${source}`}>{source === "live" ? "Live stats" : "Live data partial"}</p>
+      <p className={`impact-source-pill ${source}`}>
+        {getDataSourceLabel(source, "Live stats")}
+      </p>
     </div>
   );
 };

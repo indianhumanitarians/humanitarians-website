@@ -2,9 +2,9 @@ import type { CaseStory, CaseStoryImage } from "../types/stats";
 import { normalizeImageUrl } from "../utils";
 
 const imageFields = [
-  ["image_url_1", "image_alt_1", "image_caption_1"],
-  ["image_url_2", "image_alt_2", "image_caption_2"],
-  ["image_url_3", "image_alt_3", "image_caption_3"],
+  ["image_url_1", "image_alt_1"],
+  ["image_url_2", "image_alt_2"],
+  ["image_url_3", "image_alt_3"],
 ] as const;
 
 export const getCaseStoryMedia = (story: CaseStory): CaseStoryImage[] => {
@@ -12,7 +12,8 @@ export const getCaseStoryMedia = (story: CaseStory): CaseStoryImage[] => {
     return [];
   }
 
-  return imageFields.reduce<CaseStoryImage[]>((images, [urlKey, altKey, captionKey], index) => {
+  return imageFields.reduce<CaseStoryImage[]>(
+    (images, [urlKey, altKey], index) => {
       const src = normalizeImageUrl(String(story[urlKey] ?? ""));
       if (!src) {
         return images;
@@ -23,9 +24,10 @@ export const getCaseStoryMedia = (story: CaseStory): CaseStoryImage[] => {
         alt:
           String(story[altKey] ?? "").trim() ||
           `Public case story image ${index + 1} for ${story.title}`,
-        caption: String(story[captionKey] ?? "").trim() || undefined,
       });
 
       return images;
-    }, []);
+    },
+    [],
+  );
 };

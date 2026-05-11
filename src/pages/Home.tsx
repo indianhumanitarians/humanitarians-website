@@ -1,19 +1,22 @@
+import { lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { CaseStoryCard } from "../components/cases/CaseStoryCard";
 import { Button } from "../components/common/Button";
 import { CTASection } from "../components/common/CTASection";
 import { useCaseStories } from "../hooks/useCaseStories";
 import { usePublicStats, type PublicStatsState } from "../hooks/usePublicStats";
-import { formatRupees, getMetricValue, toFiniteNumber } from "../utils";
+import {
+  formatRupees,
+  getDataSourceLabel,
+  getMetricValue,
+  toFiniteNumber,
+} from "../utils";
+
+const HomeMonthlyChart = lazy(() =>
+  import("../components/stats/HomeMonthlyChart").then((module) => ({
+    default: module.HomeMonthlyChart,
+  })),
+);
 
 const modelCards = [
   {
@@ -116,11 +119,7 @@ const HomeHeroStats = ({ statsState }: HomeStatsProps) => {
         </div>
       </div>
       <p className={`hero-source-pill ${source}`}>
-        {source === "live"
-          ? "Live public stats"
-          : source === "partial"
-            ? "Live data partial"
-            : "Live data unavailable"}
+        {getDataSourceLabel(source, "Live stats")}
       </p>
     </div>
   );
@@ -230,11 +229,7 @@ const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
         <div className="impact-title-line">
           <div className="tag">Impact snapshot</div>
           <p className={`impact-source-pill ${source}`}>
-            {source === "live"
-              ? "Live stats"
-              : source === "partial"
-                ? "Live data partial"
-                : "Live data unavailable"}
+            {getDataSourceLabel(source, "Live stats")}
           </p>
         </div>
         <h2 className="h2">
@@ -247,9 +242,7 @@ const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
       </div>
       <div className="impact-top">
         {!hasStats ? (
-          <p className="empty-state">
-            Live public stats are not available right now.
-          </p>
+          <p className="empty-state">Live stats are not available right now.</p>
         ) : null}
         <div>
           <div className="impact-stats">
@@ -296,30 +289,9 @@ const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
           <h3>Families helped each month</h3>
           <p>Cases tracked publicly</p>
           <div className="chart-wrap" aria-hidden="true">
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart
-                data={stats.monthly.filter((row) => row.total_cases > 0)}
-                margin={{ top: 12, right: 6, left: -22, bottom: 0 }}
-              >
-                <CartesianGrid vertical={false} stroke="#efe7db" />
-                <XAxis
-                  dataKey="period_label"
-                  tick={{ fontSize: 10, fill: "#8a8178" }}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  allowDecimals={false}
-                  tick={{ fontSize: 10, fill: "#8a8178" }}
-                />
-                <Tooltip cursor={{ fill: "rgba(26,92,56,0.08)" }} />
-                <Bar
-                  dataKey="total_cases"
-                  name="Families helped"
-                  fill="#1a5c38"
-                  radius={[5, 5, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="chart-placeholder" />}>
+              <HomeMonthlyChart rows={stats.monthly} />
+            </Suspense>
           </div>
           <div className="chart-card-link">
             <Link to="/reports">View full reports →</Link>

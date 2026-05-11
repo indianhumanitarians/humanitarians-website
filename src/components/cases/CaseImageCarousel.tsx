@@ -23,7 +23,6 @@ export const CaseImageCarousel = ({ images, title }: CaseImageCarouselProps) => 
     resetKey: `${title}:${imageKey}`,
     autoAdvanceMs: 6500,
   });
-  const activeImage = displayImages[activeIndex];
 
   useEffect(() => {
     setFailedImages(new Set());
@@ -64,9 +63,6 @@ export const CaseImageCarousel = ({ images, title }: CaseImageCarouselProps) => 
           />
         ))}
       </div>
-      {activeImage?.caption ? (
-        <p className="case-carousel-caption">{activeImage.caption}</p>
-      ) : null}
 
       {hasMultipleImages ? (
         <>
