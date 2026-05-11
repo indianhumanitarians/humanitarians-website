@@ -11,7 +11,8 @@ export const site = {
     "Zakat and Sadaqah are tracked separately in monthly reports.",
   scholarDisclaimer:
     "Please consult a qualified scholar for personal Zakat questions. Humanitarians shares operational transparency but does not replace scholarly advice.",
-  aboutProfileDownload: "/docs/humanitarians-impact-profile.pdf",
+  aboutProfileUrl:
+    "https://drive.google.com/file/d/18NIxGJpotj_TCZmThOB1-y8djLhNwP0u/view?usp=drivesdk",
 };
 
 export const navLinks = [

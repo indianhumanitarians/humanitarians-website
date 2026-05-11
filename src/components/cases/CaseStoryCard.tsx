@@ -43,9 +43,6 @@ export const CaseStoryCard = ({ story }: CaseStoryCardProps) => {
             <p>
               <strong>Follow-up:</strong> {story.follow_up}
             </p>
-            {story.verified_quote ? (
-              <blockquote>{story.verified_quote}</blockquote>
-            ) : null}
           </div>
         ) : null}
       </div>

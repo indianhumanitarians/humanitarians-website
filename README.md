@@ -245,7 +245,7 @@ Common editable content locations:
 
 - Contact, WhatsApp, UPI, bank, QR, and CTA links: `src/data/contact.ts`
 - Founder names: `src/data/founders.ts`
-- General site copy and profile PDF path: `src/data/site.ts`
+- General site copy and external profile URL: `src/data/site.ts`
 - FAQs: `src/data/faq.ts`
 - Case-story image handling: `src/components/cases/CaseImageCarousel.tsx`
 - Public stats derivation: `src/services/caseLedgerStats.ts`
@@ -253,7 +253,6 @@ Common editable content locations:
 
 Public assets:
 
-- Profile PDF: `public/docs/humanitarians-impact-profile.pdf`
 - Logo: `public/images/logo.jpeg`
 - WhatsApp QR: `public/images/humanitarians-new-members-whatsapp-qr.jpeg`
 - Zakat UPI QR: `public/images/upi-zakat-sahil-siddiqui.png`
@@ -371,7 +370,7 @@ Also verify:
 - UPI buttons open correctly on supported devices.
 - WhatsApp links open correctly.
 - Case-story carousel images load or show placeholders.
-- Profile PDF downloads from the About page.
+- Profile button opens the Google Drive profile file from the About page.
 - Google Sheet stats show live data or a clear unavailable state.
 - Mentorship testimonials appear only after consent and publish approval.
 - Direct refresh works on routes such as `/about` and `/reports`.

@@ -25,9 +25,6 @@ export interface CaseLedgerRow extends Partial<CaseStory> {
   total_amount?: number;
   fund_type?: string;
   published?: string;
-  publish_status?: string;
-  source_notes?: string;
-  editing_note?: string;
 }
 
 export interface MonthlyCategoryStat {
@@ -99,28 +96,19 @@ export interface CaseStory {
   support_provided: string;
   outcome: string;
   follow_up: string;
-  quote_placeholder?: string;
-  verified_quote?: string;
-  privacy_note: string;
   published: string;
-  publish_status: string;
   image_url_1?: string;
   image_alt_1?: string;
-  image_caption_1?: string;
   image_url_2?: string;
   image_alt_2?: string;
-  image_caption_2?: string;
   image_url_3?: string;
   image_alt_3?: string;
-  image_caption_3?: string;
   image_consent_status?: string;
-  image_publish_notes?: string;
 }
 
 export interface CaseStoryImage {
   src: string;
   alt: string;
-  caption?: string;
 }
 
 export interface MentorshipTestimonial {

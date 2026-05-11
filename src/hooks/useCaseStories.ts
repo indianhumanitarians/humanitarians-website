@@ -15,8 +15,6 @@ const caseStoryColumns = [
   "support_provided",
   "outcome",
   "follow_up",
-  "quote_placeholder",
-  "privacy_note",
 ];
 
 interface CaseStoriesState {
