@@ -1,5 +1,13 @@
-import { lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { CaseStoryCard } from "../components/cases/CaseStoryCard";
 import { Button } from "../components/common/Button";
 import { CTASection } from "../components/common/CTASection";
@@ -11,12 +19,6 @@ import {
   getMetricValue,
   toFiniteNumber,
 } from "../utils";
-
-const HomeMonthlyChart = lazy(() =>
-  import("../components/stats/HomeMonthlyChart").then((module) => ({
-    default: module.HomeMonthlyChart,
-  })),
-);
 
 const modelCards = [
   {
@@ -289,9 +291,30 @@ const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
           <h3>Families helped each month</h3>
           <p>Cases tracked publicly</p>
           <div className="chart-wrap" aria-hidden="true">
-            <Suspense fallback={<div className="chart-placeholder" />}>
-              <HomeMonthlyChart rows={stats.monthly} />
-            </Suspense>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart
+                data={stats.monthly.filter((row) => row.total_cases > 0)}
+                margin={{ top: 12, right: 6, left: -22, bottom: 0 }}
+              >
+                <CartesianGrid vertical={false} stroke="#efe7db" />
+                <XAxis
+                  dataKey="period_label"
+                  tick={{ fontSize: 10, fill: "#8a8178" }}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fontSize: 10, fill: "#8a8178" }}
+                />
+                <Tooltip cursor={{ fill: "rgba(26,92,56,0.08)" }} />
+                <Bar
+                  dataKey="total_cases"
+                  name="Families helped"
+                  fill="#1a5c38"
+                  radius={[5, 5, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
           <div className="chart-card-link">
             <Link to="/reports">View full reports →</Link>
