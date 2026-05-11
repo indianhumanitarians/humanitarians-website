@@ -321,6 +321,11 @@
     @apply border-amber-200 bg-amber-50 text-amber-900;
   }
 
+  .impact-source-pill.fallback,
+  .data-badge.fallback {
+    @apply border-sky-200 bg-sky-50 text-sky-950;
+  }
+
   .feature-card,
   .about-support-card,
   .about-info-panel,
@@ -1908,6 +1913,10 @@
     color: rgba(255, 255, 255, 0.55);
     font-size: 0.78rem;
     margin-top: 4px;
+  }
+
+  .hero-source-pill.fallback {
+    color: rgba(219, 234, 254, 0.92);
   }
 
   .mini-card {

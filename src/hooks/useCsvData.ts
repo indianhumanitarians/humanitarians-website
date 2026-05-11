@@ -7,6 +7,7 @@ interface UseCsvDataOptions<T, TData> {
   requiredColumns: string[];
   initialData: TData;
   deriveData: (rows: T[]) => TData;
+  fallbackData?: TData;
   fallbackError: string;
 }
 
@@ -22,12 +23,13 @@ export const useCsvData = <T extends object, TData>({
   requiredColumns,
   initialData,
   deriveData,
+  fallbackData,
   fallbackError,
 }: UseCsvDataOptions<T, TData>): CsvDataState<TData> => {
   const [state, setState] = useState<CsvDataState<TData>>({
-    data: initialData,
-    loading: true,
-    source: "error",
+    data: fallbackData ?? initialData,
+    loading: fallbackData ? false : true,
+    source: fallbackData ? "fallback" : "error",
   });
 
   useEffect(() => {
@@ -35,6 +37,10 @@ export const useCsvData = <T extends object, TData>({
 
     const load = async (): Promise<void> => {
       try {
+        if (!url && fallbackData) {
+          return;
+        }
+
         const rows = await fetchCsv<T>(url, { requiredColumns });
         const data = deriveData(rows);
 
@@ -47,6 +53,15 @@ export const useCsvData = <T extends object, TData>({
         }
       } catch (fetchError) {
         if (isMounted) {
+          if (fallbackData) {
+            setState({
+              data: fallbackData,
+              loading: false,
+              source: "fallback",
+            });
+            return;
+          }
+
           setState({
             data: initialData,
             loading: false,
@@ -63,7 +78,7 @@ export const useCsvData = <T extends object, TData>({
     return () => {
       isMounted = false;
     };
-  }, [deriveData, fallbackError, initialData, requiredColumns, url]);
+  }, [deriveData, fallbackData, fallbackError, initialData, requiredColumns, url]);
 
   return state;
 };

@@ -1,3 +1,4 @@
+import { fallbackMentorshipTestimonialRows } from "../data/fallbackSheets";
 import type { DataSourceState, MentorshipTestimonial } from "../types/stats";
 import { normalizeImageUrl, toFiniteNumber } from "../utils";
 import { useCsvData } from "./useCsvData";
@@ -48,6 +49,7 @@ const deriveTestimonials = (rows: MentorshipTestimonial[]): MentorshipTestimonia
     .sort((a, b) => a.display_order - b.display_order);
 
 const emptyTestimonials: MentorshipTestimonial[] = [];
+const fallbackTestimonials = deriveTestimonials(fallbackMentorshipTestimonialRows);
 
 export const useMentorshipTestimonials = (): MentorshipTestimonialsState => {
   const { data: testimonials, loading, source } = useCsvData<
@@ -58,6 +60,7 @@ export const useMentorshipTestimonials = (): MentorshipTestimonialsState => {
     requiredColumns: testimonialColumns,
     initialData: emptyTestimonials,
     deriveData: deriveTestimonials,
+    fallbackData: fallbackTestimonials,
     fallbackError: "Mentorship testimonials could not be loaded.",
   });
 

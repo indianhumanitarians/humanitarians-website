@@ -1,4 +1,7 @@
 import {
+  fallbackCaseLedgerRows,
+} from "../data/fallbackSheets";
+import {
   caseLedgerColumns,
   deriveCaseStoriesFromLedger,
 } from "../services/caseLedgerStats";
@@ -25,6 +28,7 @@ interface CaseStoriesState {
 }
 
 const emptyStories: CaseStory[] = [];
+const fallbackStories = deriveCaseStoriesFromLedger(fallbackCaseLedgerRows);
 
 export const useCaseStories = (): CaseStoriesState => {
   const { data: stories, loading, source, error } = useCsvData<CaseLedgerRow, CaseStory[]>({
@@ -32,6 +36,7 @@ export const useCaseStories = (): CaseStoriesState => {
     requiredColumns: caseStoryColumns,
     initialData: emptyStories,
     deriveData: deriveCaseStoriesFromLedger,
+    fallbackData: fallbackStories,
     fallbackError: "Case stories could not be derived from CaseLedger.",
   });
 

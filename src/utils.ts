@@ -1,3 +1,5 @@
+import type { DataSourceState } from "./types/stats";
+
 export const formatRupees = (value: number): string =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -36,4 +38,23 @@ export const normalizeImageUrl = (url: string): string => {
   }
 
   return trimmedUrl;
+};
+
+export const getDataSourceLabel = (
+  source: DataSourceState,
+  liveLabel = "Live data",
+): string => {
+  if (source === "live") {
+    return liveLabel;
+  }
+
+  if (source === "partial") {
+    return "Live data partial";
+  }
+
+  if (source === "fallback") {
+    return "Snapshot through May 2026";
+  }
+
+  return "Live data unavailable";
 };

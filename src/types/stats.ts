@@ -1,4 +1,4 @@
-export type DataSourceState = "live" | "partial" | "error";
+export type DataSourceState = "live" | "partial" | "fallback" | "error";
 
 export interface MonthlyStat {
   [key: string]: string | number | undefined;

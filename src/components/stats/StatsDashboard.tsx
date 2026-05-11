@@ -2,7 +2,12 @@ import {
   usePublicStats,
   type PublicStatsState,
 } from "../../hooks/usePublicStats";
-import { formatRupees, getMetricValue, toFiniteNumber } from "../../utils";
+import {
+  formatRupees,
+  getDataSourceLabel,
+  getMetricValue,
+  toFiniteNumber,
+} from "../../utils";
 import { SectionHeading } from "../common/SectionHeading";
 import { FundAllocationSummary } from "./FundAllocationSummary";
 import { FundBreakdownChart } from "./FundBreakdownChart";
@@ -35,12 +40,7 @@ export const StatsDashboardContent = ({
   const sadaqahMetric = metric("sadaqah_amount_disbursed");
   const totalAmountMetric = metric("total_amount_disbursed");
   const totalAmount = toFiniteNumber(totalAmountMetric);
-  const sourceLabel =
-    source === "live"
-      ? "Live"
-      : source === "partial"
-        ? "Live data partial"
-        : "Live data unavailable";
+  const sourceLabel = getDataSourceLabel(source, "Live");
   const hasStats =
     stats.impactSummary.length > 0 ||
     stats.monthly.length > 0 ||
@@ -72,9 +72,7 @@ export const StatsDashboardContent = ({
         />
       ) : null}
       {!loading && !hasStats ? (
-        <p className="empty-state">
-          Live public stats are not available right now.
-        </p>
+        <p className="empty-state">Live stats are not available right now.</p>
       ) : null}
       {hasStats ? (
         <div className="kpi-grid">
@@ -120,6 +118,7 @@ export const StatsDashboardContent = ({
         <div className="last-updated">
           <strong>Last updated:</strong> {stats.lastUpdated.last_updated} · Data
           through {stats.lastUpdated.data_through}
+          {source === "fallback" ? " · Using bundled fallback snapshot" : ""}
         </div>
       ) : null}
     </section>

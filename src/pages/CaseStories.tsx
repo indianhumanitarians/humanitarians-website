@@ -9,7 +9,7 @@ import { useCaseStories } from "../hooks/useCaseStories";
 const initialStoryLimit = 9;
 
 export const CaseStories = () => {
-  const { stories, loading, error } = useCaseStories();
+  const { stories, loading, source, error } = useCaseStories();
   const [category, setCategory] = useState("all");
   const [fundType, setFundType] = useState("all");
   const [supportType, setSupportType] = useState("all");
@@ -56,6 +56,9 @@ export const CaseStories = () => {
       </PrivacyNote>
       {loading ? (
         <p className="soft-status">Loading public case stories from the live sheet...</p>
+      ) : null}
+      {source === "fallback" ? (
+        <p className="soft-status">Showing fallback snapshot data through May 2026.</p>
       ) : null}
       {!loading && error ? (
         <p className="soft-status">Live case stories could not be loaded right now.</p>
