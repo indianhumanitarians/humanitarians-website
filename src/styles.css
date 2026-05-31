@@ -60,6 +60,386 @@
 }
 
 @layer components {
+  .admin-page {
+    @apply grid min-w-0 gap-6 pb-12;
+  }
+
+  .admin-login-page {
+    @apply min-h-[calc(100dvh-62px)] place-items-center;
+  }
+
+  .admin-auth-card,
+  .admin-shell-header,
+  .admin-panel,
+  .admin-kpi-grid article {
+    @apply rounded-lg border border-stone-200 bg-white shadow-sm shadow-stone-950/5;
+  }
+
+  .admin-auth-card {
+    @apply grid w-full max-w-md gap-5 p-6;
+  }
+
+  .admin-shell-header,
+  .admin-panel {
+    @apply min-w-0;
+  }
+
+  .admin-auth-card h1,
+  .admin-shell-header h1,
+  .admin-section-heading h2 {
+    @apply m-0 font-black text-stone-950;
+  }
+
+  .admin-auth-card h1,
+  .admin-shell-header h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.05;
+  }
+
+  .admin-shell-header {
+    @apply mt-7 flex flex-col gap-5 p-6 md:flex-row md:items-start md:justify-between;
+  }
+
+  .admin-shell-header span {
+    @apply text-xs font-black uppercase text-teal-800;
+  }
+
+  .admin-shell-header p {
+    @apply mb-0 mt-2 text-sm font-bold text-stone-500;
+  }
+
+  .admin-header-actions,
+  .admin-form-actions,
+  .admin-tabs,
+  .admin-toggle-grid,
+  .admin-inline-field {
+    @apply flex flex-wrap gap-3;
+  }
+
+  .admin-tabs {
+    @apply border-b border-stone-200 pb-3;
+  }
+
+  .admin-tabs a,
+  .admin-inline-link,
+  .admin-small-button {
+    @apply inline-flex min-h-10 items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-black text-stone-700 transition hover:border-teal-700 hover:text-teal-900 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+  }
+
+  .admin-tabs a {
+    @apply justify-center whitespace-nowrap text-center;
+  }
+
+  .admin-small-button:disabled {
+    @apply cursor-not-allowed opacity-50 hover:border-stone-300 hover:text-stone-700;
+  }
+
+  .admin-tabs a.active {
+    @apply border-teal-900 bg-teal-900 text-white;
+  }
+
+  .admin-kpi-grid {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4;
+  }
+
+  .admin-insight-grid,
+  .admin-split-tables {
+    @apply mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2;
+  }
+
+  .admin-kpi-grid article,
+  .admin-insight-grid article,
+  .admin-panel {
+    @apply p-5;
+  }
+
+  .admin-insight-grid article {
+    @apply rounded-lg border border-stone-200 bg-stone-50;
+  }
+
+  .admin-kpi-grid span,
+  .admin-insight-grid span {
+    @apply block text-xs font-black uppercase text-stone-500;
+  }
+
+  .admin-kpi-grid strong,
+  .admin-insight-grid strong {
+    @apply mt-2 block text-2xl font-black text-stone-950;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-insight-grid p {
+    @apply mb-0 mt-2 text-sm leading-6 text-stone-600;
+  }
+
+  .admin-form {
+    @apply grid gap-5;
+  }
+
+  .admin-case-form {
+    @apply pb-12;
+  }
+
+  .admin-form-grid {
+    @apply mt-4 grid grid-cols-1 gap-4 md:grid-cols-2;
+  }
+
+  .admin-form-grid.three {
+    @apply lg:grid-cols-3;
+  }
+
+  .admin-form label {
+    @apply grid gap-2 text-sm font-black text-stone-700;
+  }
+
+  .admin-form input,
+  .admin-form select,
+  .admin-form textarea {
+    @apply min-h-11 w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-base font-medium text-stone-950 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+  }
+
+  .admin-form textarea {
+    @apply min-h-28 resize-y leading-7;
+  }
+
+  .admin-field-wide {
+    @apply md:col-span-2;
+  }
+
+  .admin-inline-field {
+    @apply items-center;
+  }
+
+  .admin-inline-field input {
+    @apply min-w-0 flex-1;
+  }
+
+  .admin-toggle-grid {
+    @apply mb-2;
+  }
+
+  .admin-toggle-grid label {
+    @apply flex min-h-11 flex-row items-center gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-2;
+  }
+
+  .admin-toggle-grid input {
+    @apply size-4 min-h-0 w-4;
+  }
+
+  .admin-section-heading {
+    @apply border-b border-stone-100 pb-3;
+  }
+
+  .admin-section-heading h2 {
+    @apply text-xl;
+  }
+
+  .admin-error {
+    @apply rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold leading-6 text-red-900;
+  }
+
+  .admin-success {
+    @apply rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-sm font-bold leading-6 text-teal-950;
+  }
+
+  .admin-helper-text {
+    @apply mb-0 mt-3 max-w-4xl text-sm font-semibold leading-7 text-stone-600;
+  }
+
+  .admin-empty-panel {
+    @apply mt-7 rounded-lg border border-stone-200 bg-white p-6;
+  }
+
+  .admin-empty-panel h1 {
+    @apply m-0 text-3xl font-black text-stone-950;
+  }
+
+  .admin-empty-panel p {
+    @apply mb-0 mt-3 text-sm leading-7 text-stone-600;
+  }
+
+  .admin-table-wrap {
+    @apply mt-4 block w-full min-w-0 max-w-full overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-table {
+    @apply w-full min-w-[820px] border-collapse;
+    table-layout: fixed;
+  }
+
+  .admin-wide-table {
+    @apply min-w-[1180px];
+  }
+
+  .admin-monthly-table {
+    @apply min-w-[1500px];
+  }
+
+  .admin-extra-wide-table {
+    @apply min-w-[1900px];
+  }
+
+  .admin-lookup-table {
+    @apply min-w-[980px];
+  }
+
+  .admin-users-table {
+    @apply min-w-[820px];
+  }
+
+  .admin-count-col {
+    width: 8rem;
+  }
+
+  .admin-case-col {
+    width: 8.5rem;
+  }
+
+  .admin-period-col,
+  .admin-fund-col,
+  .admin-updated-col,
+  .admin-phone-col {
+    width: 8rem;
+  }
+
+  .admin-category-col,
+  .admin-location-col,
+  .admin-beneficiary-col {
+    width: 9rem;
+  }
+
+  .admin-support-col,
+  .admin-story-col,
+  .admin-address-col {
+    width: 12rem;
+  }
+
+  .admin-amount-col {
+    width: 8rem;
+  }
+
+  .admin-public-col {
+    width: 8rem;
+  }
+
+  .admin-action-col {
+    width: 10rem;
+  }
+
+  .admin-lookup-name-col {
+    width: 18rem;
+  }
+
+  .admin-lookup-status-col,
+  .admin-lookup-usage-col,
+  .admin-lookup-updated-col {
+    width: 8rem;
+  }
+
+  .admin-lookup-updated-by-col {
+    width: 14rem;
+  }
+
+  .admin-lookup-action-col {
+    width: 18rem;
+  }
+
+  .admin-user-email-col {
+    width: 22rem;
+  }
+
+  .admin-user-role-col,
+  .admin-user-created-col {
+    width: 10rem;
+  }
+
+  .admin-user-action-col {
+    width: 14rem;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    @apply border-t border-stone-200 px-3 py-4 text-left align-top text-sm;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-table th {
+    @apply whitespace-nowrap text-xs uppercase text-stone-500;
+  }
+
+  .admin-monthly-table th {
+    @apply whitespace-normal leading-5;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  .admin-table-sort-button {
+    @apply inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-xs font-black uppercase text-stone-500 transition hover:text-teal-900 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+    font: inherit;
+  }
+
+  .admin-nowrap-cell,
+  .admin-money-cell {
+    @apply whitespace-nowrap;
+    overflow-wrap: normal;
+  }
+
+  .admin-money-cell {
+    @apply min-w-0 text-right tabular-nums;
+  }
+
+  .admin-text-cell {
+    @apply min-w-0 max-w-none whitespace-normal leading-6;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-table-input {
+    @apply min-h-10 w-full min-w-0 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-bold text-stone-950 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+  }
+
+  .admin-table-select {
+    @apply min-h-10 w-full min-w-0 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-bold text-stone-950 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .admin-admin-invite-form {
+    @apply mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_12rem_auto] md:items-end;
+  }
+
+  .admin-list-add-form {
+    @apply w-full md:w-auto md:min-w-[360px];
+  }
+
+  .admin-list-add-form input {
+    @apply min-h-10 min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-bold text-stone-950 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+  }
+
+  .admin-table span {
+    @apply mt-1.5 block text-xs text-stone-500;
+  }
+
+  .status-pill {
+    @apply mr-2 inline-flex rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-xs font-black text-stone-500;
+  }
+
+  .status-pill.on {
+    @apply border-teal-200 bg-teal-50 text-teal-900;
+  }
+
+  .admin-table .status-pill {
+    @apply mt-0 inline-flex;
+  }
+
+  .admin-table-actions {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .admin-danger-button {
+    @apply border-red-200 text-red-700 hover:border-red-700 hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+}
+
+@layer components {
   .container {
     @apply mx-auto w-[min(1160px,calc(100%-36px))];
   }
@@ -216,11 +596,8 @@
     @apply mt-4 block max-w-4xl text-base font-medium leading-8 text-stone-600 md:text-lg;
   }
 
-  .impact-preview,
   .feature-grid,
-  .founder-grid,
   .kpi-grid,
-  .impact-grid,
   .case-grid,
   .three-col,
   .donate-grid,
@@ -233,10 +610,6 @@
     @apply grid gap-6;
   }
 
-  .impact-preview {
-    @apply grid-cols-1 border-y border-stone-300 sm:grid-cols-2 lg:grid-cols-5;
-  }
-
   .feature-grid {
     @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-4;
   }
@@ -245,7 +618,6 @@
     @apply grid-cols-1 md:grid-cols-2;
   }
 
-  .founder-grid,
   .case-grid,
   .three-col {
     @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
@@ -255,60 +627,35 @@
     @apply grid-cols-1 border-y border-stone-300 sm:grid-cols-2 lg:grid-cols-3;
   }
 
-  .impact-grid {
-    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
-  }
-
   .donate-grid,
   .two-col {
     @apply grid grid-cols-1 gap-8 lg:grid-cols-2;
   }
 
-  .impact-preview article,
-  .kpi-card,
-  .impact-card {
+  .kpi-card {
     @apply min-w-0 border-b border-stone-200 py-5 sm:border-r sm:pr-5 lg:border-b-0;
   }
 
-  .impact-preview article:last-of-type,
-  .kpi-card:last-child,
-  .impact-card:last-child {
+  .kpi-card:last-child {
     @apply border-r-0;
   }
 
-  .impact-preview article strong,
-  .kpi-card strong,
-  .impact-card strong {
+  .kpi-card strong {
     @apply block text-3xl font-black text-stone-950;
     overflow-wrap: anywhere;
   }
 
-  .impact-preview article span,
-  .kpi-card span,
-  .impact-card span {
+  .kpi-card span {
     @apply mt-2 block text-xs font-black uppercase text-stone-500;
   }
 
-  .impact-card p,
   .kpi-card p {
     @apply mt-3 text-sm leading-6 text-stone-600;
-  }
-
-  .impact-snapshot-section {
-    @apply relative;
-  }
-
-  .impact-snapshot-section .section-heading {
-    max-width: calc(100% - 220px);
   }
 
   .impact-source-pill {
     @apply col-span-full w-fit border border-stone-300 bg-white px-3 py-2 text-xs font-black uppercase text-stone-700;
     border-radius: 999px;
-  }
-
-  .impact-snapshot-section .impact-source-pill {
-    @apply absolute right-0 top-3;
   }
 
   .impact-source-pill.live,
@@ -319,11 +666,6 @@
   .impact-source-pill.partial,
   .data-badge.partial {
     @apply border-amber-200 bg-amber-50 text-amber-900;
-  }
-
-  .impact-source-pill.fallback,
-  .data-badge.fallback {
-    @apply border-sky-200 bg-sky-50 text-sky-950;
   }
 
   .feature-card,
@@ -1118,14 +1460,11 @@
     display: none;
   }
 
-  .impact-preview,
   .kpi-grid {
     @apply border-y-0;
   }
 
-  .impact-preview article,
   .kpi-card,
-  .impact-card,
   .feature-card,
   .about-support-card,
   .about-info-panel,
@@ -1139,9 +1478,7 @@
     @apply rounded-3xl border border-stone-200 bg-white p-6 shadow-sm shadow-stone-950/5;
   }
 
-  .impact-preview article,
-  .kpi-card,
-  .impact-card {
+  .kpi-card {
     @apply border-r border-b;
   }
 
@@ -1358,13 +1695,6 @@
     display: flex;
   }
 
-  .impact-snapshot-section .section-heading {
-    max-width: none;
-  }
-
-  .impact-snapshot-section .impact-source-pill {
-    @apply static mt-4;
-  }
 }
 
 @media (max-width: 640px) {
@@ -1428,11 +1758,8 @@
     @apply px-4 py-4 text-base;
   }
 
-  .impact-preview,
   .feature-grid,
-  .founder-grid,
   .kpi-grid,
-  .impact-grid,
   .case-grid,
   .three-col,
   .donate-grid,
@@ -1444,9 +1771,7 @@
     @apply gap-4;
   }
 
-  .impact-preview article,
-  .kpi-card,
-  .impact-card {
+  .kpi-card {
     @apply border-r-0;
   }
 
@@ -1913,10 +2238,6 @@
     color: rgba(255, 255, 255, 0.55);
     font-size: 0.78rem;
     margin-top: 4px;
-  }
-
-  .hero-source-pill.fallback {
-    color: rgba(219, 234, 254, 0.92);
   }
 
   .mini-card {
@@ -2698,6 +3019,10 @@
     margin-top: 0;
   }
 
+  .admin-page + .site-footer {
+    margin-top: clamp(3rem, 7vw, 6rem);
+  }
+
   .editorial-band,
   .our-model-page .timeline,
   .disclaimer,
@@ -3145,8 +3470,6 @@
   }
 
   .kpi-card strong,
-  .impact-card strong,
-  .impact-preview article strong,
   .istat strong,
   .upi-id-line span,
   td,

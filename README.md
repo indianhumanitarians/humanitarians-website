@@ -16,8 +16,8 @@ Core message:
 - Vite
 - React Router
 - Recharts
-- PapaParse
 - Tailwind CSS v4
+- Supabase Auth, Postgres, Row Level Security, and Supabase Storage for case images
 
 ## Main Pages
 
@@ -32,6 +32,10 @@ Routes are defined in `src/App.tsx`.
 - `/zakat-sadaqah` - Zakat and Sadaqah handling
 - `/about` - About and profile PDF
 - `/contact` - Contact details
+- `/admin/login` - Authorized admin sign-in
+- `/admin` - Private case ledger dashboard
+- `/admin/cases/new` - Add a new private case record
+- `/admin/admins` - Owner-only admin invitations and access management
 
 ## Development Setup
 
@@ -71,18 +75,6 @@ Build for production:
 npm run build
 ```
 
-Before each production build, `npm run build` automatically runs:
-
-```bash
-npm run refresh:fallback
-```
-
-That command fetches the latest published CaseLedger and MentorshipTestimonials
-CSV tabs and rewrites `src/data/fallbackSheets.ts`, so the bundled fallback
-snapshot stays current for deployments. If Google Sheets is temporarily
-unavailable during a build, the refresh step logs a warning and keeps the
-existing committed fallback snapshot so the build can still complete.
-
 Preview the production build:
 
 ```bash
@@ -91,36 +83,99 @@ npm run preview
 
 ## Environment Variables
 
-The app has no backend. It fetches public, privacy-reviewed CSV data from Google Sheets.
+The public site and admin panel use Supabase only. A legacy spreadsheet can be used once as an import source, but it is not used by the deployed website.
 
 Required local variables:
 
 ```txt
-VITE_STATS_CASE_LEDGER_CSV_URL="..."
-VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL="..."
+VITE_SUPABASE_URL="..."
+VITE_SUPABASE_ANON_KEY="..."
 ```
 
 Rules:
 
 - Keep real values in `.env`.
 - Commit only `.env.example`.
-- If a CSV URL is missing or unavailable, the site shows a live-data-unavailable state instead of using saved public data.
+- Public stats/case stories are read from the `public_case_ledger` view.
+- Public mentorship testimonials are read from the `public_mentorship_testimonials` view.
 - Add the same variables in Netlify or any other hosting provider.
+- Do not add `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` to frontend hosting variables.
+
+## Supabase Backend Setup
+
+1. Create a Supabase project.
+2. Open the Supabase SQL editor.
+3. Run the one latest schema file: `supabase/schema.sql`.
+4. Create the first owner user in Supabase Auth.
+5. Insert the first owner in SQL:
+
+```sql
+insert into public.admin_profiles (user_id, email, role)
+select id, email, 'owner'
+from auth.users
+where email = 'admin@example.com';
+```
+
+6. Deploy the owner-only invite function:
+
+```bash
+supabase functions deploy invite-admin --no-verify-jwt
+```
+
+The function verifies the logged-in user itself and only allows users with `role = 'owner'` to invite admins.
+
+In Supabase Auth URL settings, add these redirect URLs before sending invites:
+
+```txt
+http://localhost:5173/admin/login
+http://localhost:5173/admin/accept-invite
+https://your-domain.example/admin/login
+https://your-domain.example/admin/accept-invite
+```
+
+Only users in `admin_profiles` with role `owner` or `admin` can use `/admin`. Owners can invite and manage admins from `/admin/admins`. The private tables have Row Level Security enabled, and anonymous users only receive the filtered views `public_case_ledger`, `public_case_stories`, and `public_mentorship_testimonials`.
+
+## One-Time Legacy Sheet Import
+
+Spreadsheet data is not used at runtime. To migrate existing rows into Supabase, keep these local-only variables in `.env` temporarily:
+
+```txt
+VITE_STATS_CASE_LEDGER_CSV_URL="..."
+VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL="..."
+SUPABASE_SERVICE_ROLE_KEY="..."
+```
+
+Use the legacy `service_role` key or a server-only Supabase secret key only on your own machine for this import. Never put it in browser code, Netlify frontend variables, GitHub, or chat.
+
+Dry run:
+
+```bash
+npm run import:supabase
+```
+
+Write rows and copy case images into the public `case-images` Supabase Storage bucket:
+
+```bash
+npm run import:supabase -- --write
+```
+
+Skip image copying if you want to import rows first:
+
+```bash
+npm run import:supabase -- --write --skip-images
+```
+
+Restore one deleted case from the legacy sheet without touching testimonials or every other case:
+
+```bash
+npm run import:supabase -- --case HUM-001 --write
+```
+
+After the import succeeds, remove the legacy sheet URLs and service key from `.env`.
 
 ## Public Data Source
 
-The public Google Sheet workbook is expected to be named:
-
-```txt
-Humanitarians_Public_Impact_Stats_Linked
-```
-
-The site currently reads these published CSV tabs:
-
-- `CaseLedger`
-- `MentorshipTestimonials`
-
-`CaseLedger` is the master public-safe table. It drives:
+Supabase is the source of truth. The private `cases` table stores the admin ledger. The private `case_images` table stores image records after files are uploaded to Supabase Storage. The public `public_case_ledger` view exposes only anonymized fields and approximate amount buckets. It drives:
 
 - Public stats
 - Monthly reports
@@ -129,48 +184,42 @@ The site currently reads these published CSV tabs:
 - Case stories
 - Homepage impact numbers
 
-Publish `CaseLedger` only after privacy review, because the frontend derives public information directly from this tab.
+Do not store private recipient, donor, phone, address, document, verification, or bank data in public views.
 
 ## CaseLedger Publishing Rules
 
-Rows are included in public stats only when:
+Rows are included in public stats only when the private `cases.show_in_public_stats` field is enabled. In the public view this appears as:
 
 ```txt
-case_id is not blank
-include_in_public_stats = TRUE
+case_number is not blank
+show_in_public_stats = true
 ```
 
 Rows appear as public case stories only when:
 
 ```txt
-case_id is not blank
-published = Yes
-```
-
-Case-story images appear only when:
-
-```txt
-image_consent_status = Consent received
+case_number is not blank
+publish_public_story = true
 ```
 
 Important behavior:
 
-- Rows without `case_id` are ignored.
-- `period_sort` is preferred for sorting when present.
-- If `period_sort` is missing, the app tries to parse `period_label`, for example `Jan 2026`.
-- `total_amount` is used when present; otherwise the app calculates it from `amount_zakat`, `amount_sadaqah`, and `other_amount`.
-- If `fund_type` is blank, the app derives it from the amount columns.
-- Reports are derived live from `CaseLedger`; there are no saved public report rows in the repo.
+- Rows without `case_number` are ignored.
+- `reporting_month_sort` is preferred for sorting when present.
+- If `reporting_month_sort` is missing, the app tries to parse `reporting_month`, for example `Jan 2026`.
+- `total_amount` is used when present; otherwise the app calculates it from `zakat_amount`, `sadaqah_amount`, and `other_amount`.
+- If `fund_source` is blank, the app derives it from the amount columns.
+- Case-story images come from the private `case_images` table and are exposed only through the public view for published stories.
+- Reports are derived live from the configured public-safe source; there are no saved public report rows in the repo.
 
 ## Mentorship Testimonials
 
-The `MentorshipTestimonials` tab is used for public mentee testimonials.
+The private `mentorship_testimonials` table stores testimonial rows.
 
 Testimonials appear only when:
 
 ```txt
-consent_received = Yes
-publish_status = Publish
+consent_received = true
 ```
 
 Required public-safe fields:
@@ -190,7 +239,6 @@ profile_image_url
 profile_image_alt
 carousel_tagline
 consent_received
-publish_status
 privacy_note
 ```
 
@@ -200,37 +248,27 @@ Internal field:
 editing_note
 ```
 
-The website does not render `editing_note`.
+The public view does not expose `editing_note`.
 
 If there are no publishable testimonials, the mentorship page shows a safe empty state.
 
 ## Case Images
 
-Case images are read from public URLs in `CaseLedger`.
-
-Use these fields:
+Case images are uploaded to Supabase Storage in the public `case-images` bucket. The private `case_images` table stores the resulting storage path and public URL:
 
 ```txt
-image_url_1
-image_alt_1
-image_caption_1
-image_url_2
-image_alt_2
-image_caption_2
-image_url_3
-image_alt_3
-image_caption_3
-image_consent_status
-image_publish_notes
+case_id
+display_order
+storage_path
+public_url
 ```
 
 Rules:
 
 - Use only public-safe images.
-- Set Google Drive image sharing to `Anyone with the link can view`.
-- Use clear alt text for every image.
 - Do not publish images that show full names, phone numbers, addresses, IDs, payment details, bank details, UPI IDs, donor identities, or private documents.
-- `image_publish_notes` is internal and is never rendered publicly.
+- The admin form accepts file uploads only; it does not ask admins to paste image URLs, captions, alt text, or image consent status.
+- Public alt text is generated from the public story title.
 - If no approved image is available, the site shows a placeholder.
 
 ## Privacy Rules
@@ -244,10 +282,9 @@ Never publish:
 - Donor names
 - Private notes
 - Draft cases
-- Draft testimonials
+- Testimonials without consent
 - Images without consent
 - `editing_note`
-- `image_publish_notes`
 
 Keep public reporting aggregated and anonymized. Do not claim government registration, 80G, FCRA, tax exemption, scholar certification, or a 100% Zakat policy unless verified public copy is added later.
 
@@ -256,12 +293,11 @@ Keep public reporting aggregated and anonymized. Do not claim government registr
 Common editable content locations:
 
 - Contact, WhatsApp, UPI, bank, QR, and CTA links: `src/data/contact.ts`
-- Founder names: `src/data/founders.ts`
 - General site copy and external profile URL: `src/data/site.ts`
 - FAQs: `src/data/faq.ts`
 - Case-story image handling: `src/components/cases/CaseImageCarousel.tsx`
 - Public stats derivation: `src/services/caseLedgerStats.ts`
-- CSV fetching and validation: `src/services/googleSheets.ts`
+- Supabase data and image storage helpers: `src/services/adminCases.ts`
 
 Public assets:
 
@@ -269,40 +305,6 @@ Public assets:
 - WhatsApp QR: `public/images/humanitarians-new-members-whatsapp-qr.jpeg`
 - Zakat UPI QR: `public/images/upi-zakat-sahil-siddiqui.png`
 - Sadaqah UPI QR: `public/images/upi-sadaqah-mohammad-aqib.png`
-
-## Google Sheets Operating Precautions
-
-Published CSV URLs depend on the Google Sheet and each tab's internal `gid`.
-
-Best practice:
-
-1. Keep one permanent Google Sheet named `Humanitarians_Public_Impact_Stats_Linked`.
-2. Keep existing public tabs alive.
-3. Update data by pasting values into existing tabs.
-4. Do not delete and recreate public tabs unless necessary.
-5. Do not import a full `.xlsx` over the existing published workbook unless ready to republish every tab.
-6. Do not rename public tabs unless documentation and CSV URLs are updated.
-7. Keep private/raw tabs separate and never publish them.
-
-Safer update workflow:
-
-1. Make edits in a copy or temporary sheet.
-2. Review privacy-sensitive columns.
-3. Copy only public-safe values.
-4. Paste values into the existing public tab.
-5. Keep the same tab and published CSV URL.
-6. Refresh the website and verify.
-
-If published CSV URLs break:
-
-1. Open the Google Sheet.
-2. Go to File > Share > Publish to web.
-3. Republish each public tab as CSV.
-4. Copy the new CSV URLs.
-5. Update local `.env`.
-6. Restart `npm run dev`.
-7. Update hosting environment variables.
-8. Trigger a redeploy if needed.
 
 ## Local-Only Files And Git Ignore
 
@@ -312,22 +314,7 @@ The following files and folders are intentionally ignored:
 .env
 .env.local
 .env.*.local
-Humanitarians_Public_Impact_Stats_Linked.xlsx
-/anas/
-/case-images/
 ```
-
-Important: `.gitignore` does not remove files that were already committed. If a local-only folder is already visible on GitHub, remove it from Git tracking while keeping it locally:
-
-```bash
-git rm --cached -r anas
-git commit -m "Stop tracking local anas folder"
-git push
-```
-
-After this, `anas/` remains on your machine but is deleted from the remote repository on the next push.
-
-For this repo, `anas/index.html` has already been removed from Git tracking in the current working tree. Commit and push the staged deletion to remove it from GitHub.
 
 ## Deployment On Netlify
 
@@ -343,15 +330,13 @@ Publish directory: dist
 Add these environment variables in Netlify:
 
 ```txt
-VITE_STATS_CASE_LEDGER_CSV_URL
-VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
 ```
 
 After Netlify is connected to GitHub, every push to `main` triggers a deployment.
-Because the build command is `npm run build`, Netlify refreshes the bundled
-fallback data from the published Google Sheet tabs before compiling the site.
 
-If only Google Sheet data changes, a redeploy is usually not needed because the site fetches published CSV data on page load with light cache busting.
+If Supabase case data changes, a redeploy is not needed because the site fetches the public-safe view on page load.
 
 ## Direct Route Support
 
@@ -377,6 +362,7 @@ After deployment, test:
 - `/reports`
 - `/zakat-sadaqah`
 - `/contact`
+- `/admin/login`
 
 Also verify:
 
@@ -385,8 +371,9 @@ Also verify:
 - WhatsApp links open correctly.
 - Case-story carousel images load or show placeholders.
 - Profile button opens the Google Drive profile file from the About page.
-- Google Sheet stats show live data or a clear unavailable state.
-- Mentorship testimonials appear only after consent and publish approval.
+- Public stats show Supabase data or a clear unavailable state.
+- Authorized users can sign in to `/admin` and add a case.
+- Mentorship testimonials appear only after consent is recorded.
 - Direct refresh works on routes such as `/about` and `/reports`.
 
 ## Custom Domain Notes
@@ -402,6 +389,6 @@ www.yourdomain.org -> primary website
 
 After buying a domain, add it in Netlify under Domain management, copy the DNS records Netlify provides into the registrar, and wait for DNS and HTTPS provisioning.
 
-## No Backend In This MVP
+## Backend Notes
 
-This MVP has no backend. A backend is only needed later for features such as admin login, private case applications, document uploads, donor records, payment reconciliation, or mentor/mentee matching dashboards.
+This site uses Supabase as the backend for admin login, private case records, public-safe views, and case image storage. Donor records, payment reconciliation, mentor/mentee matching, and document uploads are not part of the current implementation.

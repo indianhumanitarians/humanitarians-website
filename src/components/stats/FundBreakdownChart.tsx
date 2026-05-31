@@ -72,7 +72,7 @@ export const FundBreakdownChart = ({ rows }: FundBreakdownChartProps) => {
           </ResponsiveContainer>
         ) : (
           <div className="empty-chart-state">
-            Monthly fund amounts are not available in the public sheet yet.
+            Monthly fund amounts are not available yet.
           </div>
         )}
       </div>

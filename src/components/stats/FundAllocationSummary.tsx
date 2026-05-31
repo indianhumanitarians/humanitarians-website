@@ -1,5 +1,5 @@
 import type { MonthlyStat } from "../../types/stats";
-import { formatRupees, toFiniteNumber } from "../../utils";
+import { toFiniteNumber } from "../../utils";
 
 interface FundAllocationSummaryProps {
   monthlyRows: MonthlyStat[];
@@ -31,7 +31,7 @@ export const FundAllocationSummary = ({
     <section className="fund-allocation-panel" aria-label="Fund allocation percentages">
       <div className="fund-allocation-heading">
         <h3>Fund type split</h3>
-        <p>Simple view of how public allocated funds are divided across Zakat, Sadaqah, and other funds.</p>
+        <p>Public view shows only the percentage split across Zakat, Sadaqah, and other funds. Exact amounts are visible to admins only.</p>
       </div>
       <div className="fund-allocation-grid">
         <article>
@@ -40,7 +40,6 @@ export const FundAllocationSummary = ({
           <div className="fund-progress" aria-hidden="true">
             <i style={{ width: `${zakatPercent}%` }} />
           </div>
-          <p>{formatRupees(zakat)} tracked as Zakat support.</p>
         </article>
         <article>
           <span>Sadaqah share</span>
@@ -48,7 +47,6 @@ export const FundAllocationSummary = ({
           <div className="fund-progress sadaqah" aria-hidden="true">
             <i style={{ width: `${sadaqahPercent}%` }} />
           </div>
-          <p>{formatRupees(sadaqah)} tracked as Sadaqah support.</p>
         </article>
         <article>
           <span>Other funds share</span>
@@ -56,7 +54,6 @@ export const FundAllocationSummary = ({
           <div className="fund-progress other" aria-hidden="true">
             <i style={{ width: `${otherPercent}%` }} />
           </div>
-          <p>{formatRupees(other)} tracked as other fund support.</p>
         </article>
       </div>
     </section>

@@ -1,26 +1,7 @@
-import { fallbackMentorshipTestimonialRows } from "../data/fallbackSheets";
+import { useEffect, useState } from "react";
+import { fetchPublicMentorshipTestimonials } from "../services/adminCases";
 import type { DataSourceState, MentorshipTestimonial } from "../types/stats";
-import { normalizeImageUrl, toFiniteNumber } from "../utils";
-import { useCsvData } from "./useCsvData";
-
-const testimonialColumns = [
-  "testimonial_id",
-  "display_order",
-  "anonymized_name",
-  "public_role",
-  "mentorship_track",
-  "mentee_stage",
-  "public_location",
-  "period_label",
-  "outcome_summary",
-  "testimonial_text",
-  "profile_image_url",
-  "profile_image_alt",
-  "carousel_tagline",
-  "consent_received",
-  "publish_status",
-  "privacy_note",
-];
+import { normalizeImageUrl } from "../utils";
 
 interface MentorshipTestimonialsState {
   testimonials: MentorshipTestimonial[];
@@ -28,41 +9,59 @@ interface MentorshipTestimonialsState {
   source: DataSourceState;
 }
 
-const matches = (value: unknown, expected: string): boolean =>
-  String(value ?? "").trim().toLowerCase() === expected.toLowerCase();
-
 const isPublishable = (row: MentorshipTestimonial): boolean =>
   String(row.testimonial_id ?? "").trim().length > 0 &&
-  matches(row.consent_received, "Yes") &&
-  matches(row.publish_status, "Publish");
+  row.consent_received === true;
 
 const normalizeTestimonial = (row: MentorshipTestimonial): MentorshipTestimonial => ({
   ...row,
-  display_order: toFiniteNumber(row.display_order),
   profile_image_url: normalizeImageUrl(String(row.profile_image_url ?? "")),
 });
 
 const deriveTestimonials = (rows: MentorshipTestimonial[]): MentorshipTestimonial[] =>
   rows
     .filter(isPublishable)
-    .map(normalizeTestimonial)
-    .sort((a, b) => a.display_order - b.display_order);
+    .map(normalizeTestimonial);
 
 const emptyTestimonials: MentorshipTestimonial[] = [];
-const fallbackTestimonials = deriveTestimonials(fallbackMentorshipTestimonialRows);
 
 export const useMentorshipTestimonials = (): MentorshipTestimonialsState => {
-  const { data: testimonials, loading, source } = useCsvData<
-    MentorshipTestimonial,
-    MentorshipTestimonial[]
-  >({
-    url: import.meta.env.VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL,
-    requiredColumns: testimonialColumns,
-    initialData: emptyTestimonials,
-    deriveData: deriveTestimonials,
-    fallbackData: fallbackTestimonials,
-    fallbackError: "Mentorship testimonials could not be loaded.",
+  const [state, setState] = useState<MentorshipTestimonialsState>({
+    testimonials: emptyTestimonials,
+    loading: true,
+    source: "live",
   });
 
-  return { testimonials, loading, source };
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadTestimonials = async () => {
+      try {
+        const rows = await fetchPublicMentorshipTestimonials();
+        if (isMounted) {
+          setState({
+            testimonials: deriveTestimonials(rows),
+            loading: false,
+            source: "live",
+          });
+        }
+      } catch {
+        if (isMounted) {
+          setState({
+            testimonials: emptyTestimonials,
+            loading: false,
+            source: "error",
+          });
+        }
+      }
+    };
+
+    void loadTestimonials();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return state;
 };

@@ -14,7 +14,7 @@ import { CTASection } from "../components/common/CTASection";
 import { useCaseStories } from "../hooks/useCaseStories";
 import { usePublicStats, type PublicStatsState } from "../hooks/usePublicStats";
 import {
-  formatRupees,
+  formatApproxRupeesBand,
   getDataSourceLabel,
   getMetricValue,
   toFiniteNumber,
@@ -127,24 +127,13 @@ const HomeHeroStats = ({ statsState }: HomeStatsProps) => {
   );
 };
 
-const formatCompactRupees = (value: string | number): string => {
-  const amount = toFiniteNumber(value);
-
-  if (amount >= 100000) {
-    const lakhs = amount / 100000;
-    return `₹${lakhs.toFixed(lakhs >= 10 || Number.isInteger(lakhs) ? 0 : 1)}L`;
-  }
-
-  return amount > 0 ? formatRupees(amount) : String(value);
-};
-
 const HomeMarquee = ({ statsState }: HomeStatsProps) => {
   const { stats } = statsState;
   const metric = (key: string) => getMetricValue(stats.impactSummary, key);
   const hasStats = stats.impactSummary.length > 0;
   const community = String(metric("active_donor_community"));
   const cases = String(metric("total_public_cases"));
-  const disbursed = formatCompactRupees(metric("total_amount_disbursed"));
+  const supportRange = formatApproxRupeesBand(metric("total_amount_disbursed"));
   const marqueeItems = [
     "Verified Cases",
     "Zakat Tracked Separately",
@@ -153,7 +142,7 @@ const HomeMarquee = ({ statsState }: HomeStatsProps) => {
     "Skill Sponsorship",
     "IIT Kanpur Founded",
     ...(hasStats
-      ? [`${community} Donors`, `${cases} Cases`, `${disbursed} Disbursed`]
+      ? [`${community} Donors`, `${cases} Cases`, `${supportRange} Support Range`]
       : []),
     "Privacy Protected",
   ];
@@ -216,11 +205,8 @@ const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
       value: String(metric("livelihood_cases")),
     },
     {
-      label: "Total donation",
-      value:
-        amount > 0
-          ? formatRupees(amount)
-          : String(metric("total_amount_disbursed")),
+      label: "Approx. support range",
+      value: formatApproxRupeesBand(metric("total_amount_disbursed")),
       variant: "gold",
     },
   ];
@@ -261,8 +247,8 @@ const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
           <div className="fund-bar-card">
             <h3>Fund Allocation</h3>
             <p>
-              How total support of {formatRupees(allocationTotal)} was
-              distributed across fund types
+              Public percentage split across fund types. Exact donation amounts
+              are visible only inside the admin dashboard.
             </p>
             <div className="fund-stack-bar" aria-hidden="true">
               {allocationItems.map((item) => (
@@ -280,8 +266,7 @@ const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
                   key={item.label}
                 >
                   <i aria-hidden="true" />
-                  <strong>{item.label}</strong> - {formatRupees(item.amount)} (
-                  {item.percent.toFixed(1)}%)
+                  <strong>{item.label}</strong> - {item.percent.toFixed(1)}%
                 </span>
               ))}
             </div>
@@ -390,7 +375,7 @@ export const Home = () => {
               <>
                 <div className="case-grid stories-grid">
                   {featuredStories.map((story) => (
-                    <CaseStoryCard key={story.case_id} story={story} />
+                    <CaseStoryCard key={story.case_number} story={story} />
                   ))}
                 </div>
                 <p className="stories-cta">

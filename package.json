@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "refresh:fallback": "node scripts/update-fallback-data.mjs",
-    "prebuild": "npm run refresh:fallback",
+    "import:supabase": "node scripts/import-legacy-sheet-to-supabase.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },

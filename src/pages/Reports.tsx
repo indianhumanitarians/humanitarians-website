@@ -1,6 +1,5 @@
 import { PrivacyNote } from "../components/common/PrivacyNote";
 import { SectionHeading } from "../components/common/SectionHeading";
-import { ReportsTable } from "../components/reports/ReportsTable";
 import { ReportInsightsCharts } from "../components/stats/ReportInsightsCharts";
 import { StatsDashboardContent } from "../components/stats/StatsDashboard";
 import { useReportPageData } from "../hooks/useReportPageData";
@@ -9,7 +8,8 @@ import { getDataSourceLabel } from "../utils";
 const reportItems = [
   "Case type",
   "Fund type",
-  "Amount summary",
+  "Approximate amount range",
+  "Fund allocation percentages",
   "Support provided",
   "Follow-up status where available",
 ];
@@ -24,14 +24,14 @@ const privateItems = [
 ];
 
 export const Reports = () => {
-  const { rows, stats, loading, source, error } = useReportPageData();
+  const { stats, loading, source, error } = useReportPageData();
 
   return (
     <main className="container page">
       <div className="report-page-hero">
         <SectionHeading
           title="Public Zakat & Sadaqah case reports"
-          content="Every month, we share privacy-safe public summaries of handled Zakat and Sadaqah cases with the donor community."
+          content="Every month, we share privacy-safe approximate summaries of handled Zakat and Sadaqah cases with the donor community."
         />
         <span className={`data-badge ${source}`}>
           {getDataSourceLabel(source, "Live archive")}
@@ -55,7 +55,6 @@ export const Reports = () => {
         statsState={{ stats, loading, source, error }}
       />
       <ReportInsightsCharts stats={stats} />
-      <ReportsTable rows={rows} />
       <section className="section two-col">
         <div className="report-info-panel">
           <h2>What we report</h2>
