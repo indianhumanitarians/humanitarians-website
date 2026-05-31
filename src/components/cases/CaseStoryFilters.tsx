@@ -27,7 +27,7 @@ export const CaseStoryFilters = ({
       Category
       <select value={category} onChange={(event) => onCategoryChange(event.target.value)}>
         <option value="all">All</option>
-        {uniqueValues(stories, "category").map((value) => (
+        {uniqueValues(stories, "support_category").map((value) => (
           <option key={value} value={value}>
             {value}
           </option>
@@ -38,7 +38,7 @@ export const CaseStoryFilters = ({
       Fund type
       <select value={fundType} onChange={(event) => onFundTypeChange(event.target.value)}>
         <option value="all">All</option>
-        {uniqueValues(stories, "fund_type").map((value) => (
+        {uniqueValues(stories, "fund_source").map((value) => (
           <option key={value} value={value}>
             {value}
           </option>
@@ -49,7 +49,7 @@ export const CaseStoryFilters = ({
       Support type
       <select value={supportType} onChange={(event) => onSupportTypeChange(event.target.value)}>
         <option value="all">All</option>
-        {uniqueValues(stories, "support_type").map((value) => (
+        {uniqueValues(stories, "support_description").map((value) => (
           <option key={value} value={value}>
             {value}
           </option>

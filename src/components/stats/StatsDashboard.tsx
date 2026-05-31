@@ -3,14 +3,12 @@ import {
   type PublicStatsState,
 } from "../../hooks/usePublicStats";
 import {
-  formatRupees,
+  formatApproxRupeesBand,
   getDataSourceLabel,
   getMetricValue,
-  toFiniteNumber,
 } from "../../utils";
 import { SectionHeading } from "../common/SectionHeading";
 import { FundAllocationSummary } from "./FundAllocationSummary";
-import { FundBreakdownChart } from "./FundBreakdownChart";
 import { KpiStatCard } from "./KpiStatCard";
 import { MonthlyCasesChart } from "./MonthlyCasesChart";
 import { StatsError } from "./StatsError";
@@ -39,7 +37,6 @@ export const StatsDashboardContent = ({
   const zakatMetric = metric("zakat_amount_disbursed");
   const sadaqahMetric = metric("sadaqah_amount_disbursed");
   const totalAmountMetric = metric("total_amount_disbursed");
-  const totalAmount = toFiniteNumber(totalAmountMetric);
   const sourceLabel = getDataSourceLabel(source, "Live");
   const hasStats =
     stats.impactSummary.length > 0 ||
@@ -85,12 +82,8 @@ export const StatsDashboardContent = ({
             value={String(metric("total_public_cases"))}
           />
           <KpiStatCard
-            label="Total donation amount"
-            value={
-              totalAmount > 0
-                ? formatRupees(totalAmount)
-                : String(totalAmountMetric)
-            }
+            label="Approx. support range"
+            value={formatApproxRupeesBand(totalAmountMetric)}
           />
         </div>
       ) : null}
@@ -104,7 +97,6 @@ export const StatsDashboardContent = ({
           />
           <div className="chart-grid">
             <MonthlyCasesChart rows={stats.monthly} />
-            <FundBreakdownChart rows={stats.monthly} />
             <SupportTypeChart rows={stats.supportTypes} />
           </div>
         </>
@@ -118,7 +110,6 @@ export const StatsDashboardContent = ({
         <div className="last-updated">
           <strong>Last updated:</strong> {stats.lastUpdated.last_updated} · Data
           through {stats.lastUpdated.data_through}
-          {source === "fallback" ? " · Using bundled fallback snapshot" : ""}
         </div>
       ) : null}
     </section>

@@ -1,24 +1,9 @@
+import { useEffect, useState } from "react";
 import {
-  fallbackCaseLedgerRows,
-} from "../data/fallbackSheets";
-import {
-  caseLedgerColumns,
   deriveCaseStoriesFromLedger,
 } from "../services/caseLedgerStats";
-import { useCsvData } from "./useCsvData";
+import { fetchPublicCaseLedgerRows } from "../services/adminCases";
 import type { CaseLedgerRow, CaseStory, DataSourceState } from "../types/stats";
-
-const caseStoryColumns = [
-  ...caseLedgerColumns,
-  "title",
-  "anonymized_name",
-  "public_location",
-  "amount_range",
-  "need",
-  "support_provided",
-  "outcome",
-  "follow_up",
-];
 
 interface CaseStoriesState {
   stories: CaseStory[];
@@ -28,17 +13,48 @@ interface CaseStoriesState {
 }
 
 const emptyStories: CaseStory[] = [];
-const fallbackStories = deriveCaseStoriesFromLedger(fallbackCaseLedgerRows);
 
 export const useCaseStories = (): CaseStoriesState => {
-  const { data: stories, loading, source, error } = useCsvData<CaseLedgerRow, CaseStory[]>({
-    url: import.meta.env.VITE_STATS_CASE_LEDGER_CSV_URL,
-    requiredColumns: caseStoryColumns,
-    initialData: emptyStories,
-    deriveData: deriveCaseStoriesFromLedger,
-    fallbackData: fallbackStories,
-    fallbackError: "Case stories could not be derived from CaseLedger.",
+  const [state, setState] = useState<CaseStoriesState>({
+    stories: emptyStories,
+    loading: true,
+    source: "live",
   });
 
-  return { stories, loading, source, error };
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadStories = async () => {
+      try {
+        const rows = await fetchPublicCaseLedgerRows();
+        if (isMounted) {
+          setState({
+            stories: deriveCaseStoriesFromLedger(rows as CaseLedgerRow[]),
+            loading: false,
+            source: "live",
+          });
+        }
+      } catch (storyError) {
+        if (isMounted) {
+          setState({
+            stories: emptyStories,
+            loading: false,
+            source: "error",
+            error:
+              storyError instanceof Error
+                ? storyError.message
+                : "Supabase case stories could not be loaded.",
+          });
+        }
+      }
+    };
+
+    void loadStories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return state;
 };

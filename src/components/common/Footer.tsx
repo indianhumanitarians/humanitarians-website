@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { contact } from "../../data/contact";
-import { navLinks, site } from "../../data/site";
+import { adminLink, navLinks, site } from "../../data/site";
 
 export const Footer = () => (
   <footer className="site-footer">
@@ -33,7 +33,11 @@ export const Footer = () => (
       </div>
       <div className="footer-col">
         <h4>Resources</h4>
-        {[...navLinks.slice(5), { label: "Contact", to: "/contact" }].map((link) => (
+        {[
+          ...navLinks.slice(5),
+          { label: "Contact", to: "/contact" },
+          adminLink,
+        ].map((link) => (
           <Link key={link.to} to={link.to}>{link.label}</Link>
         ))}
       </div>

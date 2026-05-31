@@ -1,4 +1,4 @@
-export type DataSourceState = "live" | "partial" | "fallback" | "error";
+export type DataSourceState = "live" | "partial" | "error";
 
 export interface MonthlyStat {
   [key: string]: string | number | undefined;
@@ -15,16 +15,19 @@ export interface MonthlyStat {
 }
 
 export interface CaseLedgerRow extends Partial<CaseStory> {
-  case_id: string;
-  include_in_public_stats: string;
-  period_sort?: number;
-  month_start?: string;
-  amount_zakat?: number;
-  amount_sadaqah?: number;
+  case_number: string;
+  show_in_public_stats: boolean;
+  publish_public_story: boolean;
+  reporting_month?: string;
+  reporting_month_sort?: number;
+  reporting_month_start?: string;
+  support_category?: string;
+  support_description?: string;
+  zakat_amount?: number;
+  sadaqah_amount?: number;
   other_amount?: number;
   total_amount?: number;
-  fund_type?: string;
-  published?: string;
+  fund_source?: string;
 }
 
 export interface MonthlyCategoryStat {
@@ -83,27 +86,26 @@ export interface ReportRow {
 }
 
 export interface CaseStory {
-  case_id: string;
-  title: string;
-  anonymized_name: string;
-  category: string;
-  support_type: string;
-  fund_type: string;
-  period_label: string;
+  case_number: string;
+  public_story_title: string;
+  public_beneficiary_label: string;
+  support_category: string;
+  support_description: string;
+  fund_source: string;
+  reporting_month: string;
   public_location: string;
   amount_range: string;
-  need: string;
-  support_provided: string;
-  outcome: string;
-  follow_up: string;
-  published: string;
-  image_url_1?: string;
-  image_alt_1?: string;
-  image_url_2?: string;
-  image_alt_2?: string;
-  image_url_3?: string;
-  image_alt_3?: string;
-  image_consent_status?: string;
+  public_need_summary: string;
+  public_support_summary: string;
+  public_outcome_summary: string;
+  public_follow_up_summary: string;
+  publish_public_story: boolean;
+  case_image_1_url?: string;
+  case_image_1_alt?: string;
+  case_image_2_url?: string;
+  case_image_2_alt?: string;
+  case_image_3_url?: string;
+  case_image_3_alt?: string;
 }
 
 export interface CaseStoryImage {
@@ -113,7 +115,6 @@ export interface CaseStoryImage {
 
 export interface MentorshipTestimonial {
   testimonial_id: string;
-  display_order: number;
   anonymized_name: string;
   public_role: string;
   mentorship_track: string;
@@ -125,8 +126,7 @@ export interface MentorshipTestimonial {
   profile_image_url?: string;
   profile_image_alt?: string;
   carousel_tagline: string;
-  consent_received: string;
-  publish_status: string;
+  consent_received: boolean;
   privacy_note: string;
   editing_note?: string;
 }

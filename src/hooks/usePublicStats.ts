@@ -1,13 +1,8 @@
+import { useEffect, useState } from "react";
 import {
-  fallbackCaseLedgerRows,
-  fallbackSnapshotLabel,
-  fallbackSnapshotLastUpdated,
-} from "../data/fallbackSheets";
-import {
-  caseLedgerColumns,
   derivePublicStatsFromLedger,
 } from "../services/caseLedgerStats";
-import { useCsvData } from "./useCsvData";
+import { fetchPublicCaseLedgerRows } from "../services/adminCases";
 import type { CaseLedgerRow, DataSourceState, PublicStats } from "../types/stats";
 
 export interface PublicStatsState {
@@ -30,25 +25,47 @@ export const emptyPublicStats: PublicStats = {
   },
 };
 
-export const fallbackPublicStats: PublicStats = {
-  ...derivePublicStatsFromLedger(fallbackCaseLedgerRows),
-  lastUpdated: {
-    last_updated: fallbackSnapshotLastUpdated,
-    data_through: "May 2026",
-    note: fallbackSnapshotLabel,
-    source_workbook: "Bundled CaseLedger snapshot",
-  },
-};
-
 export const usePublicStats = (): PublicStatsState => {
-  const { data: stats, loading, source, error } = useCsvData<CaseLedgerRow, PublicStats>({
-    url: import.meta.env.VITE_STATS_CASE_LEDGER_CSV_URL,
-    requiredColumns: caseLedgerColumns,
-    initialData: emptyPublicStats,
-    deriveData: derivePublicStatsFromLedger,
-    fallbackData: fallbackPublicStats,
-    fallbackError: "CaseLedger could not be loaded.",
+  const [state, setState] = useState<PublicStatsState>({
+    stats: emptyPublicStats,
+    loading: true,
+    source: "live",
   });
 
-  return { stats, loading, source, error };
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadStats = async () => {
+      try {
+        const rows = await fetchPublicCaseLedgerRows();
+        if (isMounted) {
+          setState({
+            stats: derivePublicStatsFromLedger(rows as CaseLedgerRow[]),
+            loading: false,
+            source: "live",
+          });
+        }
+      } catch (statsError) {
+        if (isMounted) {
+          setState({
+            stats: emptyPublicStats,
+            loading: false,
+            source: "error",
+            error:
+              statsError instanceof Error
+                ? statsError.message
+                : "Supabase public stats could not be loaded.",
+          });
+        }
+      }
+    };
+
+    void loadStats();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return state;
 };

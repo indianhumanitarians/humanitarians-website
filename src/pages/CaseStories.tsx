@@ -9,7 +9,7 @@ import { useCaseStories } from "../hooks/useCaseStories";
 const initialStoryLimit = 9;
 
 export const CaseStories = () => {
-  const { stories, loading, source, error } = useCaseStories();
+  const { stories, loading, error } = useCaseStories();
   const [category, setCategory] = useState("all");
   const [fundType, setFundType] = useState("all");
   const [supportType, setSupportType] = useState("all");
@@ -19,9 +19,9 @@ export const CaseStories = () => {
     () =>
       stories.filter(
         (story) =>
-          (category === "all" || story.category === category) &&
-          (fundType === "all" || story.fund_type === fundType) &&
-          (supportType === "all" || story.support_type === supportType),
+          (category === "all" || story.support_category === category) &&
+          (fundType === "all" || story.fund_source === fundType) &&
+          (supportType === "all" || story.support_description === supportType),
       ),
     [category, fundType, stories, supportType],
   );
@@ -55,10 +55,7 @@ export const CaseStories = () => {
         Public stories are anonymized to protect recipient dignity and privacy.
       </PrivacyNote>
       {loading ? (
-        <p className="soft-status">Loading public case stories from the live sheet...</p>
-      ) : null}
-      {source === "fallback" ? (
-        <p className="soft-status">Showing fallback snapshot data through May 2026.</p>
+        <p className="soft-status">Loading public case stories...</p>
       ) : null}
       {!loading && error ? (
         <p className="soft-status">Live case stories could not be loaded right now.</p>
@@ -76,10 +73,10 @@ export const CaseStories = () => {
       ) : null}
       <div className="case-grid case-grid-compact">
         {loading ? (
-          <p className="empty-state">Fetching published stories from the live public sheet...</p>
+          <p className="empty-state">Fetching published stories...</p>
         ) : visibleStories.length > 0 ? (
           visibleStories.map((story) => (
-            <CaseStoryCard key={story.case_id} story={story} />
+            <CaseStoryCard key={story.case_number} story={story} />
           ))
         ) : (
           <p className="empty-state">

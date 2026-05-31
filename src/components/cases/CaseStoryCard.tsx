@@ -14,20 +14,20 @@ export const CaseStoryCard = ({ story }: CaseStoryCardProps) => {
 
   return (
     <article className="case-card">
-      <CaseImageCarousel images={images} title={story.title} />
+      <CaseImageCarousel images={images} title={story.public_story_title} />
       <div className="case-card-body">
         <div className="badge-row">
-          <span className="badge">{story.category}</span>
-          <span className="badge muted">{story.fund_type}</span>
+          <span className="badge">{story.support_category}</span>
+          <span className="badge muted">{story.fund_source}</span>
         </div>
-        <h3>{story.title}</h3>
+        <h3>{story.public_story_title}</h3>
         <p className="case-meta">
-          {story.anonymized_name} · {story.public_location} · {story.amount_range}
+          {story.public_beneficiary_label} · {story.public_location} · {story.amount_range}
         </p>
-        <p>{story.need}</p>
+        <p>{story.public_need_summary}</p>
         <Button
           variant="ghost"
-          ariaLabel={`Read details for ${story.title}`}
+          ariaLabel={`Read details for ${story.public_story_title}`}
           onClick={() => setIsOpen((current) => !current)}
         >
           {isOpen ? "Hide details" : "Read details"}
@@ -35,13 +35,13 @@ export const CaseStoryCard = ({ story }: CaseStoryCardProps) => {
         {isOpen ? (
           <div className="case-details">
             <p>
-              <strong>Support provided:</strong> {story.support_provided}
+              <strong>Support provided:</strong> {story.public_support_summary}
             </p>
             <p>
-              <strong>Outcome:</strong> {story.outcome}
+              <strong>Outcome:</strong> {story.public_outcome_summary}
             </p>
             <p>
-              <strong>Follow-up:</strong> {story.follow_up}
+              <strong>Follow-up:</strong> {story.public_follow_up_summary}
             </p>
           </div>
         ) : null}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { navLinks } from "../../data/site";
+import { adminLink, navLinks } from "../../data/site";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,6 +34,13 @@ export const Navbar = () => {
               {link.label}
             </NavLink>
           ))}
+          <NavLink
+            to={adminLink.to}
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) => (isActive ? "active" : undefined)}
+          >
+            {adminLink.label}
+          </NavLink>
         </div>
       </nav>
     </header>

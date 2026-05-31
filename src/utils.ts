@@ -7,6 +7,58 @@ export const formatRupees = (value: number): string =>
     maximumFractionDigits: 0,
   }).format(value);
 
+export const formatApproxRupeesBand = (
+  value: string | number | undefined,
+): string => {
+  const amount = toFiniteNumber(value);
+
+  if (amount <= 0) {
+    return "Not available";
+  }
+
+  if (amount < 5000) {
+    return "Under ₹5,000";
+  }
+
+  if (amount <= 10000) {
+    return "₹5,000-₹10,000";
+  }
+
+  if (amount <= 25000) {
+    return "₹10,000-₹25,000";
+  }
+
+  if (amount <= 50000) {
+    return "₹25,000-₹50,000";
+  }
+
+  if (amount <= 100000) {
+    return "₹50,000-₹1,00,000";
+  }
+
+  if (amount <= 250000) {
+    return "₹1L-₹2.5L";
+  }
+
+  if (amount <= 500000) {
+    return "₹2.5L-₹5L";
+  }
+
+  if (amount <= 1000000) {
+    return "₹5L-₹10L";
+  }
+
+  if (amount <= 2500000) {
+    return "₹10L-₹25L";
+  }
+
+  if (amount <= 5000000) {
+    return "₹25L-₹50L";
+  }
+
+  return "More than ₹50L";
+};
+
 export const getMetricValue = (summary: { metric: string; value: string | number }[], metric: string): string | number =>
   summary.find((item) => item.metric === metric)?.value ?? "0";
 
@@ -50,10 +102,6 @@ export const getDataSourceLabel = (
 
   if (source === "partial") {
     return "Live data partial";
-  }
-
-  if (source === "fallback") {
-    return "Snapshot through May 2026";
   }
 
   return "Live data unavailable";

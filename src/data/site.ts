@@ -4,7 +4,7 @@ export const site = {
     "A charity community helping verified families move from urgent support toward dignified self-reliance through livelihood, skills, and mentorship.",
   workbookName: "Humanitarians_Public_Impact_Stats_Linked",
   privacyLine:
-    "Stats are fetched from a public, privacy-safe Google Sheet. No private recipient or donor data is published.",
+    "Public pages use privacy-safe summaries. Full case details are available only to authorized admins.",
   anonymizedStoriesLine:
     "Public stories are anonymized to protect recipient dignity and privacy.",
   fundTrackingLine:
@@ -25,3 +25,5 @@ export const navLinks = [
   { label: "Zakat & Sadaqah", to: "/zakat-sadaqah" },
   { label: "About", to: "/about" },
 ];
+
+export const adminLink = { label: "Admin", to: "/admin" };
