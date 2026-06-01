@@ -22,7 +22,8 @@ export const CaseStoryCard = ({ story }: CaseStoryCardProps) => {
         </div>
         <h3>{story.public_story_title}</h3>
         <p className="case-meta">
-          {story.public_beneficiary_label} · {story.public_location} · {story.amount_range}
+          <span>{story.public_location}</span>
+          <span className="case-meta-amount">{story.amount_range}</span>
         </p>
         <p>{story.public_need_summary}</p>
         <Button

@@ -1,7 +1,7 @@
 import { Button } from "../components/common/Button";
 import { CTASection } from "../components/common/CTASection";
 import { SectionHeading } from "../components/common/SectionHeading";
-import { site } from "../data/site";
+import { usePublicSiteSettings } from "../hooks/usePublicSiteSettings";
 
 const values = [
   "Amanah",
@@ -54,8 +54,11 @@ const workingPrinciples = [
   },
 ];
 
-export const About = () => (
-  <main className="container page about-page">
+export const About = () => {
+  const { error, loading, settings } = usePublicSiteSettings();
+
+  return (
+    <main className="container page about-page">
     <SectionHeading
       title="About Humanitarians"
       content="Humanitarians is a charity community focused on verified Zakat and Sadaqah cases, with a strong emphasis on livelihood, skills, mentorship, and dignified self-reliance."
@@ -72,9 +75,17 @@ export const About = () => (
           assets, courses, job-readiness, and mentorship.
         </p>
         <div className="about-work-actions">
-          <Button href={site.aboutProfileUrl} variant="secondary">
-            Click here to know more about us.
-          </Button>
+          {loading ? (
+            <p className="soft-status">Loading profile link...</p>
+          ) : null}
+          {error ? (
+            <p className="stats-error">Profile link could not be loaded.</p>
+          ) : null}
+          {settings ? (
+            <Button href={settings.about_profile_url} variant="secondary">
+              Click here to know more about us.
+            </Button>
+          ) : null}
           <Button to="/contact" variant="secondary">
             Contact us
           </Button>
@@ -126,4 +137,5 @@ export const About = () => (
     </section>
     <CTASection />
   </main>
-);
+  );
+};

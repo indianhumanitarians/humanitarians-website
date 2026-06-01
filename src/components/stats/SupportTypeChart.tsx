@@ -2,13 +2,13 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import type { SupportTypeStat } from "../../types/stats";
+import { chartTooltipClassName } from "./chartTooltip";
 
 interface SupportTypeChartProps {
   rows: SupportTypeStat[];
@@ -37,6 +37,14 @@ interface SupportTypeTooltipProps {
   }[];
 }
 
+interface WrappedYAxisTickProps {
+  x?: number;
+  y?: number;
+  payload?: {
+    value?: string;
+  };
+}
+
 const SUPPORT_TYPE_PALETTE = [
   "#0284c7",
   "#166534",
@@ -56,6 +64,40 @@ const supportTypeKey = (supportType: string): string =>
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "")}`;
 
+const wrapLabel = (label: string, maxCharacters = 14): string[] => {
+  const words = label.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+
+  for (const word of words) {
+    const currentLine = lines[lines.length - 1];
+    if (!currentLine || `${currentLine} ${word}`.length > maxCharacters) {
+      lines.push(word);
+    } else {
+      lines[lines.length - 1] = `${currentLine} ${word}`;
+    }
+  }
+
+  return lines.length > 0 ? lines : [label];
+};
+
+const WrappedYAxisTick = ({ x = 0, y = 0, payload }: WrappedYAxisTickProps) => {
+  const lines = wrapLabel(String(payload?.value ?? ""));
+  const lineHeight = 14;
+  const startY = y - ((lines.length - 1) * lineHeight) / 2;
+
+  return (
+    <g transform={`translate(${x},${startY})`}>
+      <text textAnchor="end" fill="#57534e" fontSize={12} fontWeight={700}>
+        {lines.map((line, index) => (
+          <tspan x={0} dy={index === 0 ? 0 : lineHeight} key={`${line}-${index}`}>
+            {line}
+          </tspan>
+        ))}
+      </text>
+    </g>
+  );
+};
+
 const SupportTypeTooltip = ({
   active,
   payload,
@@ -69,17 +111,24 @@ const SupportTypeTooltip = ({
     return null;
   }
 
+  const visibleSupportTypes = row.supportTypes.filter(
+    (supportType) => supportType.cases > 0,
+  );
+
   return (
-    <div className="chart-tooltip">
+    <div className={`${chartTooltipClassName({})} support-tooltip`}>
       <strong>{row.category}</strong>
       <span>{row.cases} families helped</span>
-      {row.supportTypes
-        .filter((supportType) => supportType.cases > 0)
-        .map((supportType) => (
+      <span className="support-tooltip-list">
+        {visibleSupportTypes.slice(0, 12).map((supportType) => (
           <span key={supportType.support_type}>
             {supportType.support_type}: {supportType.cases}
           </span>
         ))}
+      </span>
+      {visibleSupportTypes.length > 12 ? (
+        <span>+{visibleSupportTypes.length - 12} more support types</span>
+      ) : null}
     </div>
   );
 };
@@ -155,18 +204,22 @@ export const SupportTypeChart = ({ rows }: SupportTypeChartProps) => {
           <BarChart
             data={categoryRows}
             layout="vertical"
-            margin={{ top: 12, right: 24, left: 72, bottom: 0 }}
+            margin={{ top: 12, right: 24, left: 28, bottom: 0 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#dbeafe" />
             <XAxis type="number" allowDecimals={false} />
             <YAxis
               dataKey="category"
               type="category"
-              tick={{ fontSize: 11 }}
-              width={110}
+              tick={<WrappedYAxisTick />}
+              tickLine={false}
+              axisLine={false}
+              width={135}
             />
-            <Tooltip content={<SupportTypeTooltip />} />
-            <Legend />
+            <Tooltip
+              content={<SupportTypeTooltip />}
+              wrapperStyle={{ zIndex: 20 }}
+            />
             {supportTypes.map((supportType, index) => (
               <Bar
                 dataKey={supportType.key}
@@ -178,6 +231,25 @@ export const SupportTypeChart = ({ rows }: SupportTypeChartProps) => {
             ))}
           </BarChart>
         </ResponsiveContainer>
+      </div>
+      <div className="chart-color-legend" aria-label="Support description legend">
+        {supportTypes.map((supportType, index) => (
+          <span
+            key={supportType.key}
+            style={{
+              color: SUPPORT_TYPE_PALETTE[index % SUPPORT_TYPE_PALETTE.length],
+            }}
+          >
+            <i
+              aria-hidden="true"
+              style={{
+                backgroundColor:
+                  SUPPORT_TYPE_PALETTE[index % SUPPORT_TYPE_PALETTE.length],
+              }}
+            />
+            {supportType.label}
+          </span>
+        ))}
       </div>
       <div className="support-type-mobile-bars" aria-label="Support types by category">
         {categoryRows.map((row) => (

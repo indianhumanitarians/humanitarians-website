@@ -7,10 +7,56 @@ import { SupportTypeChart } from "../components/stats/SupportTypeChart";
 import { useAdminAuth } from "../hooks/useAdminAuth";
 import { useAdminCases } from "../hooks/useAdminCases";
 import { deriveAdminInsights } from "../services/adminInsights";
+import type { AdminMonthlySummary } from "../services/adminInsights";
 import { formatRupees } from "../utils";
 
 const percent = (value: number, total: number): string =>
   total > 0 ? `${Math.round((value / total) * 100)}%` : "0%";
+
+const csvValue = (value: string | number | boolean | null | undefined): string => {
+  const text = String(value ?? "");
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+};
+
+const monthlyExportColumns: Array<{
+  label: string;
+  value: (item: AdminMonthlySummary) => string | number;
+}> = [
+  { label: "Period", value: (item) => item.period_label },
+  { label: "Period sort", value: (item) => item.period_sort },
+  { label: "Cases", value: (item) => item.total_cases },
+  { label: "Zakat cases", value: (item) => item.zakat_cases },
+  { label: "Sadaqah cases", value: (item) => item.sadaqah_cases },
+  { label: "Mixed cases", value: (item) => item.mixed_cases },
+  { label: "Other fund cases", value: (item) => item.other_fund_cases },
+  { label: "Zakat amount", value: (item) => item.zakat_amount },
+  { label: "Sadaqah amount", value: (item) => item.sadaqah_amount },
+  { label: "Other amount", value: (item) => item.other_amount },
+  { label: "Total donation", value: (item) => item.total_amount },
+  { label: "Public stats cases", value: (item) => item.public_stats_cases },
+  { label: "Published story cases", value: (item) => item.published_story_cases },
+];
+
+const downloadMonthlyStatsCsv = (rows: AdminMonthlySummary[]): void => {
+  const headerRow = monthlyExportColumns
+    .map((column) => csvValue(column.label))
+    .join(",");
+  const dataRows = rows.map((item) =>
+    monthlyExportColumns
+      .map((column) => csvValue(column.value(item)))
+      .join(","),
+  );
+  const csv = `\uFEFF${[headerRow, ...dataRows].join("\n")}`;
+  const url = URL.createObjectURL(
+    new Blob([csv], { type: "text/csv;charset=utf-8" }),
+  );
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = "monthly-statistics.csv";
+  anchor.click();
+  URL.revokeObjectURL(url);
+};
 
 export const AdminDashboard = () => {
   const { session } = useAdminAuth();
@@ -89,6 +135,14 @@ export const AdminDashboard = () => {
       <section className="admin-panel">
         <div className="table-toolbar">
           <h3>Monthly statistics</h3>
+          <button
+            type="button"
+            className="admin-small-button"
+            disabled={latestMonthlyRows.length === 0}
+            onClick={() => downloadMonthlyStatsCsv(latestMonthlyRows)}
+          >
+            Download CSV
+          </button>
         </div>
         {latestMonthlyRows.length > 0 ? (
           <div className="admin-table-wrap">

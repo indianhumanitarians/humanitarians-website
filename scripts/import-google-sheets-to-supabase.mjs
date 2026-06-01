@@ -52,7 +52,10 @@ const config = {
   supabaseUrl: String(env.VITE_SUPABASE_URL ?? "").replace(/\/+$/, ""),
   serviceKey: env.SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_SECRET_KEY,
   caseLedgerUrl: env.VITE_STATS_CASE_LEDGER_CSV_URL,
+  caseImagesUrl: env.VITE_STATS_CASE_IMAGES_CSV_URL,
   mentorshipTestimonialsUrl: env.VITE_STATS_MENTORSHIP_TESTIMONIALS_CSV_URL,
+  supportCategoriesUrl: env.VITE_STATS_SUPPORT_CATEGORIES_CSV_URL,
+  fundTypesUrl: env.VITE_STATS_FUND_TYPES_CSV_URL,
 };
 
 const requireValue = (value, label) => {
@@ -83,6 +86,62 @@ const firstText = (row, keys) => {
 const toNumber = (value) => {
   const numericValue = Number(String(value ?? "").replace(/[₹,\s]/g, ""));
   return Number.isFinite(numericValue) ? numericValue : 0;
+};
+
+const monthAliases = new Map(
+  [
+    ["Jan", ["jan", "january"]],
+    ["Feb", ["feb", "february"]],
+    ["Mar", ["mar", "march"]],
+    ["Apr", ["apr", "april"]],
+    ["May", ["may"]],
+    ["Jun", ["jun", "june"]],
+    ["Jul", ["jul", "july"]],
+    ["Aug", ["aug", "august"]],
+    ["Sep", ["sep", "sept", "september"]],
+    ["Oct", ["oct", "october"]],
+    ["Nov", ["nov", "november"]],
+    ["Dec", ["dec", "december"]],
+  ].flatMap(([label, aliases], index) =>
+    aliases.map((alias) => [alias, { label, month: index + 1 }]),
+  ),
+);
+
+const periodSortFromLabel = (periodLabel) => {
+  const trimmedPeriod = text(periodLabel);
+  const monthInputMatch = trimmedPeriod.match(/^(\d{4})-(\d{2})$/);
+  if (monthInputMatch) {
+    const year = Number(monthInputMatch[1]);
+    const month = Number(monthInputMatch[2]);
+    return year > 1900 && month >= 1 && month <= 12 ? year * 100 + month : 0;
+  }
+
+  const [monthText, yearText] = trimmedPeriod.split(/\s+/);
+  const month = monthAliases.get(monthText?.toLowerCase());
+  const year = Number(yearText);
+
+  return month && Number.isFinite(year) ? year * 100 + month.month : 0;
+};
+
+const periodLabelFromSort = (periodSort) => {
+  const numericSort = toNumber(periodSort);
+  const year = Math.floor(numericSort / 100);
+  const month = numericSort % 100;
+  const monthLabel = Array.from(monthAliases.values()).find(
+    (item) => item.month === month,
+  )?.label;
+
+  return year && monthLabel ? `${monthLabel} ${year}` : "";
+};
+
+const monthStartFromSort = (periodSort) => {
+  const numericSort = toNumber(periodSort);
+  const year = Math.floor(numericSort / 100);
+  const month = numericSort % 100;
+
+  return year && month >= 1 && month <= 12
+    ? `${year}-${String(month).padStart(2, "0")}-01`
+    : "";
 };
 
 const normalizeKey = (key) => key.trim().toLowerCase();
@@ -221,55 +280,103 @@ const uploadImageToSupabase = async (caseCode, slot, sourceUrl) => {
   };
 };
 
-const toCaseImport = async (row) => {
-  const caseNumber = text(row.case_id);
+const caseNumberFromRow = (row) =>
+  firstText(row, ["case_number"]);
+
+const toCaseImport = (row) => {
+  const caseNumber = caseNumberFromRow(row);
+  const periodSort =
+    toNumber(firstText(row, ["reporting_month_sort"])) ||
+    periodSortFromLabel(firstText(row, ["reporting_month"]));
   const payload = {
     case_number: caseNumber,
-    reporting_month: text(row.period_label),
-    reporting_month_sort: toNumber(row.period_sort) || null,
-    reporting_month_start: text(row.month_start) || null,
-    support_category: text(row.category),
-    support_description: text(row.support_type),
-    fund_source: text(row.fund_type),
-    zakat_amount: toNumber(row.amount_zakat),
-    sadaqah_amount: toNumber(row.amount_sadaqah),
-    other_amount: toNumber(row.other_amount),
-    beneficiary_name: firstText(row, ["recipient_name", "full_name", "name"]),
-    beneficiary_phone: firstText(row, ["recipient_phone", "phone", "mobile"]),
-    beneficiary_private_location: firstText(row, ["recipient_location", "address", "private_location"]),
-    public_story_title: firstText(row, ["public_title", "title"]),
-    public_beneficiary_label: firstText(row, ["public_display_name", "anonymized_name"]),
+    reporting_month:
+      periodLabelFromSort(periodSort) ||
+      firstText(row, ["reporting_month"]),
+    reporting_month_sort: periodSort || null,
+    reporting_month_start:
+      firstText(row, ["reporting_month_start"]) ||
+      monthStartFromSort(periodSort) ||
+      null,
+    support_category: firstText(row, ["support_category"]) ?? "",
+    support_description: firstText(row, ["support_description"]) ?? "",
+    fund_source: firstText(row, ["fund_source"]) ?? "",
+    zakat_amount: toNumber(firstText(row, ["zakat_amount"])),
+    sadaqah_amount: toNumber(firstText(row, ["sadaqah_amount"])),
+    other_amount: toNumber(firstText(row, ["other_amount"])),
+    beneficiary_name: firstText(row, ["beneficiary_name"]),
+    beneficiary_phone: firstText(row, ["beneficiary_phone"]),
+    beneficiary_private_location: firstText(row, ["beneficiary_private_location"]),
+    public_story_title: firstText(row, ["public_story_title"]),
     public_location: firstText(row, ["public_location"]),
-    public_need_summary: firstText(row, ["need_public", "need"]),
-    public_support_summary: firstText(row, ["support_provided_public", "support_provided"]),
-    public_outcome_summary: firstText(row, ["outcome_public", "outcome"]),
-    public_follow_up_summary: firstText(row, ["follow_up_public", "follow_up"]),
-    show_in_public_stats: parseBoolean(row.include_in_public_stats),
-    publish_public_story: parseBoolean(row.published),
+    public_need_summary: firstText(row, ["public_need_summary"]),
+    public_support_summary: firstText(row, ["public_support_summary"]),
+    public_outcome_summary: firstText(row, ["public_outcome_summary"]),
+    public_follow_up_summary: firstText(row, ["public_follow_up_summary"]),
+    show_in_public_stats: parseBoolean(firstText(row, ["show_in_public_stats"])),
+    publish_public_story: parseBoolean(firstText(row, ["publish_public_story"])),
   };
-  const images = [];
 
-  for (const slot of [1, 2, 3]) {
-    const sourceUrl = text(row[`image_url_${slot}`]);
-    if (shouldWrite && shouldImportImages && sourceUrl) {
-      try {
-        images.push({
-          display_order: slot,
-          ...(await uploadImageToSupabase(caseNumber, slot, sourceUrl)),
-        });
-      } catch (error) {
-        console.warn(`Skipping image ${slot} for ${caseNumber}: ${error.message}`);
-      }
-    } else if (!shouldWrite && sourceUrl) {
-      images.push({
-        display_order: slot,
-        storage_path: sourceUrl,
-        public_url: sourceUrl,
-      });
+  return { caseNumber, payload };
+};
+
+const toCaseImageImport = async (row) => {
+  const caseNumber = caseNumberFromRow(row);
+  const displayOrder = toNumber(firstText(row, ["display_order"]));
+  const sourceUrl = firstText(row, [
+    "source_image_url",
+    "public_url",
+  ]);
+  const existingStoragePath = firstText(row, ["storage_path"]);
+  const existingPublicUrl = firstText(row, ["public_url"]);
+
+  if (!caseNumber || !displayOrder) {
+    return null;
+  }
+
+  if (
+    config.supabaseUrl &&
+    existingStoragePath &&
+    existingPublicUrl &&
+    existingPublicUrl.startsWith(config.supabaseUrl)
+  ) {
+    return {
+      caseNumber,
+      image: {
+        display_order: displayOrder,
+        storage_path: existingStoragePath,
+        public_url: existingPublicUrl,
+      },
+    };
+  }
+
+  if (shouldWrite && shouldImportImages && sourceUrl) {
+    try {
+      return {
+        caseNumber,
+        image: {
+          display_order: displayOrder,
+          ...(await uploadImageToSupabase(caseNumber, displayOrder, sourceUrl)),
+        },
+      };
+    } catch (error) {
+      console.warn(`Skipping image ${displayOrder} for ${caseNumber}: ${error.message}`);
+      return null;
     }
   }
 
-  return { caseNumber, payload, images };
+  if (sourceUrl || existingStoragePath || existingPublicUrl) {
+    return {
+      caseNumber,
+      image: {
+        display_order: displayOrder,
+        storage_path: existingStoragePath || sourceUrl || existingPublicUrl,
+        public_url: existingPublicUrl || sourceUrl || existingStoragePath,
+      },
+    };
+  }
+
+  return null;
 };
 
 const toTestimonialPayload = (row) => ({
@@ -282,6 +389,7 @@ const toTestimonialPayload = (row) => ({
   period_label: text(row.period_label),
   outcome_summary: text(row.outcome_summary),
   testimonial_text: text(row.testimonial_text),
+  profile_image_storage_path: text(row.profile_image_storage_path) || null,
   profile_image_url: text(row.profile_image_url) || null,
   carousel_tagline: text(row.carousel_tagline),
   consent_received: parseBoolean(row.consent_received),
@@ -289,53 +397,64 @@ const toTestimonialPayload = (row) => ({
   editing_note: text(row.editing_note) || null,
 });
 
-const toLookupPayloads = (values) =>
-  [...new Set(values.map(text).filter(Boolean))]
-    .sort((left, right) => left.localeCompare(right))
-    .map((name) => ({
-      name,
-      is_active: true,
-    }));
+const toLookupPayloadsFromRows = (rows) =>
+  rows
+    .map((row, index) => ({
+      name: firstText(row, ["name"]),
+      display_order: toNumber(row.display_order) || (index + 1) * 10,
+      is_active: row.is_active === undefined ? true : parseBoolean(row.is_active),
+    }))
+    .filter((row) => text(row.name));
 
 const main = async () => {
-  const caseRows = await fetchCsvRows("CaseLedger", config.caseLedgerUrl);
+  const caseRows = await fetchCsvRows("Case Ledger", config.caseLedgerUrl);
   const caseRowsWithIds = caseRows
-    .filter((row) => text(row.case_id))
+    .filter((row) => text(caseNumberFromRow(row)))
     .filter(
       (row) =>
         !restoreCaseNumber ||
-        text(row.case_id).toLowerCase() === restoreCaseNumber.toLowerCase(),
+        text(caseNumberFromRow(row)).toLowerCase() === restoreCaseNumber.toLowerCase(),
     );
+  const caseImageRows = shouldImportImages
+    ? (await fetchCsvRows("Case Images", config.caseImagesUrl)).filter(
+        (row) =>
+          !restoreCaseNumber ||
+          text(caseNumberFromRow(row)).toLowerCase() === restoreCaseNumber.toLowerCase(),
+      )
+    : [];
   const testimonialRowsWithIds = restoreCaseNumber
     ? []
     : (
         await fetchCsvRows(
-          "MentorshipTestimonials",
+          "Mentorship Testimonials",
           config.mentorshipTestimonialsUrl,
         )
       ).filter((row) => text(row.testimonial_id));
-
-  if (restoreCaseNumber && caseRowsWithIds.length === 0) {
-    throw new Error(`${restoreCaseNumber} was not found in the CaseLedger CSV.`);
-  }
-
-  const imageUrlCount = caseRowsWithIds.reduce(
-    (count, row) =>
-      count +
-      [row.image_url_1, row.image_url_2, row.image_url_3].filter((value) => text(value)).length,
-    0,
+  const categoryPayloads = toLookupPayloadsFromRows(
+    await fetchCsvRows("Support Categories", config.supportCategoriesUrl),
+  );
+  const fundTypePayloads = toLookupPayloadsFromRows(
+    await fetchCsvRows("Fund Types", config.fundTypesUrl),
   );
 
+  if (restoreCaseNumber && caseRowsWithIds.length === 0) {
+    throw new Error(`${restoreCaseNumber} was not found in the Case Ledger CSV.`);
+  }
+
+  const imageUrlCount = caseImageRows.length;
+
   console.log(
-    `Fetched CaseLedger: ${caseRowsWithIds.length} importable row${caseRowsWithIds.length === 1 ? "" : "s"}`,
+    `Fetched Case Ledger: ${caseRowsWithIds.length} importable row${caseRowsWithIds.length === 1 ? "" : "s"}`,
   );
   if (restoreCaseNumber) {
     console.log(`Single-case restore mode: ${restoreCaseNumber}`);
-    console.log("MentorshipTestimonials import skipped.");
+    console.log("Mentorship Testimonials import skipped.");
   } else {
-    console.log(`Fetched MentorshipTestimonials: ${testimonialRowsWithIds.length} importable rows`);
+    console.log(`Fetched Mentorship Testimonials: ${testimonialRowsWithIds.length} importable rows`);
   }
-  console.log(`Found case image URLs: ${imageUrlCount}`);
+  console.log(`Fetched Case Images: ${imageUrlCount} importable row${imageUrlCount === 1 ? "" : "s"}`);
+  console.log(`Fetched Support Categories: ${categoryPayloads.length} importable rows`);
+  console.log(`Fetched Fund Types: ${fundTypePayloads.length} importable rows`);
 
   if (!shouldWrite) {
     console.log("Dry run only. Re-run with --write to upsert into Supabase.");
@@ -344,22 +463,23 @@ const main = async () => {
 
   const caseImports = [];
   for (const row of caseRowsWithIds) {
-    caseImports.push(await toCaseImport(row));
+    caseImports.push(toCaseImport(row));
+  }
+  const separateCaseImageImports = [];
+  for (const row of caseImageRows) {
+    const imageImport = await toCaseImageImport(row);
+    if (imageImport) {
+      separateCaseImageImports.push(imageImport);
+    }
   }
 
   const casePayloads = caseImports.map((caseImport) => caseImport.payload);
   const testimonialPayloads = testimonialRowsWithIds.map(toTestimonialPayload);
-  const categoryPayloads = toLookupPayloads(
-    casePayloads.map((payload) => payload.support_category),
-  );
-  const fundTypePayloads = toLookupPayloads(
-    casePayloads.map((payload) => payload.fund_source),
-  );
 
-  const importedCases = await supabaseRest("cases", {
+  await supabaseRest("cases", {
     method: "POST",
     query: { on_conflict: "case_number" },
-    prefer: "resolution=merge-duplicates,return=representation",
+    prefer: "resolution=merge-duplicates,return=minimal",
     body: casePayloads,
   });
 
@@ -381,21 +501,12 @@ const main = async () => {
     });
   }
 
-  const imagePayloads = caseImports.flatMap((caseImport) => {
-    const importedCase = (importedCases ?? []).find(
-      (item) => item.case_number === caseImport.caseNumber,
-    );
-    if (!importedCase) {
-      return [];
-    }
-
-    return caseImport.images.map((image) => ({
-      case_number: caseImport.caseNumber,
-      display_order: image.display_order,
-      storage_path: image.storage_path,
-      public_url: image.public_url,
-    }));
-  });
+  const imagePayloads = separateCaseImageImports.map((imageImport) => ({
+    case_number: imageImport.caseNumber,
+    display_order: imageImport.image.display_order,
+    storage_path: imageImport.image.storage_path,
+    public_url: imageImport.image.public_url,
+  }));
 
   if (imagePayloads.length > 0) {
     await supabaseRest("case_images", {

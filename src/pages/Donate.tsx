@@ -2,16 +2,27 @@ import { Button } from "../components/common/Button";
 import { CopyButton } from "../components/common/CopyButton";
 import { PrivacyNote } from "../components/common/PrivacyNote";
 import { SectionHeading } from "../components/common/SectionHeading";
-import { contact } from "../data/contact";
+import { usePublicSiteSettings } from "../hooks/usePublicSiteSettings";
 
-export const Donate = () => (
-  <main className="container page">
+export const Donate = () => {
+  const { contact, error, loading } = usePublicSiteSettings();
+
+  return (
+    <main className="container page">
     <SectionHeading
       title="Donate / Join"
       content="Support a livelihood, sponsor a course, join the Humanitarians WhatsApp community, or use the public Zakat and Sadaqah QR details below."
     />
+    {loading ? (
+      <p className="soft-status">Loading public payment settings...</p>
+    ) : null}
+    {error ? (
+      <p className="stats-error">Public payment settings could not be loaded.</p>
+    ) : null}
 
-    <section className="section donate-payment-section">
+    {contact ? (
+      <>
+        <section className="section donate-payment-section">
       <div className="donate-section-heading">
         <h2>Donate</h2>
         <p>
@@ -119,5 +130,8 @@ export const Donate = () => (
       Do not send sensitive documents, payment IDs, recipient documents, or
       private notes through public forms or public links.
     </PrivacyNote>
+      </>
+    ) : null}
   </main>
-);
+  );
+};

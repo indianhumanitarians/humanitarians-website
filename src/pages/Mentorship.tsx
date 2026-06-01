@@ -2,7 +2,7 @@ import { Button } from "../components/common/Button";
 import { CTASection } from "../components/common/CTASection";
 import { SectionHeading } from "../components/common/SectionHeading";
 import { MentorshipTestimonialsCarousel } from "../components/mentorship/MentorshipTestimonialsCarousel";
-import { contact } from "../data/contact";
+import { usePublicSiteSettings } from "../hooks/usePublicSiteSettings";
 
 const tracks = [
   {
@@ -46,8 +46,11 @@ const audiences = [
   },
 ];
 
-export const Mentorship = () => (
-  <main className="container page">
+export const Mentorship = () => {
+  const { contact, error, loading } = usePublicSiteSettings();
+
+  return (
+    <main className="container page">
     <SectionHeading
       title="Mentorship program"
       content="Livelihood, skills, and mentorship with volunteers from IITs, other colleges, and professional backgrounds."
@@ -90,13 +93,22 @@ export const Mentorship = () => (
           practical: a resume pass, a mock interview, a course recommendation, or a focused learning path.
         </p>
       </div>
-      <div className="cta-actions">
-        <Button href={contact.whatsapp.mentorVolunteer} variant="secondary">Join as Mentor</Button>
-        <Button href={contact.whatsapp.menteeGroup} variant="secondary">Join as Mentee</Button>
-        <Button to="/donate" variant="secondary">Sponsor a Course</Button>
-      </div>
+      {loading ? (
+        <p className="soft-status">Loading mentorship contact links...</p>
+      ) : null}
+      {error ? (
+        <p className="stats-error">Mentorship contact links could not be loaded.</p>
+      ) : null}
+      {contact ? (
+        <div className="cta-actions">
+          <Button href={contact.whatsapp.mentorVolunteer} variant="secondary">Join as Mentor</Button>
+          <Button href={contact.whatsapp.menteeGroup} variant="secondary">Join as Mentee</Button>
+          <Button to="/donate" variant="secondary">Sponsor a Course</Button>
+        </div>
+      ) : null}
     </section>
     <MentorshipTestimonialsCarousel />
     <CTASection />
   </main>
-);
+  );
+};

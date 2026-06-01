@@ -4,8 +4,14 @@ import { AdminShell } from "../components/admin/AdminShell";
 import { AdminTopActions } from "../components/admin/AdminTopActions";
 import { useAdminAuth } from "../hooks/useAdminAuth";
 import { useAdminCases } from "../hooks/useAdminCases";
-import { caseNumberSequence, deleteAdminCase } from "../services/adminCases";
+import {
+  caseNumberSequence,
+  deleteAdminCase,
+  periodLabelFromSort,
+  periodSortFromLabel,
+} from "../services/adminCases";
 import { adminCaseTotalAmount } from "../services/adminInsights";
+import type { AdminCase } from "../types/admin";
 import { formatRupees } from "../utils";
 
 const formatDate = (value: string): string =>
@@ -16,20 +22,152 @@ const formatDate = (value: string): string =>
   }).format(new Date(value));
 
 type SortDirection = "asc" | "desc";
+type PublicFilter = "all" | "stats" | "stories" | "private";
 
 const emptyValue = (value: string | null | undefined): string =>
   value?.trim() || "-";
+
+const normalized = (value: string | null | undefined): string =>
+  String(value ?? "").trim().toLowerCase();
+
+const uniqueSorted = (values: Array<string | null | undefined>): string[] =>
+  Array.from(new Set(values.map((value) => value?.trim()).filter(Boolean) as string[]))
+    .sort((left, right) => left.localeCompare(right));
+
+interface PeriodFilterOption {
+  label: string;
+  value: string;
+}
+
+const periodSortForCase = (item: AdminCase): number =>
+  item.reporting_month_sort ?? periodSortFromLabel(item.reporting_month) ?? 0;
+
+const uniquePeriodsDescending = (items: AdminCase[]): PeriodFilterOption[] =>
+  [...items.reduce<Map<number, PeriodFilterOption>>((periods, item) => {
+    const periodSort = periodSortForCase(item);
+    if (periodSort > 0 && !periods.has(periodSort)) {
+      periods.set(periodSort, {
+        label: periodLabelFromSort(periodSort) || item.reporting_month,
+        value: String(periodSort),
+      });
+    }
+    return periods;
+  }, new Map()).values()].sort(
+    (left, right) => Number(right.value) - Number(left.value),
+  );
+
+const csvValue = (value: string | number | boolean | null | undefined): string => {
+  const text = String(value ?? "");
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+};
+
+const caseExportColumns: Array<{
+  label: string;
+  value: (item: AdminCase) => string | number | boolean | null | undefined;
+}> = [
+  { label: "Case number", value: (item) => item.case_number },
+  { label: "Period", value: (item) => item.reporting_month },
+  { label: "Show in public stats", value: (item) => item.show_in_public_stats },
+  { label: "Publish public story", value: (item) => item.publish_public_story },
+  { label: "Title", value: (item) => item.public_story_title },
+  { label: "Public location", value: (item) => item.public_location },
+  { label: "Category", value: (item) => item.support_category },
+  { label: "Sub category / support", value: (item) => item.support_description },
+  { label: "Zakat amount", value: (item) => item.zakat_amount },
+  { label: "Sadaqah amount", value: (item) => item.sadaqah_amount },
+  { label: "Other amount", value: (item) => item.other_amount },
+  { label: "Total amount", value: (item) => adminCaseTotalAmount(item) },
+  { label: "Fund type", value: (item) => item.fund_source },
+  { label: "Beneficiary name", value: (item) => item.beneficiary_name },
+  { label: "Phone", value: (item) => item.beneficiary_phone },
+  { label: "Private address", value: (item) => item.beneficiary_private_location },
+  { label: "Created by", value: (item) => item.created_by },
+  { label: "Updated by", value: (item) => item.updated_by },
+  { label: "Created", value: (item) => item.created_at },
+  { label: "Updated", value: (item) => item.updated_at },
+];
+
+const downloadCaseCsv = (rows: AdminCase[], fileLabel: string): void => {
+  const headerRow = caseExportColumns.map((column) => csvValue(column.label)).join(",");
+  const dataRows = rows.map((item) =>
+    caseExportColumns.map((column) => csvValue(column.value(item))).join(","),
+  );
+  const csv = `\uFEFF${[headerRow, ...dataRows].join("\n")}`;
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = `case-ledger-${fileLabel}.csv`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+};
 
 export const AdminCaseLedger = () => {
   const { session } = useAdminAuth();
   const { cases, loading, error, reload } = useAdminCases(session?.accessToken);
   const [caseSortDirection, setCaseSortDirection] =
-    useState<SortDirection>("asc");
+    useState<SortDirection>("desc");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [periodFilter, setPeriodFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [fundFilter, setFundFilter] = useState("all");
+  const [publicFilter, setPublicFilter] = useState<PublicFilter>("all");
   const [deletingCase, setDeletingCase] = useState<string | undefined>();
   const [deleteError, setDeleteError] = useState<string | undefined>();
+  const filterOptions = useMemo(
+    () => ({
+      periods: uniquePeriodsDescending(cases),
+      categories: uniqueSorted(cases.map((item) => item.support_category)),
+      fundTypes: uniqueSorted(cases.map((item) => item.fund_source)),
+    }),
+    [cases],
+  );
+  const filteredCases = useMemo(() => {
+    const query = normalized(searchQuery);
+
+    return cases.filter((item) => {
+      const matchesSearch =
+        !query ||
+        [
+          item.case_number,
+          item.reporting_month,
+          item.public_story_title,
+          item.public_location,
+          item.support_category,
+          item.support_description,
+          item.fund_source,
+          item.beneficiary_name,
+          item.beneficiary_phone,
+          item.beneficiary_private_location,
+          item.created_by,
+          item.updated_by,
+        ].some((value) => normalized(value).includes(query));
+      const matchesPeriod =
+        periodFilter === "all" || String(periodSortForCase(item)) === periodFilter;
+      const matchesCategory =
+        categoryFilter === "all" || item.support_category === categoryFilter;
+      const matchesFund =
+        fundFilter === "all" || item.fund_source === fundFilter;
+      const matchesPublic =
+        publicFilter === "all" ||
+        (publicFilter === "stats" && item.show_in_public_stats) ||
+        (publicFilter === "stories" && item.publish_public_story) ||
+        (publicFilter === "private" &&
+          !item.show_in_public_stats &&
+          !item.publish_public_story);
+
+      return (
+        matchesSearch &&
+        matchesPeriod &&
+        matchesCategory &&
+        matchesFund &&
+        matchesPublic
+      );
+    });
+  }, [cases, categoryFilter, fundFilter, periodFilter, publicFilter, searchQuery]);
   const sortedCases = useMemo(
     () =>
-      [...cases].sort((left, right) => {
+      [...filteredCases].sort((left, right) => {
         const leftSequence = caseNumberSequence(left.case_number);
         const rightSequence = caseNumberSequence(right.case_number);
 
@@ -51,7 +189,7 @@ export const AdminCaseLedger = () => {
 
         return caseSortDirection === "asc" ? comparison : -comparison;
       }),
-    [caseSortDirection, cases],
+    [caseSortDirection, filteredCases],
   );
 
   const handleDeleteCase = async (caseNumber: string) => {
@@ -60,7 +198,7 @@ export const AdminCaseLedger = () => {
     }
 
     const confirmed = window.confirm(
-      `Delete ${caseNumber}? This will also remove its case images from the database.`,
+      `Delete ${caseNumber}? This will also remove its case image files from Supabase Storage.`,
     );
     if (!confirmed) {
       return;
@@ -83,6 +221,22 @@ export const AdminCaseLedger = () => {
     }
   };
 
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setPeriodFilter("all");
+    setCategoryFilter("all");
+    setFundFilter("all");
+    setPublicFilter("all");
+  };
+
+  const handleExport = () => {
+    const fileLabel =
+      periodFilter === "all"
+        ? "all-filtered"
+        : periodFilter.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    downloadCaseCsv(sortedCases, fileLabel);
+  };
+
   return (
     <AdminShell
       title="Case ledger"
@@ -99,6 +253,91 @@ export const AdminCaseLedger = () => {
         {loading ? <p className="soft-status">Loading cases...</p> : null}
         {error ? <p className="admin-error">{error}</p> : null}
         {deleteError ? <p className="admin-error">{deleteError}</p> : null}
+        <div className="admin-table-controls">
+          <label className="admin-filter-field admin-filter-search">
+            <span>Search</span>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Case, beneficiary, phone, category..."
+            />
+          </label>
+          <label className="admin-filter-field">
+            <span>Month</span>
+            <select
+              value={periodFilter}
+              onChange={(event) => setPeriodFilter(event.target.value)}
+            >
+              <option value="all">All months</option>
+              {filterOptions.periods.map((period) => (
+                <option value={period.value} key={period.value}>
+                  {period.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="admin-filter-field">
+            <span>Category</span>
+            <select
+              value={categoryFilter}
+              onChange={(event) => setCategoryFilter(event.target.value)}
+            >
+              <option value="all">All categories</option>
+              {filterOptions.categories.map((category) => (
+                <option value={category} key={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="admin-filter-field">
+            <span>Fund type</span>
+            <select
+              value={fundFilter}
+              onChange={(event) => setFundFilter(event.target.value)}
+            >
+              <option value="all">All fund types</option>
+              {filterOptions.fundTypes.map((fundType) => (
+                <option value={fundType} key={fundType}>
+                  {fundType}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="admin-filter-field">
+            <span>Public</span>
+            <select
+              value={publicFilter}
+              onChange={(event) => setPublicFilter(event.target.value as PublicFilter)}
+            >
+              <option value="all">All rows</option>
+              <option value="stats">Included in stats</option>
+              <option value="stories">Published stories</option>
+              <option value="private">Private only</option>
+            </select>
+          </label>
+          <div className="admin-filter-actions">
+            <button
+              type="button"
+              className="admin-small-button"
+              onClick={handleResetFilters}
+            >
+              Reset
+            </button>
+            <button
+              type="button"
+              className="admin-small-button"
+              onClick={handleExport}
+              disabled={sortedCases.length === 0}
+            >
+              Export CSV
+            </button>
+          </div>
+        </div>
+        <p className="admin-helper-text">
+          Showing {sortedCases.length} of {cases.length} cases.
+        </p>
         {!loading && cases.length === 0 ? (
           <p className="empty-state">No cases have been added yet.</p>
         ) : null}
@@ -121,6 +360,8 @@ export const AdminCaseLedger = () => {
                 <col className="admin-beneficiary-col" />
                 <col className="admin-phone-col" />
                 <col className="admin-address-col" />
+                <col className="admin-audit-user-col" />
+                <col className="admin-audit-user-col" />
                 <col className="admin-updated-col" />
                 <col className="admin-action-col" />
               </colgroup>
@@ -156,6 +397,8 @@ export const AdminCaseLedger = () => {
                   <th>Beneficiary</th>
                   <th>Phone</th>
                   <th>Private address</th>
+                  <th>Created by</th>
+                  <th>Updated by</th>
                   <th>Updated</th>
                   <th>Action</th>
                 </tr>
@@ -177,7 +420,6 @@ export const AdminCaseLedger = () => {
                     </td>
                     <td className="admin-text-cell">
                       <strong>{emptyValue(item.public_story_title)}</strong>
-                      <span>{emptyValue(item.public_beneficiary_label)}</span>
                     </td>
                     <td className="admin-text-cell">{emptyValue(item.public_location)}</td>
                     <td className="admin-text-cell">{item.support_category}</td>
@@ -190,9 +432,11 @@ export const AdminCaseLedger = () => {
                     <td className="admin-text-cell">{emptyValue(item.beneficiary_name)}</td>
                     <td className="admin-nowrap-cell">{emptyValue(item.beneficiary_phone)}</td>
                     <td className="admin-text-cell">{emptyValue(item.beneficiary_private_location)}</td>
+                    <td className="admin-nowrap-cell">{emptyValue(item.created_by)}</td>
+                    <td className="admin-nowrap-cell">{emptyValue(item.updated_by)}</td>
                     <td className="admin-nowrap-cell">{formatDate(item.updated_at)}</td>
                     <td className="admin-nowrap-cell">
-                      <div className="admin-table-actions">
+                      <div className="admin-table-actions admin-case-actions">
                         <Link
                           className="admin-inline-link"
                           to={`/admin/cases/${item.case_number}/edit`}

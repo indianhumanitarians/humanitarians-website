@@ -45,7 +45,9 @@ export const AdminMentorshipTestimonials = () => {
       return;
     }
 
-    const confirmed = window.confirm(`Delete testimonial ${testimonialLabel}?`);
+    const confirmed = window.confirm(
+      `Delete testimonial ${testimonialLabel}? This will also remove its image file from Supabase Storage.`,
+    );
     if (!confirmed) {
       return;
     }
@@ -89,7 +91,24 @@ export const AdminMentorshipTestimonials = () => {
         ) : null}
         {testimonials.length > 0 ? (
           <div className="admin-table-wrap">
-            <table className="admin-table admin-extra-wide-table">
+            <table className="admin-table admin-testimonials-table">
+              <colgroup>
+                <col className="admin-testimonial-id-col" />
+                <col className="admin-testimonial-name-col" />
+                <col className="admin-testimonial-short-col" />
+                <col className="admin-testimonial-short-col" />
+                <col className="admin-testimonial-short-col" />
+                <col className="admin-testimonial-short-col" />
+                <col className="admin-testimonial-period-col" />
+                <col className="admin-testimonial-long-col" />
+                <col className="admin-testimonial-long-col" />
+                <col className="admin-testimonial-medium-col" />
+                <col className="admin-testimonial-consent-col" />
+                <col className="admin-testimonial-audit-col" />
+                <col className="admin-testimonial-audit-col" />
+                <col className="admin-testimonial-updated-col" />
+                <col className="admin-testimonial-action-col" />
+              </colgroup>
               <thead>
                 <tr>
                   <th>ID</th>
@@ -102,9 +121,9 @@ export const AdminMentorshipTestimonials = () => {
                   <th>Outcome</th>
                   <th>Testimonial</th>
                   <th>Tagline</th>
-                  <th>Image</th>
-                  <th>Privacy</th>
                   <th>Consent</th>
+                  <th>Created by</th>
+                  <th>Updated by</th>
                   <th>Updated</th>
                   <th>Action</th>
                 </tr>
@@ -124,29 +143,16 @@ export const AdminMentorshipTestimonials = () => {
                     <td className="admin-text-cell">{previewText(item.outcome_summary)}</td>
                     <td className="admin-text-cell">{previewText(item.testimonial_text)}</td>
                     <td className="admin-text-cell">{emptyValue(item.carousel_tagline)}</td>
-                    <td className="admin-text-cell">
-                      {item.profile_image_url ? (
-                        <a
-                          className="admin-inline-link"
-                          href={item.profile_image_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View image
-                        </a>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                    <td className="admin-text-cell">{previewText(item.privacy_note, 80)}</td>
                     <td className="admin-nowrap-cell">
                       <span className={`status-pill ${item.consent_received ? "on" : ""}`}>
                         {item.consent_received ? "Public" : "Private"}
                       </span>
                     </td>
+                    <td className="admin-nowrap-cell">{emptyValue(item.created_by)}</td>
+                    <td className="admin-nowrap-cell">{emptyValue(item.updated_by)}</td>
                     <td className="admin-nowrap-cell">{formatDate(item.updated_at)}</td>
                     <td className="admin-nowrap-cell">
-                      <div className="admin-table-actions">
+                      <div className="admin-table-actions admin-testimonial-actions">
                         <Link
                           className="admin-inline-link"
                           to={`/admin/testimonials/${item.testimonial_id}/edit`}

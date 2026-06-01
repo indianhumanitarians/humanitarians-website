@@ -88,7 +88,6 @@ export interface ReportRow {
 export interface CaseStory {
   case_number: string;
   public_story_title: string;
-  public_beneficiary_label: string;
   support_category: string;
   support_description: string;
   fund_source: string;

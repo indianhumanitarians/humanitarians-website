@@ -28,7 +28,9 @@ const MONTHS = new Map(
   ].map((month, index) => [month, index + 1]),
 );
 
-const ACTIVE_DONOR_COMMUNITY = "150+";
+interface PublicStatsOptions {
+  activeDonorCommunity?: string;
+}
 
 export const caseLedgerColumns = [
   "case_number",
@@ -318,9 +320,11 @@ const deriveImpactSummary = (
   rows: CaseLedgerRow[],
   monthly: MonthlyStat[],
   supportTypes: SupportTypeStat[],
+  options: PublicStatsOptions = {},
 ): ImpactSummaryStat[] => {
   const publicRows = rows.filter(isPublicStatsRow);
   const publicFundTypes = publicRows.map(normalizedFundType);
+  const activeDonorCommunity = options.activeDonorCommunity?.trim() ?? "";
   const totalAmountDisbursed = monthly.reduce((sum, row) => sum + row.total_amount, 0);
   const latestMonth = monthly[monthly.length - 1];
   const topSupportTypes = [...supportTypes]
@@ -334,10 +338,12 @@ const deriveImpactSummary = (
   return [
     metric(
       "active_donor_community",
-      ACTIVE_DONOR_COMMUNITY,
+      activeDonorCommunity,
       "Active WhatsApp donor community",
       1,
-      "Configured in website code.",
+      options.activeDonorCommunity
+        ? "Configured in Supabase site settings."
+        : "Supabase site setting is empty.",
     ),
     metric("total_public_cases", publicRows.length, "Anonymized public cases tracked", 2),
     metric("total_amount_disbursed", totalAmountDisbursed, "Approx. support amount in public summary", 3),
@@ -408,11 +414,14 @@ const deriveLastUpdated = (monthly: MonthlyStat[]): LastUpdatedStat => {
   };
 };
 
-export const derivePublicStatsFromLedger = (rows: CaseLedgerRow[]): PublicStats => {
+export const derivePublicStatsFromLedger = (
+  rows: CaseLedgerRow[],
+  options: PublicStatsOptions = {},
+): PublicStats => {
   const monthly = deriveMonthly(rows);
   const supportTypes = deriveSupportTypes(rows);
   const fundTypes = deriveFundTypes(rows);
-  const impactSummary = deriveImpactSummary(rows, monthly, supportTypes);
+  const impactSummary = deriveImpactSummary(rows, monthly, supportTypes, options);
 
   return {
     monthly,
@@ -480,7 +489,6 @@ export const deriveCaseStoriesFromLedger = (rows: CaseLedgerRow[]): CaseStory[] 
     .map((row) => ({
       case_number: text(row.case_number),
       public_story_title: text(row.public_story_title),
-      public_beneficiary_label: text(row.public_beneficiary_label),
       support_category: text(row.support_category),
       support_description: text(row.support_description),
       fund_source: normalizedFundType(row),

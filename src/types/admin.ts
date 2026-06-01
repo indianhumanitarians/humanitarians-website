@@ -33,7 +33,6 @@ export interface AdminCase {
   beneficiary_phone?: string | null;
   beneficiary_private_location?: string | null;
   public_story_title?: string | null;
-  public_beneficiary_label?: string | null;
   public_location?: string | null;
   public_need_summary?: string | null;
   public_support_summary?: string | null;
@@ -41,6 +40,8 @@ export interface AdminCase {
   public_follow_up_summary?: string | null;
   show_in_public_stats: boolean;
   publish_public_story: boolean;
+  created_by?: string | null;
+  updated_by?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -80,7 +81,6 @@ export interface CaseFormInput {
   beneficiary_phone: string;
   beneficiary_private_location: string;
   public_story_title: string;
-  public_beneficiary_label: string;
   public_location: string;
   public_need_summary: string;
   public_support_summary: string;
@@ -106,6 +106,8 @@ export interface AdminMentorshipTestimonial {
   consent_received: boolean;
   privacy_note: string;
   editing_note?: string | null;
+  created_by?: string | null;
+  updated_by?: string | null;
   created_at: string;
   updated_at: string;
 }

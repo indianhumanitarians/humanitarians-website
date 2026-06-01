@@ -3,6 +3,11 @@ import {
   derivePublicStatsFromLedger,
 } from "../services/caseLedgerStats";
 import { fetchPublicCaseLedgerRows } from "../services/adminCases";
+import {
+  ACTIVE_DONOR_COMMUNITY_SETTING,
+  fetchPublicSiteSettings,
+  siteSettingValue,
+} from "../services/siteSettings";
 import type { CaseLedgerRow, DataSourceState, PublicStats } from "../types/stats";
 
 export interface PublicStatsState {
@@ -37,10 +42,19 @@ export const usePublicStats = (): PublicStatsState => {
 
     const loadStats = async () => {
       try {
-        const rows = await fetchPublicCaseLedgerRows();
+        const [rows, settings] = await Promise.all([
+          fetchPublicCaseLedgerRows(),
+          fetchPublicSiteSettings().catch(() => []),
+        ]);
+        const activeDonorCommunity = siteSettingValue(
+          settings,
+          ACTIVE_DONOR_COMMUNITY_SETTING,
+        );
         if (isMounted) {
           setState({
-            stats: derivePublicStatsFromLedger(rows as CaseLedgerRow[]),
+            stats: derivePublicStatsFromLedger(rows as CaseLedgerRow[], {
+              activeDonorCommunity,
+            }),
             loading: false,
             source: "live",
           });

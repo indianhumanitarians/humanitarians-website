@@ -37,9 +37,11 @@ export const AdminShell = ({
         <NavLink to="/admin" end>
           Dashboard
         </NavLink>
-        <NavLink to="/admin/cases">Case Ledger</NavLink>
-        <NavLink to="/admin/testimonials">Mentorship Testimonials</NavLink>
-        <NavLink to="/admin/lists">Manage Lists</NavLink>
+        <NavLink to="/admin/cases" end>Case Ledger</NavLink>
+        <NavLink to="/admin/cases/new">Add Case</NavLink>
+        <NavLink to="/admin/testimonials" end>Mentorship Testimonials</NavLink>
+        <NavLink to="/admin/testimonials/new">Add Testimonial</NavLink>
+        <NavLink to="/admin/lists">Settings & Lists</NavLink>
         {profile?.role === "owner" ? <NavLink to="/admin/admins">Admins</NavLink> : null}
       </nav>
       {children}
