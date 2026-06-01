@@ -23,9 +23,9 @@ const jsonResponse = (body: unknown, status = 200): Response =>
   });
 
 const getServiceRoleKey = (): string | undefined => {
-  const legacyKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (legacyKey) {
-    return legacyKey;
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (serviceRoleKey) {
+    return serviceRoleKey;
   }
 
   const secretKeys = Deno.env.get("SUPABASE_SECRET_KEYS");

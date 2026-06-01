@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "import:supabase": "node scripts/import-legacy-sheet-to-supabase.mjs",
+    "export:supabase-to-sheets": "node scripts/export-supabase-to-google-sheets.mjs",
+    "import:sheets-to-supabase": "node scripts/import-google-sheets-to-supabase.mjs",
     "merge:cases": "node scripts/merge-cases.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview"

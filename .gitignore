@@ -16,3 +16,4 @@ vite.config.d.ts
 .DS_Store
 supabase/.temp/
 .merge-backups/
+.google-sheets-export/
