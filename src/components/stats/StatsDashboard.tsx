@@ -34,6 +34,8 @@ export const StatsDashboardContent = ({
   const { stats, loading, source, error } = statsState;
   const isFull = variant === "full";
   const metric = (key: string) => getMetricValue(stats.impactSummary, key);
+  const activeDonorCommunity =
+    String(metric("active_donor_community")).trim() || "Not available";
   const zakatMetric = metric("zakat_amount_disbursed");
   const sadaqahMetric = metric("sadaqah_amount_disbursed");
   const totalAmountMetric = metric("total_amount_disbursed");
@@ -75,7 +77,7 @@ export const StatsDashboardContent = ({
         <div className="kpi-grid">
           <KpiStatCard
             label="Active donor community"
-            value={String(metric("active_donor_community"))}
+            value={activeDonorCommunity}
           />
           <KpiStatCard
             label="Families publicly tracked"

@@ -9,9 +9,21 @@ import {
   YAxis,
 } from "recharts";
 import type { MonthlyCategoryStat, MonthlyStat } from "../../types/stats";
+import { chartTooltipClassName } from "./chartTooltip";
 
 interface MonthlyCasesChartProps {
   rows: MonthlyStat[];
+}
+
+interface MonthlyCasesTooltipProps {
+  active?: boolean;
+  label?: string;
+  payload?: {
+    color?: string;
+    name?: string;
+    value?: number;
+    payload?: MonthlyStat;
+  }[];
 }
 
 const CATEGORY_PALETTE = [
@@ -52,6 +64,32 @@ const getDynamicCategories = (rows: MonthlyStat[]): MonthlyCategoryStat[] => {
     .filter((category) => rows.some((row) => Number(row[category.key]) > 0));
 };
 
+const MonthlyCasesTooltip = ({
+  active,
+  label,
+  payload,
+}: MonthlyCasesTooltipProps) => {
+  if (!active || !payload?.length) {
+    return null;
+  }
+
+  const nonZeroItems = payload.filter((item) => Number(item.value) > 0);
+  const totalCases = Number(payload[0]?.payload?.total_cases) || 0;
+
+  return (
+    <div className={chartTooltipClassName({ compact: true })}>
+      <strong>{label}</strong>
+      {nonZeroItems.map((item) => (
+        <span className="chart-tooltip-row" key={item.name}>
+          <i aria-hidden="true" style={{ backgroundColor: item.color }} />
+          {item.name}: {Number(item.value) || 0}
+        </span>
+      ))}
+      <b>Total cases: {totalCases}</b>
+    </div>
+  );
+};
+
 export const MonthlyCasesChart = ({ rows }: MonthlyCasesChartProps) => {
   const categories = getDynamicCategories(rows);
   const chartRows = rows.map((row) => ({
@@ -76,7 +114,10 @@ export const MonthlyCasesChart = ({ rows }: MonthlyCasesChartProps) => {
             <CartesianGrid strokeDasharray="3 3" stroke="#dbeafe" />
             <XAxis dataKey="period_label" tick={{ fontSize: 11 }} />
             <YAxis allowDecimals={false} />
-            <Tooltip />
+            <Tooltip
+              content={<MonthlyCasesTooltip />}
+              wrapperStyle={{ zIndex: 20 }}
+            />
             <Legend />
             {categories.map((category, index) => (
               <Bar

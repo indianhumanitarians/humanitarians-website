@@ -301,7 +301,10 @@ Common editable content locations:
 
 Public assets:
 
-- Logo: `public/images/logo.jpeg`
+- Header/footer logo mark: `public/images/logo-mark-transparent.png`
+- Legacy logo: `public/images/logo.jpeg`
+- Favicon: `public/favicon-32x32.png`
+- Apple touch icon: `public/apple-touch-icon.png`
 - WhatsApp QR: `public/images/humanitarians-new-members-whatsapp-qr.jpeg`
 - Zakat UPI QR: `public/images/upi-zakat-sahil-siddiqui.png`
 - Sadaqah UPI QR: `public/images/upi-sadaqah-mohammad-aqib.png`
@@ -392,3 +395,27 @@ After buying a domain, add it in Netlify under Domain management, copy the DNS r
 ## Backend Notes
 
 This site uses Supabase as the backend for admin login, private case records, public-safe views, and case image storage. Donor records, payment reconciliation, mentor/mentee matching, and document uploads are not part of the current implementation.
+
+## Admin Data Repair
+
+Use the duplicate-case merge script only for local admin repair. It is a dry run unless `--write` is passed.
+
+```bash
+npm run merge:cases -- --target HUM-059 --source HUM-061
+npm run merge:cases -- --target HUM-059 --source HUM-061 --write
+```
+
+By default, the script keeps the target case, deletes the source case, adds the source amounts into the matching amount columns on the target (`zakat_amount`, `sadaqah_amount`, `other_amount`), copies source images into empty target image slots, and writes a local backup in `.merge-backups/`.
+
+If the merged case should become one specific fund type, force the fund and amount column:
+
+```bash
+npm run merge:cases -- --target HUM-059 --source HUM-061 --fund-type Sadaqah --amount-field sadaqah_amount
+npm run merge:cases -- --target HUM-059 --source HUM-061 --fund-type Sadaqah --amount-field sadaqah_amount --write
+```
+
+Supported `--amount-field` values are `zakat_amount`, `sadaqah_amount`, and `other_amount`. Short aliases like `zakat`, `sadaqah`, and `other` also work. If `--fund-type` is passed without `--amount-field`, the script guesses the amount column from the fund type name.
+
+By default it also renumbers later `HUM-###` cases down by one and moves each affected case image object into the matching storage folder. Add `--no-renumber` to skip that, or `--keep-source-storage` if you want to leave the duplicate case's old image objects in the bucket for manual review.
+
+Always run the dry run first and read the full plan before adding `--write`.

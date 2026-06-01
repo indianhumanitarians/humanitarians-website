@@ -62,6 +62,8 @@
 @layer components {
   .admin-page {
     @apply grid min-w-0 gap-6 pb-12;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
   }
 
   .admin-login-page {
@@ -82,6 +84,8 @@
   .admin-shell-header,
   .admin-panel {
     @apply min-w-0;
+    max-width: 100%;
+    width: 100%;
   }
 
   .admin-auth-card h1,
@@ -117,7 +121,15 @@
   }
 
   .admin-tabs {
-    @apply border-b border-stone-200 pb-3;
+    @apply flex-nowrap items-center overflow-x-auto overflow-y-hidden border-b border-stone-200 pb-3;
+    min-height: 3.25rem;
+    max-width: 100%;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-tabs::-webkit-scrollbar {
+    display: none;
   }
 
   .admin-tabs a,
@@ -128,10 +140,17 @@
 
   .admin-tabs a {
     @apply justify-center whitespace-nowrap text-center;
+    flex: 0 0 auto;
+    line-height: 1;
+    transition-property: color, background-color, border-color;
   }
 
   .admin-small-button:disabled {
     @apply cursor-not-allowed opacity-50 hover:border-stone-300 hover:text-stone-700;
+  }
+
+  .admin-small-button.disabled {
+    @apply pointer-events-none cursor-not-allowed opacity-50;
   }
 
   .admin-tabs a.active {
@@ -192,10 +211,73 @@
     @apply grid gap-2 text-sm font-black text-stone-700;
   }
 
+  .admin-month-field {
+    @apply relative grid gap-2 text-sm font-black text-stone-700;
+  }
+
   .admin-form input,
   .admin-form select,
   .admin-form textarea {
     @apply min-h-11 w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-base font-medium text-stone-950 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+  }
+
+  .admin-month-picker {
+    @apply relative;
+  }
+
+  .admin-month-picker-trigger {
+    @apply flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-left text-base font-black text-stone-950 transition hover:border-teal-700 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+  }
+
+  .admin-month-picker.is-open .admin-month-picker-trigger {
+    @apply border-teal-800;
+  }
+
+  .admin-month-picker-icon {
+    @apply relative size-5 shrink-0 rounded-sm border-2 border-stone-950;
+  }
+
+  .admin-month-picker-icon::before {
+    @apply absolute -top-1 left-1 h-1.5 w-0.5 rounded-full bg-stone-950;
+    content: "";
+  }
+
+  .admin-month-picker-icon::after {
+    @apply absolute -top-1 right-1 h-1.5 w-0.5 rounded-full bg-stone-950;
+    content: "";
+  }
+
+  .admin-month-popover {
+    @apply absolute left-0 top-[calc(100%+0.5rem)] z-40 w-full min-w-[18rem] max-w-[24rem] rounded-xl border border-stone-200 bg-white p-4 shadow-xl shadow-stone-950/15;
+  }
+
+  .admin-month-popover-header {
+    @apply flex items-center justify-between gap-3 rounded-lg bg-stone-50 px-2 py-2;
+  }
+
+  .admin-month-popover-header strong {
+    @apply text-base font-black text-stone-950;
+  }
+
+  .admin-month-popover-header button,
+  .admin-month-popover-footer button {
+    @apply inline-flex min-h-9 items-center justify-center rounded-full border border-stone-200 bg-white px-3 py-1 text-sm font-black text-teal-900 transition hover:border-teal-700 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+  }
+
+  .admin-month-grid {
+    @apply mt-4 grid grid-cols-4 gap-2;
+  }
+
+  .admin-month-grid button {
+    @apply min-h-11 rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-black text-stone-800 transition hover:border-teal-700 hover:bg-teal-50 hover:text-teal-950 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+  }
+
+  .admin-month-grid button.is-selected {
+    @apply border-teal-900 bg-teal-900 text-white hover:bg-teal-900 hover:text-white;
+  }
+
+  .admin-month-popover-footer {
+    @apply mt-4 flex justify-end border-t border-stone-100 pt-3;
   }
 
   .admin-form textarea {
@@ -230,6 +312,10 @@
     @apply border-b border-stone-100 pb-3;
   }
 
+  .admin-section-heading-row {
+    @apply flex flex-wrap items-center justify-between gap-3;
+  }
+
   .admin-section-heading h2 {
     @apply text-xl;
   }
@@ -259,12 +345,16 @@
   }
 
   .admin-table-wrap {
-    @apply mt-4 block w-full min-w-0 max-w-full overflow-x-auto;
+    @apply mt-4 block w-full min-w-0 max-w-full overflow-auto;
+    max-height: min(72vh, 760px);
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
   .admin-table {
-    @apply w-full min-w-[820px] border-collapse;
+    @apply w-full min-w-[820px];
+    border-collapse: separate;
+    border-spacing: 0;
     table-layout: fixed;
   }
 
@@ -277,7 +367,11 @@
   }
 
   .admin-extra-wide-table {
-    @apply min-w-[1900px];
+    @apply min-w-[2320px];
+  }
+
+  .admin-testimonials-table {
+    @apply min-w-[2540px];
   }
 
   .admin-lookup-table {
@@ -309,6 +403,10 @@
     width: 9rem;
   }
 
+  .admin-audit-user-col {
+    width: 17rem;
+  }
+
   .admin-support-col,
   .admin-story-col,
   .admin-address-col {
@@ -324,7 +422,7 @@
   }
 
   .admin-action-col {
-    width: 10rem;
+    width: 9rem;
   }
 
   .admin-lookup-name-col {
@@ -358,6 +456,40 @@
     width: 14rem;
   }
 
+  .admin-testimonial-id-col {
+    width: 8rem;
+  }
+
+  .admin-testimonial-name-col {
+    width: 11rem;
+  }
+
+  .admin-testimonial-short-col {
+    width: 11rem;
+  }
+
+  .admin-testimonial-period-col,
+  .admin-testimonial-consent-col,
+  .admin-testimonial-updated-col {
+    width: 8rem;
+  }
+
+  .admin-testimonial-audit-col {
+    width: 17rem;
+  }
+
+  .admin-testimonial-medium-col {
+    width: 15rem;
+  }
+
+  .admin-testimonial-long-col {
+    width: 22rem;
+  }
+
+  .admin-testimonial-action-col {
+    width: 13rem;
+  }
+
   .admin-table th,
   .admin-table td {
     @apply border-t border-stone-200 px-3 py-4 text-left align-top text-sm;
@@ -365,7 +497,8 @@
   }
 
   .admin-table th {
-    @apply whitespace-nowrap text-xs uppercase text-stone-500;
+    @apply sticky top-0 z-10 whitespace-nowrap bg-white text-xs uppercase text-stone-500;
+    box-shadow: inset 0 -1px 0 rgb(231 229 228);
   }
 
   .admin-monthly-table th {
@@ -414,6 +547,87 @@
     @apply min-h-10 min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-bold text-stone-950 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
   }
 
+  .admin-site-settings-form {
+    @apply grid gap-4;
+  }
+
+  .admin-site-settings-form fieldset {
+    @apply m-0 border-0 p-0;
+  }
+
+  .admin-site-settings-form legend {
+    @apply mb-3 text-sm font-black uppercase text-teal-900;
+  }
+
+  .admin-site-settings-grid {
+    @apply grid gap-3 md:grid-cols-2;
+  }
+
+  .admin-site-settings-form label {
+    @apply grid gap-2 text-sm font-black text-stone-700;
+  }
+
+  .admin-setting-label {
+    @apply inline-flex w-fit items-center gap-2;
+  }
+
+  .admin-info-icon {
+    @apply grid size-5 cursor-pointer place-items-center rounded-full border border-stone-300 bg-stone-100 text-xs font-black normal-case leading-none text-stone-600 transition hover:border-stone-500 hover:text-stone-900 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .admin-setting-helper {
+    @apply col-span-full max-w-sm rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs font-semibold leading-5 text-stone-600 shadow-sm;
+  }
+
+  .admin-site-settings-form input {
+    @apply min-h-11 w-full min-w-0 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-bold text-stone-950 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+  }
+
+  .admin-setting-input-row {
+    @apply grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto];
+  }
+
+  .admin-setting-input-row .admin-small-button {
+    @apply min-h-11 justify-center;
+  }
+
+  .admin-setting-image-cell {
+    @apply md:col-span-2;
+  }
+
+  .admin-payment-settings-grid {
+    @apply grid gap-4;
+  }
+
+  .admin-payment-subsection {
+    @apply rounded-lg border border-stone-200 bg-stone-50 p-4;
+  }
+
+  .admin-payment-subsection h3 {
+    @apply mb-3 mt-0 text-base font-black text-stone-950;
+  }
+
+  .admin-qr-upload-field {
+    @apply grid gap-3 rounded-lg border border-stone-200 bg-white p-3 text-sm font-black text-stone-700;
+  }
+
+  .admin-qr-preview {
+    @apply aspect-square w-36 rounded-lg border border-stone-200 bg-white object-contain p-2 shadow-sm;
+  }
+
+  .admin-qr-actions {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .admin-qr-actions input[type="file"] {
+    @apply sr-only;
+  }
+
+  .admin-qr-status {
+    @apply text-xs font-bold text-stone-500;
+  }
+
   .admin-table span {
     @apply mt-1.5 block text-xs text-stone-500;
   }
@@ -434,8 +648,44 @@
     @apply flex flex-wrap gap-2;
   }
 
+  .admin-case-actions {
+    @apply flex-nowrap gap-1.5;
+  }
+
+  .admin-testimonial-actions {
+    @apply flex-nowrap gap-1.5;
+  }
+
+  .admin-case-actions .admin-inline-link,
+  .admin-case-actions .admin-small-button,
+  .admin-testimonial-actions .admin-inline-link,
+  .admin-testimonial-actions .admin-small-button {
+    @apply min-h-9 px-3 py-1.5 text-xs;
+  }
+
   .admin-danger-button {
     @apply border-red-200 text-red-700 hover:border-red-700 hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .admin-table-controls {
+    @apply mt-5 grid grid-cols-1 gap-3 rounded-lg border border-stone-200 bg-stone-50 p-4 md:grid-cols-2 xl:grid-cols-[minmax(16rem,1.3fr)_repeat(4,minmax(9rem,1fr))_auto];
+  }
+
+  .admin-filter-field {
+    @apply grid gap-2 text-sm font-black text-stone-700;
+  }
+
+  .admin-filter-field input,
+  .admin-filter-field select {
+    @apply min-h-10 w-full min-w-0 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-bold text-stone-950 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+  }
+
+  .admin-filter-search {
+    @apply md:col-span-2 xl:col-span-1;
+  }
+
+  .admin-filter-actions {
+    @apply flex flex-wrap items-end gap-2 xl:justify-end;
   }
 }
 
@@ -873,11 +1123,75 @@
   }
 
   .chart-tooltip {
-    @apply grid max-w-72 gap-1 border border-stone-300 bg-white px-3 py-2 text-xs leading-5 text-stone-700 shadow-lg;
+    @apply grid max-w-72 gap-1 overflow-visible border border-stone-300 bg-white px-3 py-2 text-xs leading-5 text-stone-700 shadow-lg;
+    pointer-events: none;
+    white-space: normal;
+  }
+
+  .chart-tooltip.compact {
+    @apply max-w-56 text-[11px] leading-4;
+  }
+
+  .chart-tooltip.support-tooltip {
+    @apply max-w-[24rem] gap-1.5 text-[11px] leading-4;
   }
 
   .chart-tooltip strong {
     @apply text-sm text-stone-950;
+  }
+
+  .chart-tooltip.compact strong {
+    @apply text-xs;
+  }
+
+  .chart-tooltip span,
+  .chart-tooltip b {
+    @apply block;
+  }
+
+  .chart-tooltip b {
+    @apply mt-1 border-t border-stone-200 pt-1 text-stone-950;
+  }
+
+  .chart-tooltip-row {
+    @apply flex items-center gap-1.5;
+  }
+
+  .chart-tooltip-row i {
+    @apply size-2 shrink-0 rounded-sm;
+  }
+
+  .support-tooltip-list {
+    @apply grid grid-cols-2 gap-x-3 gap-y-1;
+  }
+
+  .support-tooltip-list span {
+    @apply min-w-0;
+  }
+
+  .chart-color-legend {
+    @apply mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs font-black leading-5 text-stone-700;
+  }
+
+  .chart-color-legend span {
+    @apply inline-flex max-w-full items-center gap-2;
+  }
+
+  .chart-color-legend i {
+    @apply size-3 shrink-0 rounded-sm;
+  }
+
+  .chart-card .recharts-default-legend {
+    @apply mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs font-black;
+  }
+
+  .chart-card .recharts-legend-item {
+    @apply mr-0 inline-flex items-center;
+  }
+
+  .chart-card .recharts-legend-item-text {
+    font-size: 0.78rem;
+    font-weight: 800;
   }
 
   .sr-summary,
@@ -909,6 +1223,7 @@
 
   .case-carousel {
     @apply relative overflow-hidden bg-stone-100;
+    touch-action: pan-y;
   }
 
   .case-carousel:focus-visible,
@@ -929,7 +1244,7 @@
   }
 
   .case-carousel-button {
-    @apply absolute top-1/2 grid size-9 -translate-y-1/2 place-items-center border border-stone-300 bg-white text-xl font-black text-stone-950 transition hover:bg-stone-50 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+    @apply absolute top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-lg border border-stone-300 bg-white text-xl font-black text-stone-950 shadow-sm transition hover:bg-stone-50 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
   }
 
   .case-carousel-button.previous {
@@ -941,15 +1256,15 @@
   }
 
   .case-carousel-dots {
-    @apply mx-auto my-3 flex w-fit gap-2 bg-white px-3 py-2;
+    @apply mx-auto my-3 flex w-fit gap-2 rounded-full bg-white px-3 py-2 shadow-sm;
   }
 
   .case-carousel-dots button {
-    @apply size-2.5 bg-stone-300 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
+    @apply size-2.5 rounded-full bg-stone-300 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400/70;
   }
 
   .case-carousel-dots button.active {
-    @apply w-6 bg-teal-800;
+    @apply w-6 rounded-full bg-teal-800;
   }
 
   .case-card-body {
@@ -1894,13 +2209,10 @@
   }
 
   .brand-logo {
-    width: 42px;
-    height: 42px;
+    width: 46px;
+    height: 46px;
     flex: 0 0 auto;
-    border: 1px solid rgba(26, 92, 56, 0.18);
-    border-radius: 50%;
-    background: var(--white);
-    object-fit: cover;
+    object-fit: contain;
   }
 
   .nav-links a {
@@ -2470,6 +2782,14 @@
   .case-meta {
     color: var(--muted);
     font-size: 0.78rem;
+    margin: 0.5rem 0 0.85rem;
+  }
+
+  .case-meta-amount {
+    display: inline-block;
+    margin-left: 0.7rem;
+    padding-left: 0.7rem;
+    border-left: 1px solid var(--line);
   }
 
   .case-grid-compact {
@@ -2537,6 +2857,12 @@
   .case-grid-compact .case-meta {
     font-size: 0.76rem;
     line-height: 1.45;
+    margin: 0.4rem 0 0.75rem;
+  }
+
+  .case-grid-compact .case-meta-amount {
+    margin-left: 0.55rem;
+    padding-left: 0.55rem;
   }
 
   .case-grid-compact .case-card p:not(.case-meta) {
@@ -3328,10 +3654,7 @@
     width: 42px;
     height: 42px;
     flex: 0 0 auto;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 50%;
-    background: var(--white);
-    object-fit: cover;
+    object-fit: contain;
   }
 
   .site-footer p,
@@ -3595,6 +3918,10 @@
     display: none;
   }
 
+  .support-type-chart .chart-color-legend {
+    display: none;
+  }
+
   .support-type-mobile-bars {
     display: grid;
     gap: 16px;
@@ -3854,6 +4181,18 @@
 
   .referral-privacy-note .button {
     flex: 0 0 auto;
+  }
+
+  .contact-card-grid .feature-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .contact-card-grid .button {
+    margin-top: auto;
+    min-width: min(100%, 13.5rem);
+    justify-content: center;
   }
 
   aside.privacy-note {

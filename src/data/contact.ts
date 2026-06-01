@@ -1,5 +1,4 @@
-const email = "indianhumanitarians@gmail.com";
-const newMembersGroup = "https://chat.whatsapp.com/ICHmOfadrBnAReSB568crd?mode=gi_t";
+import type { PublicSiteSettingsRecord } from "../services/siteSettings";
 
 const buildUpiQuery = (upiId: string, name: string, note: string): string =>
   `pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&tn=${encodeURIComponent(note)}&cu=INR`;
@@ -14,48 +13,63 @@ const buildUpiAppLinks = (upiId: string, name: string, note: string) => {
   ];
 };
 
-export const contact = {
-  email,
-  whatsapp: {
-    newMembersGroup,
-    mentorVolunteer:
-      "https://chat.whatsapp.com/IKQhWIXlQDW5azPfuRSL64?mode=gi_t",
-    menteeGroup:
-      "https://chat.whatsapp.com/CZYDCNhhIwWARydpIK1hm7?mode=gi_t",
-  },
-  links: {
-    caseReferral: `mailto:${email}?subject=${encodeURIComponent("Case referral for Humanitarians")}`,
-    courseSponsor: newMembersGroup,
-    livelihoodSponsor: newMembersGroup,
-    sadaqahSupport: newMembersGroup,
-  },
-  qrAssets: {
-    whatsappNewMembers: "/images/humanitarians-new-members-whatsapp-qr.jpeg",
-  },
-  upiPayments: [
-    {
-      id: "sadaqah-aqib",
-      fundType: "Sadaqah",
-      displayName: "Mohammad Aqib",
-      purpose: "Use Aqib's QR for Sadaqah support.",
-      upiId: "8957768755@jupiteraxis",
-      upiAppLinks: buildUpiAppLinks("8957768755@jupiteraxis", "Mohammad Aqib", "Humanitarians Sadaqah support"),
-      qrImage: "/images/upi-sadaqah-mohammad-aqib.png",
+export const buildContact = (settings: PublicSiteSettingsRecord) => {
+  const email = settings.contact_email;
+  const newMembersGroup = settings.whatsapp_new_members_group_url;
+  const sadaqahDisplayName = settings.upi_sadaqah_display_name;
+  const zakatDisplayName = settings.upi_zakat_display_name;
+
+  return {
+    email,
+    whatsapp: {
+      newMembersGroup,
+      mentorVolunteer: settings.whatsapp_mentor_volunteer_group_url,
+      menteeGroup: settings.whatsapp_mentee_group_url,
     },
-    {
-      id: "zakat-sahil",
-      fundType: "Zakat",
-      displayName: "Sahil Siddiqui",
-      purpose: "Use Sahil's QR for Zakat support.",
-      upiId: "9565596161@jupiteraxis",
-      upiAppLinks: buildUpiAppLinks("9565596161@jupiteraxis", "Sahil Siddiqui", "Humanitarians Zakat support"),
-      qrImage: "/images/upi-zakat-sahil-siddiqui.png",
+    links: {
+      caseReferral: settings.case_referral_form_url,
+      courseSponsor: newMembersGroup,
+      livelihoodSponsor: newMembersGroup,
+      sadaqahSupport: newMembersGroup,
     },
-  ],
-  bank: {
-    accountName: "Humanitarians",
-    accountNumber: "Editable placeholder",
-    ifsc: "Editable placeholder",
-    branch: "Editable placeholder",
-  },
+    qrAssets: {
+      whatsappNewMembers: settings.whatsapp_new_members_qr_image,
+    },
+    upiPayments: [
+      {
+        id: "sadaqah-aqib",
+        fundType: "Sadaqah",
+        displayName: sadaqahDisplayName,
+        purpose: `Use ${sadaqahDisplayName}'s QR for Sadaqah support.`,
+        upiId: settings.upi_sadaqah_upi_id,
+        upiAppLinks: buildUpiAppLinks(
+          settings.upi_sadaqah_upi_id,
+          sadaqahDisplayName,
+          "Humanitarians Sadaqah support",
+        ),
+        qrImage: settings.upi_sadaqah_qr_image,
+      },
+      {
+        id: "zakat-sahil",
+        fundType: "Zakat",
+        displayName: zakatDisplayName,
+        purpose: `Use ${zakatDisplayName}'s QR for Zakat support.`,
+        upiId: settings.upi_zakat_upi_id,
+        upiAppLinks: buildUpiAppLinks(
+          settings.upi_zakat_upi_id,
+          zakatDisplayName,
+          "Humanitarians Zakat support",
+        ),
+        qrImage: settings.upi_zakat_qr_image,
+      },
+    ],
+    bank: {
+      accountName: settings.bank_account_name,
+      accountNumber: settings.bank_account_number,
+      ifsc: settings.bank_ifsc,
+      branch: settings.bank_branch,
+    },
+  };
 };
+
+export type ContactInfo = ReturnType<typeof buildContact>;

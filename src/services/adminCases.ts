@@ -15,22 +15,28 @@ import {
 } from "./supabaseConfig";
 import { supabaseRestRequest } from "./supabaseRest";
 
+const MONTH_DEFINITIONS = [
+  { short: "Jan", aliases: ["jan", "january"] },
+  { short: "Feb", aliases: ["feb", "february"] },
+  { short: "Mar", aliases: ["mar", "march"] },
+  { short: "Apr", aliases: ["apr", "april"] },
+  { short: "May", aliases: ["may"] },
+  { short: "Jun", aliases: ["jun", "june"] },
+  { short: "Jul", aliases: ["jul", "july"] },
+  { short: "Aug", aliases: ["aug", "august"] },
+  { short: "Sep", aliases: ["sep", "sept", "september"] },
+  { short: "Oct", aliases: ["oct", "october"] },
+  { short: "Nov", aliases: ["nov", "november"] },
+  { short: "Dec", aliases: ["dec", "december"] },
+];
+
 const MONTHS = new Map(
-  [
-    "jan",
-    "feb",
-    "mar",
-    "apr",
-    "may",
-    "jun",
-    "jul",
-    "aug",
-    "sep",
-    "oct",
-    "nov",
-    "dec",
-  ].map((month, index) => [month, index + 1]),
+  MONTH_DEFINITIONS.flatMap((month, index) =>
+    month.aliases.map((alias) => [alias, index + 1] as const),
+  ),
 );
+
+const MONTH_INPUT_PATTERN = /^(\d{4})-(\d{2})$/;
 
 const CASE_NUMBER_PATTERN = /^HUM-(\d+)$/i;
 
@@ -47,7 +53,6 @@ export const emptyCaseFormInput: CaseFormInput = {
   beneficiary_phone: "",
   beneficiary_private_location: "",
   public_story_title: "",
-  public_beneficiary_label: "",
   public_location: "",
   public_need_summary: "",
   public_support_summary: "",
@@ -97,8 +102,20 @@ const lookupCaseFieldByTable: Record<CaseLookupTable, keyof AdminCase> = {
 };
 
 export const periodSortFromLabel = (periodLabel: string): number | null => {
+  const monthInputMatch = periodLabel.trim().match(MONTH_INPUT_PATTERN);
+  if (monthInputMatch) {
+    const year = Number(monthInputMatch[1]);
+    const month = Number(monthInputMatch[2]);
+
+    if (year > 1900 && month >= 1 && month <= 12) {
+      return year * 100 + month;
+    }
+
+    return null;
+  }
+
   const [monthText, yearText] = periodLabel.trim().split(/\s+/);
-  const month = MONTHS.get(monthText?.slice(0, 3).toLowerCase() ?? "");
+  const month = MONTHS.get(monthText?.toLowerCase() ?? "");
   const year = Number(yearText);
 
   if (!month || !Number.isFinite(year)) {
@@ -106,6 +123,18 @@ export const periodSortFromLabel = (periodLabel: string): number | null => {
   }
 
   return year * 100 + month;
+};
+
+export const periodLabelFromSort = (periodSort: number | null): string => {
+  if (!periodSort) {
+    return "";
+  }
+
+  const year = Math.floor(periodSort / 100);
+  const month = periodSort % 100;
+  const monthLabel = MONTH_DEFINITIONS[month - 1]?.short;
+
+  return year && monthLabel ? `${monthLabel} ${year}` : "";
 };
 
 const monthStartFromSort = (periodSort: number | null): string | null => {
@@ -121,6 +150,31 @@ const monthStartFromSort = (periodSort: number | null): string | null => {
   }
 
   return `${year}-${String(month).padStart(2, "0")}-01`;
+};
+
+export const monthInputFromSort = (periodSort: number | null): string => {
+  if (!periodSort) {
+    return "";
+  }
+
+  const year = Math.floor(periodSort / 100);
+  const month = periodSort % 100;
+
+  if (!year || month < 1 || month > 12) {
+    return "";
+  }
+
+  return `${year}-${String(month).padStart(2, "0")}`;
+};
+
+const monthInputFromCase = (item: AdminCase): string => {
+  if (item.reporting_month_start) {
+    return item.reporting_month_start.slice(0, 7);
+  }
+
+  return monthInputFromSort(
+    item.reporting_month_sort ?? periodSortFromLabel(item.reporting_month),
+  );
 };
 
 export const caseNumberSequence = (caseNumber: string): number | null => {
@@ -142,10 +196,11 @@ export const generateCaseNumber = (caseNumbers: string[] = []): string => {
 
 const toCasePayload = (input: CaseFormInput) => {
   const periodSort = periodSortFromLabel(input.reporting_month);
+  const reportingMonth = periodLabelFromSort(periodSort);
 
   return {
     case_number: emptyToNull(input.case_number) ?? generateCaseNumber(),
-    reporting_month: input.reporting_month.trim(),
+    reporting_month: reportingMonth,
     reporting_month_sort: periodSort,
     reporting_month_start: monthStartFromSort(periodSort),
     support_category: input.support_category.trim(),
@@ -158,7 +213,6 @@ const toCasePayload = (input: CaseFormInput) => {
     beneficiary_phone: emptyToNull(input.beneficiary_phone),
     beneficiary_private_location: emptyToNull(input.beneficiary_private_location),
     public_story_title: emptyToNull(input.public_story_title),
-    public_beneficiary_label: emptyToNull(input.public_beneficiary_label),
     public_location: emptyToNull(input.public_location),
     public_need_summary: emptyToNull(input.public_need_summary),
     public_support_summary: emptyToNull(input.public_support_summary),
@@ -171,7 +225,7 @@ const toCasePayload = (input: CaseFormInput) => {
 
 export const caseToFormInput = (item: AdminCase): CaseFormInput => ({
   case_number: item.case_number,
-  reporting_month: item.reporting_month,
+  reporting_month: monthInputFromCase(item),
   support_category: item.support_category,
   support_description: item.support_description,
   fund_source: item.fund_source,
@@ -182,7 +236,6 @@ export const caseToFormInput = (item: AdminCase): CaseFormInput => ({
   beneficiary_phone: item.beneficiary_phone ?? "",
   beneficiary_private_location: item.beneficiary_private_location ?? "",
   public_story_title: item.public_story_title ?? "",
-  public_beneficiary_label: item.public_beneficiary_label ?? "",
   public_location: item.public_location ?? "",
   public_need_summary: item.public_need_summary ?? "",
   public_support_summary: item.public_support_summary ?? "",
@@ -423,6 +476,27 @@ export const deleteAdminCase = async (
   token: string,
   caseNumber: string,
 ): Promise<void> => {
+  const imageRows = await supabaseRestRequest<
+    Array<Pick<CaseImageUpload, "storage_path">>
+  >("case_images", {
+    token,
+    query: {
+      select: "storage_path",
+      case_number: `eq.${caseNumber}`,
+    },
+  });
+
+  const caseFolderPaths = await listStoragePrefix(
+    token,
+    "case-images",
+    `cases/${safeStorageFolderId(caseNumber)}`,
+  );
+
+  await deleteStorageObjects(token, "case-images", [
+    ...imageRows.map((image) => image.storage_path),
+    ...caseFolderPaths,
+  ]);
+
   await supabaseRestRequest<void>("cases", {
     method: "DELETE",
     token,
@@ -588,6 +662,28 @@ export const deleteAdminMentorshipTestimonial = async (
   token: string,
   testimonialId: string,
 ): Promise<void> => {
+  const [testimonial] = await supabaseRestRequest<
+    Array<Pick<AdminMentorshipTestimonial, "profile_image_storage_path">>
+  >("mentorship_testimonials", {
+    token,
+    query: {
+      select: "profile_image_storage_path",
+      testimonial_id: `eq.${testimonialId}`,
+      limit: 1,
+    },
+  });
+
+  const testimonialFolderPaths = await listStoragePrefix(
+    token,
+    "testimonial-images",
+    `testimonials/${safeStorageFolderId(testimonialId)}`,
+  );
+
+  await deleteStorageObjects(token, "testimonial-images", [
+    testimonial?.profile_image_storage_path ?? "",
+    ...testimonialFolderPaths,
+  ]);
+
   await supabaseRestRequest<void>("mentorship_testimonials", {
     method: "DELETE",
     token,
@@ -623,8 +719,100 @@ const sanitizeFileName = (fileName: string): string =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 80) || "case-image";
 
+const safeStorageFolderId = (value: string): string =>
+  value.toLowerCase().replace(/[^a-z0-9-]+/g, "-");
+
 const encodeStoragePath = (path: string): string =>
   path.split("/").map(encodeURIComponent).join("/");
+
+type StorageBucket = "case-images" | "testimonial-images";
+type StorageObjectListItem = {
+  name?: string | null;
+};
+
+const listStoragePrefix = async (
+  token: string,
+  bucket: StorageBucket,
+  prefix: string,
+): Promise<string[]> => {
+  const cleanedPrefix = prefix.replace(/^\/+|\/+$/g, "");
+  if (!cleanedPrefix) {
+    return [];
+  }
+
+  assertSupabaseConfigured();
+
+  const response = await fetch(
+    `${supabaseConfig.url}/storage/v1/object/list/${bucket}`,
+    {
+      method: "POST",
+      headers: getSupabaseHeaders(token, {
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify({
+        prefix: cleanedPrefix,
+        limit: 1000,
+        offset: 0,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return [];
+    }
+
+    const message = await response.text();
+    throw new Error(message || `Could not list ${cleanedPrefix} in storage.`);
+  }
+
+  const items = (await response.json()) as StorageObjectListItem[];
+
+  return items
+    .map((item) => item.name?.trim() ?? "")
+    .filter(Boolean)
+    .map((name) =>
+      name.startsWith(`${cleanedPrefix}/`) ? name : `${cleanedPrefix}/${name}`,
+    );
+};
+
+const deleteStorageObject = async (
+  token: string,
+  bucket: StorageBucket,
+  storagePath: string,
+): Promise<void> => {
+  const cleanedPath = storagePath.trim();
+  if (!cleanedPath) {
+    return;
+  }
+
+  assertSupabaseConfigured();
+
+  const response = await fetch(
+    `${supabaseConfig.url}/storage/v1/object/${bucket}/${encodeStoragePath(cleanedPath)}`,
+    {
+      method: "DELETE",
+      headers: getSupabaseHeaders(token),
+    },
+  );
+
+  if (!response.ok && response.status !== 404) {
+    const message = await response.text();
+    throw new Error(message || `Could not delete ${cleanedPath} from storage.`);
+  }
+};
+
+const deleteStorageObjects = async (
+  token: string,
+  bucket: StorageBucket,
+  storagePaths: string[],
+): Promise<void> => {
+  const uniquePaths = [...new Set(storagePaths.map((item) => item.trim()).filter(Boolean))];
+
+  for (const storagePath of uniquePaths) {
+    await deleteStorageObject(token, bucket, storagePath);
+  }
+};
 
 export const getCaseImagePublicUrl = (path: string): string =>
   `${supabaseConfig.url}/storage/v1/object/public/case-images/${encodeStoragePath(path)}`;

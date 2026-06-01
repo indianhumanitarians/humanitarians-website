@@ -13,6 +13,7 @@ import { Button } from "../components/common/Button";
 import { CTASection } from "../components/common/CTASection";
 import { useCaseStories } from "../hooks/useCaseStories";
 import { usePublicStats, type PublicStatsState } from "../hooks/usePublicStats";
+import { usePublicSiteSettings } from "../hooks/usePublicSiteSettings";
 import {
   formatApproxRupeesBand,
   getDataSourceLabel,
@@ -77,12 +78,19 @@ interface HomeStatsProps {
 }
 
 const HomeHeroStats = ({ statsState }: HomeStatsProps) => {
-  const { stats, source } = statsState;
+  const { loading, stats, source } = statsState;
   const metric = (key: string) => getMetricValue(stats.impactSummary, key);
-  const community = String(metric("active_donor_community"));
-  const cases = String(metric("total_public_cases"));
-  const livelihoodCases = String(metric("livelihood_cases"));
-  const skillCases = String(metric("skill_education_cases"));
+  const displayMetric = (key: string) => {
+    if (loading) {
+      return "...";
+    }
+
+    return String(metric(key)).trim() || "Not available";
+  };
+  const community = displayMetric("active_donor_community");
+  const cases = displayMetric("total_public_cases");
+  const livelihoodCases = displayMetric("livelihood_cases");
+  const skillCases = displayMetric("skill_education_cases");
 
   return (
     <div className="hero-card-stack">
@@ -131,7 +139,7 @@ const HomeMarquee = ({ statsState }: HomeStatsProps) => {
   const { stats } = statsState;
   const metric = (key: string) => getMetricValue(stats.impactSummary, key);
   const hasStats = stats.impactSummary.length > 0;
-  const community = String(metric("active_donor_community"));
+  const community = String(metric("active_donor_community")).trim();
   const cases = String(metric("total_public_cases"));
   const supportRange = formatApproxRupeesBand(metric("total_amount_disbursed"));
   const marqueeItems = [
@@ -142,7 +150,11 @@ const HomeMarquee = ({ statsState }: HomeStatsProps) => {
     "Skill Sponsorship",
     "IIT Kanpur Founded",
     ...(hasStats
-      ? [`${community} Donors`, `${cases} Cases`, `${supportRange} Support Range`]
+      ? [
+          ...(community ? [`${community} Donors`] : []),
+          `${cases} Cases`,
+          `${supportRange} Support Range`,
+        ]
       : []),
     "Privacy Protected",
   ];
@@ -159,7 +171,7 @@ const HomeMarquee = ({ statsState }: HomeStatsProps) => {
 };
 
 const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
-  const { stats, source } = statsState;
+  const { loading, stats, source } = statsState;
   const metric = (key: string) => getMetricValue(stats.impactSummary, key);
   const amount = toFiniteNumber(metric("total_amount_disbursed"));
   const zakatAmount = toFiniteNumber(metric("zakat_amount_disbursed"));
@@ -194,7 +206,7 @@ const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
   const metrics = [
     {
       label: "Active donor community",
-      value: String(metric("active_donor_community")),
+      value: String(metric("active_donor_community")).trim() || "Not available",
     },
     {
       label: "Public cases tracked",
@@ -229,9 +241,12 @@ const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
         </p>
       </div>
       <div className="impact-top">
-        {!hasStats ? (
+        {loading ? (
+          <p className="soft-status">Loading live stats...</p>
+        ) : !hasStats ? (
           <p className="empty-state">Live stats are not available right now.</p>
         ) : null}
+        {hasStats && !loading ? (
         <div>
           <div className="impact-stats">
             {metrics.map((item) => (
@@ -272,6 +287,8 @@ const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
             </div>
           </div>
         </div>
+        ) : null}
+        {hasStats && !loading ? (
         <article className="chart-card home-impact-chart">
           <h3>Families helped each month</h3>
           <p>Cases tracked publicly</p>
@@ -305,6 +322,7 @@ const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
             <Link to="/reports">View full reports →</Link>
           </div>
         </article>
+        ) : null}
       </div>
     </>
   );
@@ -313,6 +331,7 @@ const HomeImpactSnapshot = ({ statsState }: HomeStatsProps) => {
 export const Home = () => {
   const { stories, loading: storiesLoading } = useCaseStories();
   const statsState = usePublicStats();
+  const { contact } = usePublicSiteSettings();
   const featuredStories = stories.slice(0, 3);
 
   return (
@@ -340,7 +359,10 @@ export const Home = () => {
             <Button to="/case-stories" variant="secondary">
               View Our Work
             </Button>
-            <Button to="/contact" variant="secondary">
+            <Button
+              href={contact?.links.caseReferral}
+              variant="secondary"
+            >
               Refer a Case
             </Button>
           </div>

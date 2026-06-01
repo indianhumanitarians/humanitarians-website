@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AdminShell } from "../components/admin/AdminShell";
 import { Button } from "../components/common/Button";
@@ -6,8 +6,6 @@ import { useAdminAuth } from "../hooks/useAdminAuth";
 import {
   createCaseImages,
   createAdminCase,
-  createFundType,
-  createSupportCategory,
   emptyCaseFormInput,
   caseToFormInput,
   fetchCaseFormOptions,
@@ -25,8 +23,182 @@ const amountFields = [
   "other_amount",
 ] as const;
 
+const monthPickerMonths = [
+  { short: "Jan", long: "January" },
+  { short: "Feb", long: "February" },
+  { short: "Mar", long: "March" },
+  { short: "Apr", long: "April" },
+  { short: "May", long: "May" },
+  { short: "Jun", long: "June" },
+  { short: "Jul", long: "July" },
+  { short: "Aug", long: "August" },
+  { short: "Sep", long: "September" },
+  { short: "Oct", long: "October" },
+  { short: "Nov", long: "November" },
+  { short: "Dec", long: "December" },
+];
+
 const hasOption = (options: string[], value: string): boolean =>
   options.some((option) => option.toLowerCase() === value.trim().toLowerCase());
+
+const includeSelectedOption = (options: string[], value: string): string[] => {
+  const trimmedValue = value.trim();
+  if (!trimmedValue || hasOption(options, trimmedValue)) {
+    return options;
+  }
+
+  return [...options, trimmedValue];
+};
+
+const parseMonthInput = (
+  value: string,
+): { year: number; monthIndex: number } | null => {
+  const match = value.match(/^(\d{4})-(\d{2})$/);
+  if (!match) {
+    return null;
+  }
+
+  const year = Number(match[1]);
+  const monthIndex = Number(match[2]) - 1;
+
+  return year > 1900 && monthIndex >= 0 && monthIndex < 12
+    ? { year, monthIndex }
+    : null;
+};
+
+const toMonthInputValue = (year: number, monthIndex: number): string =>
+  `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
+
+const currentMonthInputValue = (): string => {
+  const today = new Date();
+  return toMonthInputValue(today.getFullYear(), today.getMonth());
+};
+
+const formatMonthInput = (value: string): string => {
+  const parsed = parseMonthInput(value);
+  if (!parsed) {
+    return "";
+  }
+
+  return `${monthPickerMonths[parsed.monthIndex].long} ${parsed.year}`;
+};
+
+interface AdminMonthPickerProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const AdminMonthPicker = ({ value, onChange }: AdminMonthPickerProps) => {
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const selectedMonth = parseMonthInput(value);
+  const [isOpen, setIsOpen] = useState(false);
+  const [viewYear, setViewYear] = useState(
+    selectedMonth?.year ?? new Date().getFullYear(),
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      setViewYear(selectedMonth?.year ?? new Date().getFullYear());
+    }
+  }, [isOpen, selectedMonth?.year]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!pickerRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const selectMonth = (monthIndex: number): void => {
+    onChange(toMonthInputValue(viewYear, monthIndex));
+    setIsOpen(false);
+  };
+
+  const selectCurrentMonth = (): void => {
+    onChange(currentMonthInputValue());
+    setIsOpen(false);
+  };
+
+  return (
+    <div
+      className={`admin-month-picker${isOpen ? " is-open" : ""}`}
+      ref={pickerRef}
+    >
+      <button
+        type="button"
+        className="admin-month-picker-trigger"
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((current) => !current)}
+      >
+        <span>{formatMonthInput(value) || "Select month"}</span>
+        <span className="admin-month-picker-icon" aria-hidden="true" />
+      </button>
+      {isOpen ? (
+        <div className="admin-month-popover" role="dialog" aria-label="Choose month">
+          <div className="admin-month-popover-header">
+            <button
+              type="button"
+              aria-label="Previous year"
+              onClick={() => setViewYear((year) => year - 1)}
+            >
+              {"<"}
+            </button>
+            <strong>{viewYear}</strong>
+            <button
+              type="button"
+              aria-label="Next year"
+              onClick={() => setViewYear((year) => year + 1)}
+            >
+              {">"}
+            </button>
+          </div>
+          <div className="admin-month-grid">
+            {monthPickerMonths.map((month, index) => {
+              const isSelected =
+                selectedMonth?.year === viewYear &&
+                selectedMonth.monthIndex === index;
+
+              return (
+                <button
+                  type="button"
+                  className={isSelected ? "is-selected" : undefined}
+                  key={month.short}
+                  onClick={() => selectMonth(index)}
+                >
+                  {month.short}
+                </button>
+              );
+            })}
+          </div>
+          <div className="admin-month-popover-footer">
+            <button type="button" onClick={selectCurrentMonth}>
+              This month
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+};
 
 export const AdminNewCase = () => {
   const { session } = useAdminAuth();
@@ -36,8 +208,6 @@ export const AdminNewCase = () => {
   const [form, setForm] = useState<CaseFormInput>(emptyCaseFormInput);
   const [categories, setCategories] = useState<string[]>([]);
   const [fundTypes, setFundTypes] = useState<string[]>([]);
-  const [usesCustomCategory, setUsesCustomCategory] = useState(false);
-  const [usesCustomFundType, setUsesCustomFundType] = useState(false);
   const [imageFiles, setImageFiles] = useState<
     Partial<Record<1 | 2 | 3, File>>
   >({});
@@ -124,22 +294,6 @@ export const AdminNewCase = () => {
     };
   }, [routeCaseNumber, session]);
 
-  useEffect(() => {
-    if (!form.support_category.trim() || optionsLoading) {
-      return;
-    }
-
-    setUsesCustomCategory(!hasOption(categories, form.support_category));
-  }, [categories, form.support_category, optionsLoading]);
-
-  useEffect(() => {
-    if (!form.fund_source.trim() || optionsLoading) {
-      return;
-    }
-
-    setUsesCustomFundType(!hasOption(fundTypes, form.fund_source));
-  }, [fundTypes, form.fund_source, optionsLoading]);
-
   const updateField = (
     field: keyof CaseFormInput,
     value: string | boolean,
@@ -149,10 +303,10 @@ export const AdminNewCase = () => {
 
   const validate = (): string | undefined => {
     if (!form.reporting_month.trim()) {
-      return "Period is required.";
+      return "Month is required.";
     }
     if (!periodSortFromLabel(form.reporting_month)) {
-      return "Use a period like May 2026 so reports can be sorted correctly.";
+      return "Choose a valid month so reports can be sorted correctly.";
     }
     if (!form.support_category.trim()) {
       return "Category is required.";
@@ -192,13 +346,6 @@ export const AdminNewCase = () => {
     setError(undefined);
 
     try {
-      if (!hasOption(categories, form.support_category)) {
-        await createSupportCategory(session.accessToken, form.support_category);
-      }
-      if (!hasOption(fundTypes, form.fund_source)) {
-        await createFundType(session.accessToken, form.fund_source);
-      }
-
       const caseNumber =
         form.case_number.trim() || (await fetchNextCaseNumber(session.accessToken));
       const formWithImages = {
@@ -231,6 +378,9 @@ export const AdminNewCase = () => {
     }
   };
 
+  const categoryOptions = includeSelectedOption(categories, form.support_category);
+  const fundTypeOptions = includeSelectedOption(fundTypes, form.fund_source);
+
   return (
     <AdminShell
       title={isEditing ? "Edit case" : "Add case"}
@@ -243,58 +393,31 @@ export const AdminNewCase = () => {
             <h2>Case basics</h2>
           </div>
           <div className="admin-form-grid">
-            <label>
-              Period
-              <input
+            <div className="admin-month-field">
+              <span>Month</span>
+              <AdminMonthPicker
                 value={form.reporting_month}
-                onChange={(event) => updateField("reporting_month", event.target.value)}
-                placeholder="May 2026"
-                required
+                onChange={(value) => updateField("reporting_month", value)}
               />
-            </label>
+            </div>
             <label>
               Category
               <select
                 disabled={optionsLoading}
-                value={
-                  usesCustomCategory
-                    ? "__custom__"
-                    : form.support_category
+                value={form.support_category}
+                onChange={(event) =>
+                  updateField("support_category", event.target.value)
                 }
-                onChange={(event) => {
-                  if (event.target.value === "__custom__") {
-                    setUsesCustomCategory(true);
-                    updateField("support_category", "");
-                    return;
-                  }
-
-                  setUsesCustomCategory(false);
-                  updateField("support_category", event.target.value);
-                }}
                 required
               >
                 <option value="">Select category</option>
-                {categories.map((category) => (
+                {categoryOptions.map((category) => (
                   <option key={category} value={category}>
                     {category}
                   </option>
                 ))}
-                <option value="__custom__">Add new category</option>
               </select>
             </label>
-            {usesCustomCategory ? (
-              <label>
-                New category
-                <input
-                  value={form.support_category}
-                  onChange={(event) =>
-                    updateField("support_category", event.target.value)
-                  }
-                  placeholder="Enter category name"
-                  required
-                />
-              </label>
-            ) : null}
             <label>
               Support description
               <input
@@ -310,43 +433,20 @@ export const AdminNewCase = () => {
               Fund type
               <select
                 disabled={optionsLoading}
-                value={
-                  usesCustomFundType
-                    ? "__custom__"
-                    : form.fund_source
+                value={form.fund_source}
+                onChange={(event) =>
+                  updateField("fund_source", event.target.value)
                 }
-                onChange={(event) => {
-                  if (event.target.value === "__custom__") {
-                    setUsesCustomFundType(true);
-                    updateField("fund_source", "");
-                    return;
-                  }
-
-                  setUsesCustomFundType(false);
-                  updateField("fund_source", event.target.value);
-                }}
                 required
               >
                 <option value="">Select fund</option>
-                {fundTypes.map((fundType) => (
+                {fundTypeOptions.map((fundType) => (
                   <option key={fundType} value={fundType}>
                     {fundType}
                   </option>
                 ))}
-                <option value="__custom__">Add new fund type</option>
               </select>
             </label>
-            {usesCustomFundType ? (
-              <label>
-                New fund type
-                <input
-                  value={form.fund_source}
-                  onChange={(event) => updateField("fund_source", event.target.value)}
-                  placeholder="Enter fund type"
-                  required
-                />
-              </label>
-            ) : null}
           </div>
         </section>
 
@@ -448,16 +548,6 @@ export const AdminNewCase = () => {
               <input
                 value={form.public_story_title}
                 onChange={(event) => updateField("public_story_title", event.target.value)}
-              />
-            </label>
-            <label>
-              Public display name
-              <input
-                value={form.public_beneficiary_label}
-                onChange={(event) =>
-                  updateField("public_beneficiary_label", event.target.value)
-                }
-                placeholder="Anonymous case"
               />
             </label>
             <label>

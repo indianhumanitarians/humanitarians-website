@@ -85,6 +85,62 @@ const toNumber = (value) => {
   return Number.isFinite(numericValue) ? numericValue : 0;
 };
 
+const monthAliases = new Map(
+  [
+    ["Jan", ["jan", "january"]],
+    ["Feb", ["feb", "february"]],
+    ["Mar", ["mar", "march"]],
+    ["Apr", ["apr", "april"]],
+    ["May", ["may"]],
+    ["Jun", ["jun", "june"]],
+    ["Jul", ["jul", "july"]],
+    ["Aug", ["aug", "august"]],
+    ["Sep", ["sep", "sept", "september"]],
+    ["Oct", ["oct", "october"]],
+    ["Nov", ["nov", "november"]],
+    ["Dec", ["dec", "december"]],
+  ].flatMap(([label, aliases], index) =>
+    aliases.map((alias) => [alias, { label, month: index + 1 }]),
+  ),
+);
+
+const periodSortFromLabel = (periodLabel) => {
+  const trimmedPeriod = text(periodLabel);
+  const monthInputMatch = trimmedPeriod.match(/^(\d{4})-(\d{2})$/);
+  if (monthInputMatch) {
+    const year = Number(monthInputMatch[1]);
+    const month = Number(monthInputMatch[2]);
+    return year > 1900 && month >= 1 && month <= 12 ? year * 100 + month : 0;
+  }
+
+  const [monthText, yearText] = trimmedPeriod.split(/\s+/);
+  const month = monthAliases.get(monthText?.toLowerCase());
+  const year = Number(yearText);
+
+  return month && Number.isFinite(year) ? year * 100 + month.month : 0;
+};
+
+const periodLabelFromSort = (periodSort) => {
+  const numericSort = toNumber(periodSort);
+  const year = Math.floor(numericSort / 100);
+  const month = numericSort % 100;
+  const monthLabel = Array.from(monthAliases.values()).find(
+    (item) => item.month === month,
+  )?.label;
+
+  return year && monthLabel ? `${monthLabel} ${year}` : "";
+};
+
+const monthStartFromSort = (periodSort) => {
+  const numericSort = toNumber(periodSort);
+  const year = Math.floor(numericSort / 100);
+  const month = numericSort % 100;
+
+  return year && month >= 1 && month <= 12
+    ? `${year}-${String(month).padStart(2, "0")}-01`
+    : "";
+};
+
 const normalizeKey = (key) => key.trim().toLowerCase();
 
 const normalizeRow = (row) =>
@@ -223,11 +279,12 @@ const uploadImageToSupabase = async (caseCode, slot, sourceUrl) => {
 
 const toCaseImport = async (row) => {
   const caseNumber = text(row.case_id);
+  const periodSort = toNumber(row.period_sort) || periodSortFromLabel(row.period_label);
   const payload = {
     case_number: caseNumber,
-    reporting_month: text(row.period_label),
-    reporting_month_sort: toNumber(row.period_sort) || null,
-    reporting_month_start: text(row.month_start) || null,
+    reporting_month: periodLabelFromSort(periodSort) || text(row.period_label),
+    reporting_month_sort: periodSort || null,
+    reporting_month_start: text(row.month_start) || monthStartFromSort(periodSort) || null,
     support_category: text(row.category),
     support_description: text(row.support_type),
     fund_source: text(row.fund_type),
@@ -238,7 +295,6 @@ const toCaseImport = async (row) => {
     beneficiary_phone: firstText(row, ["recipient_phone", "phone", "mobile"]),
     beneficiary_private_location: firstText(row, ["recipient_location", "address", "private_location"]),
     public_story_title: firstText(row, ["public_title", "title"]),
-    public_beneficiary_label: firstText(row, ["public_display_name", "anonymized_name"]),
     public_location: firstText(row, ["public_location"]),
     public_need_summary: firstText(row, ["need_public", "need"]),
     public_support_summary: firstText(row, ["support_provided_public", "support_provided"]),

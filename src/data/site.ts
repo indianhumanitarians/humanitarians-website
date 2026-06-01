@@ -11,8 +11,6 @@ export const site = {
     "Zakat and Sadaqah are tracked separately in monthly reports.",
   scholarDisclaimer:
     "Please consult a qualified scholar for personal Zakat questions. Humanitarians shares operational transparency but does not replace scholarly advice.",
-  aboutProfileUrl:
-    "https://drive.google.com/file/d/18NIxGJpotj_TCZmThOB1-y8djLhNwP0u/view?usp=drivesdk",
 };
 
 export const navLinks = [
@@ -24,6 +22,7 @@ export const navLinks = [
   { label: "Reports", to: "/reports" },
   { label: "Zakat & Sadaqah", to: "/zakat-sadaqah" },
   { label: "About", to: "/about" },
+  { label: "Contact", to: "/contact" },
 ];
 
 export const adminLink = { label: "Admin", to: "/admin" };

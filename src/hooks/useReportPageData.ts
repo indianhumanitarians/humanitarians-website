@@ -3,6 +3,11 @@ import {
   derivePublicStatsFromLedger,
 } from "../services/caseLedgerStats";
 import { fetchPublicCaseLedgerRows } from "../services/adminCases";
+import {
+  ACTIVE_DONOR_COMMUNITY_SETTING,
+  fetchPublicSiteSettings,
+  siteSettingValue,
+} from "../services/siteSettings";
 import type {
   CaseLedgerRow,
   DataSourceState,
@@ -24,8 +29,11 @@ const emptyReportPageData: ReportPageData = {
   stats: emptyPublicStats,
 };
 
-const deriveReportPageData = (rows: CaseLedgerRow[]): ReportPageData => ({
-  stats: derivePublicStatsFromLedger(rows),
+const deriveReportPageData = (
+  rows: CaseLedgerRow[],
+  activeDonorCommunity: string,
+): ReportPageData => ({
+  stats: derivePublicStatsFromLedger(rows, { activeDonorCommunity }),
 });
 
 export const useReportPageData = (): ReportPageDataState => {
@@ -40,8 +48,18 @@ export const useReportPageData = (): ReportPageDataState => {
 
     const loadReports = async () => {
       try {
-        const rows = await fetchPublicCaseLedgerRows();
-        const data = deriveReportPageData(rows as CaseLedgerRow[]);
+        const [rows, settings] = await Promise.all([
+          fetchPublicCaseLedgerRows(),
+          fetchPublicSiteSettings().catch(() => []),
+        ]);
+        const activeDonorCommunity = siteSettingValue(
+          settings,
+          ACTIVE_DONOR_COMMUNITY_SETTING,
+        );
+        const data = deriveReportPageData(
+          rows as CaseLedgerRow[],
+          activeDonorCommunity,
+        );
 
         if (isMounted) {
           setState({

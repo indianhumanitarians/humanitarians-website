@@ -10,6 +10,18 @@ create table if not exists public.admin_profiles (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.site_settings (
+  setting_key text primary key,
+  setting_value text not null default '',
+  label text not null default '',
+  helper_text text not null default '',
+  is_public boolean not null default true,
+  created_by text,
+  updated_by text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.support_categories (
   id uuid primary key default gen_random_uuid(),
   name text not null unique,
@@ -50,7 +62,6 @@ create table if not exists public.cases (
   beneficiary_phone text,
   beneficiary_private_location text,
   public_story_title text,
-  public_beneficiary_label text,
   public_location text,
   public_need_summary text,
   public_support_summary text,
@@ -117,6 +128,7 @@ declare
   audit_table_name text;
 begin
   foreach audit_table_name in array array[
+    'public.site_settings',
     'public.support_categories',
     'public.fund_types',
     'public.cases',
@@ -367,11 +379,6 @@ begin
     alter table public.cases rename column public_title to public_story_title;
   end if;
 
-  if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'cases' and column_name = 'public_display_name')
-     and not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'cases' and column_name = 'public_beneficiary_label') then
-    alter table public.cases rename column public_display_name to public_beneficiary_label;
-  end if;
-
   if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'cases' and column_name = 'need_public')
      and not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'cases' and column_name = 'public_need_summary') then
     alter table public.cases rename column need_public to public_need_summary;
@@ -410,6 +417,8 @@ alter table public.cases
   ) stored;
 
 alter table public.cases
+  drop column if exists public_beneficiary_label,
+  drop column if exists public_display_name,
   drop column if exists image_consent_status,
   drop column if exists image_url_1,
   drop column if exists image_alt_1,
@@ -429,6 +438,241 @@ alter table public.cases
   drop column if exists case_status,
   drop column if exists verification_notes,
   drop column if exists internal_notes;
+
+create or replace function public.reporting_month_label(period_sort integer)
+returns text
+language sql
+immutable
+as $$
+  select case period_sort % 100
+    when 1 then 'Jan'
+    when 2 then 'Feb'
+    when 3 then 'Mar'
+    when 4 then 'Apr'
+    when 5 then 'May'
+    when 6 then 'Jun'
+    when 7 then 'Jul'
+    when 8 then 'Aug'
+    when 9 then 'Sep'
+    when 10 then 'Oct'
+    when 11 then 'Nov'
+    when 12 then 'Dec'
+    else null
+  end || ' ' || (period_sort / 100)::integer
+  where period_sort between 190001 and 299912
+    and period_sort % 100 between 1 and 12;
+$$;
+
+create or replace function public.reporting_month_sort_from_label(period_label text)
+returns integer
+language sql
+immutable
+as $$
+  select case
+    when period_label ~ '^\d{4}-\d{2}$'
+      and substring(period_label from 6 for 2)::integer between 1 and 12
+      then substring(period_label from 1 for 4)::integer * 100
+        + substring(period_label from 6 for 2)::integer
+    when lower(split_part(trim(period_label), ' ', 1)) in ('jan', 'january')
+      then split_part(trim(period_label), ' ', 2)::integer * 100 + 1
+    when lower(split_part(trim(period_label), ' ', 1)) in ('feb', 'february')
+      then split_part(trim(period_label), ' ', 2)::integer * 100 + 2
+    when lower(split_part(trim(period_label), ' ', 1)) in ('mar', 'march')
+      then split_part(trim(period_label), ' ', 2)::integer * 100 + 3
+    when lower(split_part(trim(period_label), ' ', 1)) in ('apr', 'april')
+      then split_part(trim(period_label), ' ', 2)::integer * 100 + 4
+    when lower(split_part(trim(period_label), ' ', 1)) = 'may'
+      then split_part(trim(period_label), ' ', 2)::integer * 100 + 5
+    when lower(split_part(trim(period_label), ' ', 1)) in ('jun', 'june')
+      then split_part(trim(period_label), ' ', 2)::integer * 100 + 6
+    when lower(split_part(trim(period_label), ' ', 1)) in ('jul', 'july')
+      then split_part(trim(period_label), ' ', 2)::integer * 100 + 7
+    when lower(split_part(trim(period_label), ' ', 1)) in ('aug', 'august')
+      then split_part(trim(period_label), ' ', 2)::integer * 100 + 8
+    when lower(split_part(trim(period_label), ' ', 1)) in ('sep', 'sept', 'september')
+      then split_part(trim(period_label), ' ', 2)::integer * 100 + 9
+    when lower(split_part(trim(period_label), ' ', 1)) in ('oct', 'october')
+      then split_part(trim(period_label), ' ', 2)::integer * 100 + 10
+    when lower(split_part(trim(period_label), ' ', 1)) in ('nov', 'november')
+      then split_part(trim(period_label), ' ', 2)::integer * 100 + 11
+    when lower(split_part(trim(period_label), ' ', 1)) in ('dec', 'december')
+      then split_part(trim(period_label), ' ', 2)::integer * 100 + 12
+    else null
+  end
+  where trim(coalesce(period_label, '')) ~ '^([A-Za-z]+ \d{4}|\d{4}-\d{2})$';
+$$;
+
+create or replace function public.reporting_month_start_from_sort(period_sort integer)
+returns date
+language sql
+immutable
+as $$
+  select make_date((period_sort / 100)::integer, period_sort % 100, 1)
+  where period_sort between 190001 and 299912
+    and period_sort % 100 between 1 and 12;
+$$;
+
+with normalized_case_months as (
+  select
+    case_number,
+    coalesce(
+      reporting_month_sort,
+      public.reporting_month_sort_from_label(reporting_month)
+    ) as period_sort
+  from public.cases
+)
+update public.cases
+set reporting_month = coalesce(
+      public.reporting_month_label(normalized_case_months.period_sort),
+      public.cases.reporting_month
+    ),
+    reporting_month_sort = normalized_case_months.period_sort,
+    reporting_month_start = coalesce(
+      public.cases.reporting_month_start,
+      public.reporting_month_start_from_sort(normalized_case_months.period_sort)
+    )
+from normalized_case_months
+where public.cases.case_number = normalized_case_months.case_number
+  and normalized_case_months.period_sort is not null;
+
+insert into public.site_settings (
+  setting_key,
+  setting_value,
+  label,
+  helper_text,
+  is_public
+)
+values (
+  'active_donor_community',
+  '150+',
+  'Active donor community',
+  'Shown on the homepage and reports as the donor community size.',
+  true
+), (
+  'contact_email',
+  'indianhumanitarians@gmail.com',
+  'Contact email',
+  'Used in the footer and contact page.',
+  true
+), (
+  'about_profile_url',
+  'https://drive.google.com/file/d/18NIxGJpotj_TCZmThOB1-y8djLhNwP0u/view?usp=drivesdk',
+  'About/profile document URL',
+  'The external link behind the About page profile button.',
+  true
+), (
+  'whatsapp_mentor_volunteer_group_url',
+  'https://chat.whatsapp.com/IKQhWIXlQDW5azPfuRSL64?mode=gi_t',
+  'Mentor volunteer WhatsApp URL',
+  'Used by Contact and Mentorship pages for mentor volunteers.',
+  true
+), (
+  'whatsapp_mentee_group_url',
+  'https://chat.whatsapp.com/CZYDCNhhIwWARydpIK1hm7?mode=gi_t',
+  'Mentee WhatsApp URL',
+  'Used by the Mentorship page for mentee requests.',
+  true
+), (
+  'case_referral_form_url',
+  'https://forms.gle/j25asHA6ekoLqxEn8',
+  'Case referral form URL',
+  'Google Form opened by public Refer a Case buttons.',
+  true
+), (
+  'whatsapp_new_members_group_url',
+  'https://chat.whatsapp.com/ICHmOfadrBnAReSB568crd?mode=gi_t',
+  'New Members WhatsApp URL',
+  'Main donor/community WhatsApp group link.',
+  true
+), (
+  'whatsapp_new_members_qr_image',
+  '/images/humanitarians-new-members-whatsapp-qr.jpeg',
+  'New Members WhatsApp QR',
+  'QR image shown on the Donate page for the new members WhatsApp group.',
+  true
+), (
+  'whatsapp_new_members_qr_storage_path',
+  '',
+  'New Members WhatsApp QR storage path',
+  'Internal storage path for the uploaded new members WhatsApp QR.',
+  false
+), (
+  'upi_sadaqah_display_name',
+  'Mohammad Aqib',
+  'Sadaqah UPI display name',
+  'Name shown on the Sadaqah payment card.',
+  true
+), (
+  'upi_sadaqah_upi_id',
+  '8957768755@jupiteraxis',
+  'Sadaqah UPI ID',
+  'UPI ID and app deep-link value for Sadaqah.',
+  true
+), (
+  'upi_sadaqah_qr_image',
+  '/images/upi-sadaqah-mohammad-aqib.png',
+  'Sadaqah QR image URL/path',
+  'Public image URL or site path for the Sadaqah QR.',
+  true
+), (
+  'upi_sadaqah_qr_storage_path',
+  '',
+  'Sadaqah QR storage path',
+  'Internal storage path for the uploaded Sadaqah QR.',
+  false
+), (
+  'upi_zakat_display_name',
+  'Shahil Siddiqui',
+  'Zakat UPI display name',
+  'Name shown on the Zakat payment card.',
+  true
+), (
+  'upi_zakat_upi_id',
+  '9565596161@jupiteraxis',
+  'Zakat UPI ID',
+  'UPI ID and app deep-link value for Zakat.',
+  true
+), (
+  'upi_zakat_qr_image',
+  '/images/upi-zakat-sahil-siddiqui.png',
+  'Zakat QR image URL/path',
+  'Public image URL or site path for the Zakat QR.',
+  true
+), (
+  'upi_zakat_qr_storage_path',
+  '',
+  'Zakat QR storage path',
+  'Internal storage path for the uploaded Zakat QR.',
+  false
+), (
+  'bank_account_name',
+  'Humanitarians',
+  'Bank account name',
+  'Shown in the bank transfer section.',
+  true
+), (
+  'bank_account_number',
+  'Editable placeholder',
+  'Bank account number',
+  'Shown in the bank transfer section.',
+  true
+), (
+  'bank_ifsc',
+  'Editable placeholder',
+  'Bank IFSC',
+  'Shown in the bank transfer section.',
+  true
+), (
+  'bank_branch',
+  'Editable placeholder',
+  'Bank branch',
+  'Shown in the bank transfer section.',
+  true
+)
+on conflict (setting_key) do update
+set label = excluded.label,
+    helper_text = excluded.helper_text,
+    is_public = excluded.is_public;
 
 insert into public.support_categories (name, display_order)
 values
@@ -498,6 +742,7 @@ create index if not exists cases_public_visibility_idx on public.cases(show_in_p
 create index if not exists cases_created_at_idx on public.cases(created_at desc);
 create index if not exists case_images_case_number_idx on public.case_images(case_number, display_order);
 create index if not exists mentorship_testimonials_public_idx on public.mentorship_testimonials(consent_received, created_at);
+create index if not exists site_settings_public_idx on public.site_settings(is_public, setting_key);
 create index if not exists support_categories_active_order_idx on public.support_categories(is_active, display_order, name);
 create index if not exists fund_types_active_order_idx on public.fund_types(is_active, display_order, name);
 
@@ -535,6 +780,11 @@ $$;
 drop trigger if exists cases_set_audit_fields on public.cases;
 create trigger cases_set_audit_fields
 before insert or update on public.cases
+for each row execute function public.set_admin_audit_fields();
+
+drop trigger if exists site_settings_set_audit_fields on public.site_settings;
+create trigger site_settings_set_audit_fields
+before insert or update on public.site_settings
 for each row execute function public.set_admin_audit_fields();
 
 drop trigger if exists support_categories_set_audit_fields on public.support_categories;
@@ -609,7 +859,6 @@ select
   public.public_safe_amount(cases.total_amount) as total_amount,
   cases.fund_source,
   case when cases.publish_public_story then coalesce(nullif(cases.public_story_title, ''), 'Anonymized support case') else '' end as public_story_title,
-  case when cases.publish_public_story then coalesce(nullif(cases.public_beneficiary_label, ''), 'Anonymous case') else '' end as public_beneficiary_label,
   case when cases.publish_public_story then cases.public_location else '' end as public_location,
   public.public_amount_range(cases.total_amount) as amount_range,
   case when cases.publish_public_story then cases.public_need_summary else '' end as public_need_summary,
@@ -665,6 +914,7 @@ from public.mentorship_testimonials
 where consent_received = true;
 
 alter table public.admin_profiles enable row level security;
+alter table public.site_settings enable row level security;
 alter table public.support_categories enable row level security;
 alter table public.fund_types enable row level security;
 alter table public.cases enable row level security;
@@ -682,6 +932,19 @@ create policy "Owners can manage admin profiles"
 on public.admin_profiles for all
 using (public.is_owner(auth.uid()))
 with check (public.is_owner(auth.uid()));
+
+drop policy if exists "Public site settings are readable" on public.site_settings;
+create policy "Public site settings are readable"
+on public.site_settings for select
+to anon, authenticated
+using (is_public = true or public.is_admin(auth.uid()));
+
+drop policy if exists "Admins can manage site settings" on public.site_settings;
+create policy "Admins can manage site settings"
+on public.site_settings for all
+to authenticated
+using (public.is_admin(auth.uid()))
+with check (public.is_admin(auth.uid()));
 
 drop policy if exists "Admins can manage support categories" on public.support_categories;
 create policy "Admins can manage support categories"
@@ -717,7 +980,9 @@ grant usage on schema public to anon, authenticated;
 grant select on public.public_case_ledger to anon, authenticated;
 grant select on public.public_case_stories to anon, authenticated;
 grant select on public.public_mentorship_testimonials to anon, authenticated;
+grant select on public.site_settings to anon, authenticated;
 grant select, insert, update, delete on public.admin_profiles to authenticated;
+grant insert, update, delete on public.site_settings to authenticated;
 grant select, insert, update, delete on public.support_categories to authenticated;
 grant select, insert, update, delete on public.fund_types to authenticated;
 grant select, insert, update, delete on public.cases to authenticated;
@@ -732,6 +997,14 @@ insert into storage.buckets (id, name, public)
 values ('testimonial-images', 'testimonial-images', true)
 on conflict (id) do nothing;
 
+insert into storage.buckets (id, name, public)
+values ('payment-qr-images', 'payment-qr-images', true)
+on conflict (id) do nothing;
+
+insert into storage.buckets (id, name, public)
+values ('site-setting-images', 'site-setting-images', true)
+on conflict (id) do nothing;
+
 drop policy if exists "Anyone can read public case images" on storage.objects;
 create policy "Anyone can read public case images"
 on storage.objects for select
@@ -742,6 +1015,16 @@ create policy "Anyone can read public testimonial images"
 on storage.objects for select
 using (bucket_id = 'testimonial-images');
 
+drop policy if exists "Anyone can read public payment QR images" on storage.objects;
+create policy "Anyone can read public payment QR images"
+on storage.objects for select
+using (bucket_id = 'payment-qr-images');
+
+drop policy if exists "Anyone can read public site setting images" on storage.objects;
+create policy "Anyone can read public site setting images"
+on storage.objects for select
+using (bucket_id = 'site-setting-images');
+
 drop policy if exists "Admins can upload public case images" on storage.objects;
 create policy "Admins can upload public case images"
 on storage.objects for insert
@@ -751,6 +1034,16 @@ drop policy if exists "Admins can upload public testimonial images" on storage.o
 create policy "Admins can upload public testimonial images"
 on storage.objects for insert
 with check (bucket_id = 'testimonial-images' and public.is_admin(auth.uid()));
+
+drop policy if exists "Admins can upload public payment QR images" on storage.objects;
+create policy "Admins can upload public payment QR images"
+on storage.objects for insert
+with check (bucket_id = 'payment-qr-images' and public.is_admin(auth.uid()));
+
+drop policy if exists "Admins can upload public site setting images" on storage.objects;
+create policy "Admins can upload public site setting images"
+on storage.objects for insert
+with check (bucket_id = 'site-setting-images' and public.is_admin(auth.uid()));
 
 drop policy if exists "Admins can update public case images" on storage.objects;
 create policy "Admins can update public case images"
@@ -764,6 +1057,18 @@ on storage.objects for update
 using (bucket_id = 'testimonial-images' and public.is_admin(auth.uid()))
 with check (bucket_id = 'testimonial-images' and public.is_admin(auth.uid()));
 
+drop policy if exists "Admins can update public payment QR images" on storage.objects;
+create policy "Admins can update public payment QR images"
+on storage.objects for update
+using (bucket_id = 'payment-qr-images' and public.is_admin(auth.uid()))
+with check (bucket_id = 'payment-qr-images' and public.is_admin(auth.uid()));
+
+drop policy if exists "Admins can update public site setting images" on storage.objects;
+create policy "Admins can update public site setting images"
+on storage.objects for update
+using (bucket_id = 'site-setting-images' and public.is_admin(auth.uid()))
+with check (bucket_id = 'site-setting-images' and public.is_admin(auth.uid()));
+
 drop policy if exists "Admins can delete public case images" on storage.objects;
 create policy "Admins can delete public case images"
 on storage.objects for delete
@@ -773,3 +1078,13 @@ drop policy if exists "Admins can delete public testimonial images" on storage.o
 create policy "Admins can delete public testimonial images"
 on storage.objects for delete
 using (bucket_id = 'testimonial-images' and public.is_admin(auth.uid()));
+
+drop policy if exists "Admins can delete public payment QR images" on storage.objects;
+create policy "Admins can delete public payment QR images"
+on storage.objects for delete
+using (bucket_id = 'payment-qr-images' and public.is_admin(auth.uid()));
+
+drop policy if exists "Admins can delete public site setting images" on storage.objects;
+create policy "Admins can delete public site setting images"
+on storage.objects for delete
+using (bucket_id = 'site-setting-images' and public.is_admin(auth.uid()));
