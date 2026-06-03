@@ -348,7 +348,8 @@
     @apply mt-4 block w-full min-w-0 max-w-full overflow-auto;
     max-height: min(72vh, 760px);
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: auto;
   }
 
   .admin-table {
@@ -457,7 +458,7 @@
   }
 
   .admin-testimonial-id-col {
-    width: 8rem;
+    width: 11rem;
   }
 
   .admin-testimonial-name-col {
@@ -488,6 +489,11 @@
 
   .admin-testimonial-action-col {
     width: 13rem;
+  }
+
+  .admin-testimonials-table .admin-nowrap-cell {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .admin-table th,
@@ -4239,5 +4245,446 @@
       align-items: flex-start;
       flex-direction: column;
     }
+  }
+}
+
+@layer components {
+  .case-card .button-ghost {
+    min-height: auto;
+    justify-content: flex-start;
+    margin-top: 0.35rem;
+    padding: 0.15rem 0;
+    line-height: 1.2;
+    width: fit-content;
+  }
+
+  .case-card .button-ghost:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.25rem;
+  }
+
+  .stories-grid,
+  .case-grid {
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .case-card {
+    border-radius: 16px;
+  }
+
+  .case-carousel-track,
+  .case-image-empty {
+    aspect-ratio: 16 / 8.5;
+  }
+
+  .case-card-body {
+    padding: 1rem;
+  }
+
+  .case-card .badge-row {
+    gap: 0.4rem;
+  }
+
+  .case-card .badge {
+    font-size: 0.56rem;
+    padding: 0.22rem 0.52rem;
+  }
+
+  .case-card h3 {
+    margin: 0.65rem 0 0.35rem;
+    font-size: clamp(1.02rem, 1.5vw, 1.16rem);
+    line-height: 1.22;
+  }
+
+  .case-card .case-meta {
+    margin: 0.35rem 0 0.55rem;
+    font-size: 0.74rem;
+    line-height: 1.35;
+  }
+
+  .case-card-body > p:not(.case-meta) {
+    display: -webkit-box;
+    margin: 0 0 0.55rem;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+
+  .case-card .case-details p {
+    display: block;
+    margin: 0.35rem 0 0;
+    overflow: visible;
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+
+  .case-grid-compact {
+    gap: 0.9rem;
+  }
+
+  .case-grid-compact .case-card-body {
+    padding: 0.9rem;
+  }
+
+  .case-grid-compact .case-card h3 {
+    font-size: 1rem;
+  }
+
+  .admin-kpi-grid {
+    gap: 0.75rem;
+  }
+
+  .admin-kpi-grid article,
+  .admin-insight-grid article,
+  .admin-panel {
+    padding: 1rem;
+  }
+
+  .admin-kpi-grid strong,
+  .admin-insight-grid strong {
+    font-size: clamp(1.2rem, 2vw, 1.65rem);
+    line-height: 1.12;
+  }
+
+  .admin-kpi-grid span,
+  .admin-insight-grid span {
+    line-height: 1.25;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 0.7rem 0.75rem;
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  .admin-table span {
+    margin-top: 0.25rem;
+  }
+
+  .admin-table-wrap {
+    margin-top: 0.85rem;
+  }
+
+  .admin-table-controls {
+    margin-top: 0.85rem;
+    padding: 0.85rem;
+    gap: 0.75rem;
+  }
+
+  .admin-tab-label-short,
+  .admin-filter-toggle {
+    display: none;
+  }
+
+  @media (max-width: 760px) {
+    .admin-page {
+      gap: 0.55rem;
+      padding-bottom: 1.5rem;
+    }
+
+    .admin-shell-header {
+      margin-top: 0.6rem;
+      gap: 0.55rem;
+      padding: 0.7rem;
+    }
+
+    .admin-shell-header h1 {
+      font-size: clamp(1.55rem, 8vw, 2.1rem);
+    }
+
+    .admin-shell-header p {
+      margin-top: 0.35rem;
+      font-size: 0.78rem;
+    }
+
+    .admin-header-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.45rem;
+      width: 100%;
+    }
+
+    .admin-header-actions .button {
+      min-height: 2rem;
+      padding: 0.38rem 0.45rem;
+      font-size: 0.68rem;
+      line-height: 1.15;
+    }
+
+    .admin-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.28rem;
+      min-height: 0;
+      overflow: visible;
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .admin-tabs a {
+      min-height: 1.75rem;
+      width: 100%;
+      padding: 0.32rem 0.28rem;
+      white-space: normal;
+      font-size: 0.62rem;
+      line-height: 1.15;
+    }
+
+    .admin-tab-label-full {
+      display: none;
+    }
+
+    .admin-tab-label-short {
+      display: inline;
+    }
+
+    .admin-kpi-grid,
+    .admin-insight-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.4rem;
+    }
+
+    .admin-kpi-grid article,
+    .admin-insight-grid article {
+      padding: 0.55rem;
+    }
+
+    .admin-kpi-grid strong,
+    .admin-insight-grid strong {
+      margin-top: 0.25rem;
+      font-size: clamp(1rem, 5vw, 1.25rem);
+    }
+
+    .admin-kpi-grid span,
+    .admin-insight-grid span {
+      font-size: 0.62rem;
+    }
+
+    .admin-insight-grid p {
+      margin-top: 0.25rem;
+      font-size: 0.7rem;
+      line-height: 1.45;
+    }
+
+    .admin-panel {
+      padding: 0.62rem;
+    }
+
+    .table-toolbar {
+      gap: 0.4rem;
+    }
+
+    .table-toolbar h3 {
+      font-size: 0.98rem;
+      line-height: 1.15;
+    }
+
+    .admin-small-button,
+    .admin-inline-link {
+      min-height: 1.9rem;
+      padding: 0.32rem 0.5rem;
+      font-size: 0.66rem;
+    }
+
+    .admin-helper-text {
+      margin-top: 0.65rem;
+      font-size: 0.75rem;
+      line-height: 1.45;
+    }
+
+    .admin-table-wrap {
+      max-height: calc(100dvh - 10.5rem);
+    }
+
+    .admin-table th,
+    .admin-table td {
+      padding: 0.34rem 0.42rem;
+      font-size: 0.7rem;
+      line-height: 1.24;
+    }
+
+    .admin-table th {
+      font-size: 0.58rem;
+      line-height: 1.15;
+    }
+
+    .admin-table span {
+      margin-top: 0.12rem;
+      font-size: 0.6rem;
+      line-height: 1.2;
+    }
+
+    .admin-table .status-pill {
+      margin-right: 0.18rem;
+      padding: 0.18rem 0.32rem;
+      font-size: 0.58rem;
+    }
+
+    .admin-case-actions .admin-inline-link,
+    .admin-case-actions .admin-small-button,
+    .admin-testimonial-actions .admin-inline-link,
+    .admin-testimonial-actions .admin-small-button {
+      min-height: 1.7rem;
+      padding: 0.25rem 0.38rem;
+      font-size: 0.6rem;
+    }
+
+    .admin-filter-toggle {
+      display: flex;
+      min-height: 2.15rem;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-top: 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--cream);
+      color: var(--ink);
+      padding: 0.35rem 0.65rem;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .admin-filter-toggle strong {
+      color: var(--green);
+      font-size: 0.62rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .admin-table-controls {
+      display: none;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 0.42rem;
+      padding: 0.45rem;
+      gap: 0.42rem;
+    }
+
+    .admin-table-controls.is-open {
+      display: grid;
+    }
+
+    .admin-filter-search,
+    .admin-filter-actions {
+      grid-column: 1 / -1;
+    }
+
+    .admin-filter-field {
+      gap: 0.22rem;
+      font-size: 0.64rem;
+    }
+
+    .admin-filter-field input,
+    .admin-filter-field select {
+      min-height: 1.85rem;
+      padding: 0.3rem 0.48rem;
+      font-size: 0.68rem;
+      border-radius: 0.65rem;
+    }
+
+    .admin-filter-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+
+    .admin-filter-actions .admin-small-button {
+      width: 100%;
+    }
+  }
+
+}
+
+@media (max-width: 680px) {
+  .site-footer .footer-inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .site-footer .footer-inner > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .site-footer .footer-col h4 {
+    margin-bottom: 0.85rem;
+    font-size: 0.66rem;
+  }
+
+  .site-footer .footer-col a {
+    margin-bottom: 0.65rem;
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .site-footer .footer-bottom {
+    display: grid;
+    gap: 0.65rem;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .case-card,
+  .feature-card,
+  .payment-card,
+  .mentor-track-card,
+  .mentorship-audience-card,
+  .report-info-panel,
+  .chart-card {
+    border-radius: 14px;
+  }
+
+  .case-carousel-track,
+  .case-image-empty {
+    aspect-ratio: 16 / 7.4;
+  }
+
+  .case-card-body {
+    padding: 0.68rem;
+  }
+
+  .case-card .badge {
+    font-size: 0.5rem;
+    padding: 0.18rem 0.42rem;
+  }
+
+  .case-card h3 {
+    margin: 0.45rem 0 0.25rem;
+    font-size: 0.95rem;
+    line-height: 1.15;
+  }
+
+  .case-card .case-meta {
+    margin: 0.25rem 0 0.38rem;
+    font-size: 0.68rem;
+    line-height: 1.25;
+  }
+
+  .case-card-body > p:not(.case-meta) {
+    margin-bottom: 0.35rem;
+    -webkit-line-clamp: 2;
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+
+  .case-card .button-ghost {
+    margin-top: 0.15rem;
+    font-size: 0.74rem;
+  }
+
+  .chart-card,
+  .payment-card,
+  .feature-card,
+  .mentor-track-card,
+  .mentorship-audience-card,
+  .report-info-panel {
+    padding: 0.85rem;
   }
 }

@@ -681,8 +681,11 @@ Supabase deployment:
 - Deploy edge function:
 
 ```bash
+supabase secrets set ADMIN_SITE_URL=https://indianhumanitarians.com
 supabase functions deploy invite-admin --no-verify-jwt
 ```
+
+`ADMIN_SITE_URL` makes invite emails redirect to the production admin invite page even if the owner sends an invite while the local dev server is open.
 
 Supabase Auth redirect URLs should include:
 

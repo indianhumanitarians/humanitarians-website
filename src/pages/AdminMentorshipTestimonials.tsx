@@ -26,6 +26,8 @@ const previewText = (value: string | null | undefined, length = 120): string => 
   return `${text.slice(0, length).trim()}...`;
 };
 
+type SortDirection = "asc" | "desc";
+
 export const AdminMentorshipTestimonials = () => {
   const { session } = useAdminAuth();
   const {
@@ -36,6 +38,19 @@ export const AdminMentorshipTestimonials = () => {
   } = useAdminMentorshipTestimonials(session?.accessToken);
   const [deletingTestimonial, setDeletingTestimonial] = useState<string | undefined>();
   const [deleteError, setDeleteError] = useState<string | undefined>();
+  const [idSortDirection, setIdSortDirection] = useState<SortDirection>("asc");
+  const sortedTestimonials = [...testimonials].sort((left, right) => {
+    const comparison = left.testimonial_id.localeCompare(
+      right.testimonial_id,
+      undefined,
+      {
+        numeric: true,
+        sensitivity: "base",
+      },
+    );
+
+    return idSortDirection === "asc" ? comparison : -comparison;
+  });
 
   const handleDeleteTestimonial = async (
     testimonialId: string,
@@ -111,7 +126,22 @@ export const AdminMentorshipTestimonials = () => {
               </colgroup>
               <thead>
                 <tr>
-                  <th>ID</th>
+                  <th aria-sort={idSortDirection === "asc" ? "ascending" : "descending"}>
+                    <button
+                      type="button"
+                      className="admin-table-sort-button"
+                      onClick={() =>
+                        setIdSortDirection((current) =>
+                          current === "asc" ? "desc" : "asc",
+                        )
+                      }
+                    >
+                      ID
+                      <span aria-hidden="true">
+                        {idSortDirection === "asc" ? "↑" : "↓"}
+                      </span>
+                    </button>
+                  </th>
                   <th>Name</th>
                   <th>Role</th>
                   <th>Track</th>
@@ -129,7 +159,7 @@ export const AdminMentorshipTestimonials = () => {
                 </tr>
               </thead>
               <tbody>
-                {testimonials.map((item) => (
+                {sortedTestimonials.map((item) => (
                   <tr key={item.testimonial_id}>
                     <td className="admin-nowrap-cell">{item.testimonial_id}</td>
                     <td className="admin-text-cell">

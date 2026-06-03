@@ -119,10 +119,12 @@ where email = 'admin@example.com';
 6. Deploy the owner-only invite function:
 
 ```bash
+supabase secrets set ADMIN_SITE_URL=https://indianhumanitarians.com
 supabase functions deploy invite-admin --no-verify-jwt
 ```
 
 The function verifies the logged-in user itself and only allows users with `role = 'owner'` to invite admins.
+`ADMIN_SITE_URL` makes invite emails redirect to the production admin invite page even if you accidentally send an invite while testing locally.
 
 In Supabase Auth URL settings, add these redirect URLs before sending invites:
 

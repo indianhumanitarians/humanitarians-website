@@ -10,6 +10,23 @@ interface AdminShellProps {
   children: ReactNode;
 }
 
+const AdminTab = ({
+  to,
+  label,
+  shortLabel,
+  end = false,
+}: {
+  to: string;
+  label: string;
+  shortLabel: string;
+  end?: boolean;
+}) => (
+  <NavLink to={to} end={end}>
+    <span className="admin-tab-label-full">{label}</span>
+    <span className="admin-tab-label-short">{shortLabel}</span>
+  </NavLink>
+);
+
 export const AdminShell = ({
   title,
   eyebrow = "Private workspace",
@@ -34,15 +51,24 @@ export const AdminShell = ({
         </div>
       </section>
       <nav className="admin-tabs" aria-label="Admin navigation">
-        <NavLink to="/admin" end>
-          Dashboard
-        </NavLink>
-        <NavLink to="/admin/cases" end>Case Ledger</NavLink>
-        <NavLink to="/admin/cases/new">Add Case</NavLink>
-        <NavLink to="/admin/testimonials" end>Mentorship Testimonials</NavLink>
-        <NavLink to="/admin/testimonials/new">Add Testimonial</NavLink>
-        <NavLink to="/admin/lists">Settings & Lists</NavLink>
-        {profile?.role === "owner" ? <NavLink to="/admin/admins">Admins</NavLink> : null}
+        <AdminTab to="/admin" label="Dashboard" shortLabel="Dash" end />
+        <AdminTab to="/admin/cases" label="Case Ledger" shortLabel="Ledger" end />
+        <AdminTab to="/admin/cases/new" label="Add Case" shortLabel="Add Case" />
+        <AdminTab
+          to="/admin/testimonials"
+          label="Mentorship Testimonials"
+          shortLabel="Testimonials"
+          end
+        />
+        <AdminTab
+          to="/admin/testimonials/new"
+          label="Add Testimonial"
+          shortLabel="Add Test."
+        />
+        <AdminTab to="/admin/lists" label="Settings & Lists" shortLabel="Lists" />
+        {profile?.role === "owner" ? (
+          <AdminTab to="/admin/admins" label="Admins" shortLabel="Admins" />
+        ) : null}
       </nav>
       {children}
     </main>

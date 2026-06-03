@@ -44,6 +44,22 @@ const getServiceRoleKey = (): string | undefined => {
 const normalizeEmail = (value: unknown): string =>
   String(value ?? "").trim().toLowerCase();
 
+const normalizeSiteUrl = (value: string | null | undefined): string | undefined => {
+  const siteUrl = String(value ?? "").trim();
+  if (!siteUrl) {
+    return undefined;
+  }
+
+  return siteUrl.replace(/\/+$/, "");
+};
+
+const getInviteRedirectBaseUrl = (request: Request): string | undefined =>
+  normalizeSiteUrl(
+    Deno.env.get("ADMIN_SITE_URL") ??
+      Deno.env.get("PUBLIC_SITE_URL") ??
+      Deno.env.get("SITE_URL"),
+  ) ?? normalizeSiteUrl(request.headers.get("Origin"));
+
 const isValidEmail = (email: string): boolean =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -157,9 +173,9 @@ Deno.serve(async (request) => {
     return jsonResponse({ error: "Role must be admin or owner." }, 400);
   }
 
-  const origin = request.headers.get("Origin");
-  const redirectTo = origin
-    ? `${origin.replace(/\/+$/, "")}/admin/accept-invite`
+  const redirectBaseUrl = getInviteRedirectBaseUrl(request);
+  const redirectTo = redirectBaseUrl
+    ? `${redirectBaseUrl}/admin/accept-invite`
     : undefined;
   const { data: invitedUserData, error: inviteError } =
     await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
