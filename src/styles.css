@@ -2024,9 +2024,12 @@
   }
 
   .hero,
-  .section,
-  .page {
+  .section {
     @apply py-9;
+  }
+
+  .page {
+    @apply pt-9 pb-0;
   }
 
   .hero h1 {
