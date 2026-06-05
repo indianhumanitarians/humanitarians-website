@@ -112,6 +112,7 @@ export const AdminCaseLedger = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [fundFilter, setFundFilter] = useState("all");
   const [publicFilter, setPublicFilter] = useState<PublicFilter>("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [deletingCase, setDeletingCase] = useState<string | undefined>();
   const [deleteError, setDeleteError] = useState<string | undefined>();
   const filterOptions = useMemo(
@@ -191,6 +192,13 @@ export const AdminCaseLedger = () => {
       }),
     [caseSortDirection, filteredCases],
   );
+  const activeFilterCount = [
+    searchQuery.trim(),
+    periodFilter !== "all",
+    categoryFilter !== "all",
+    fundFilter !== "all",
+    publicFilter !== "all",
+  ].filter(Boolean).length;
 
   const handleDeleteCase = async (caseNumber: string) => {
     if (!session || deletingCase) {
@@ -246,14 +254,24 @@ export const AdminCaseLedger = () => {
       <section className="admin-panel">
         <div className="table-toolbar">
           <h3>Case ledger</h3>
-          <Link className="admin-inline-link" to="/reports">
-            View public reports
-          </Link>
         </div>
         {loading ? <p className="soft-status">Loading cases...</p> : null}
         {error ? <p className="admin-error">{error}</p> : null}
         {deleteError ? <p className="admin-error">{deleteError}</p> : null}
-        <div className="admin-table-controls">
+        <button
+          type="button"
+          className="admin-filter-toggle"
+          aria-expanded={filtersOpen}
+          aria-controls="case-ledger-filters"
+          onClick={() => setFiltersOpen((current) => !current)}
+        >
+          <span>Filters</span>
+          <strong>{activeFilterCount > 0 ? `${activeFilterCount} active` : "All rows"}</strong>
+        </button>
+        <div
+          className={`admin-table-controls ${filtersOpen ? "is-open" : ""}`}
+          id="case-ledger-filters"
+        >
           <label className="admin-filter-field admin-filter-search">
             <span>Search</span>
             <input

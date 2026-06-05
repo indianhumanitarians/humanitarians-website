@@ -1,7 +1,13 @@
 import { useMemo } from "react";
 import { AdminShell } from "../components/admin/AdminShell";
 import { AdminTopActions } from "../components/admin/AdminTopActions";
+import { AvgPerCaseChart } from "../components/stats/AvgPerCaseChart";
+import { CategoryRadialChart } from "../components/stats/CategoryRadialChart";
+import { CumulativeDisbursementChart } from "../components/stats/CumulativeDisbursementChart";
+import { DashboardStatsInfographic } from "../components/stats/DashboardStatsInfographic";
+import { DownloadDashboardPdf } from "../components/admin/DownloadDashboardPdf";
 import { FundBreakdownChart } from "../components/stats/FundBreakdownChart";
+import { FundingMixDonut } from "../components/stats/FundingMixDonut";
 import { MonthlyCasesChart } from "../components/stats/MonthlyCasesChart";
 import { SupportTypeChart } from "../components/stats/SupportTypeChart";
 import { useAdminAuth } from "../hooks/useAdminAuth";
@@ -68,7 +74,12 @@ export const AdminDashboard = () => {
     <AdminShell
       title="Dashboard"
       eyebrow="Admin insights"
-      actions={<AdminTopActions />}
+      actions={
+        <>
+          <AdminTopActions />
+          <DownloadDashboardPdf disabled={loading} />
+        </>
+      }
     >
       {loading ? <p className="soft-status">Loading dashboard insights...</p> : null}
       {error ? <p className="admin-error">{error}</p> : null}
@@ -129,6 +140,21 @@ export const AdminDashboard = () => {
           <FundBreakdownChart rows={insights.monthlyChartRows} />
           <MonthlyCasesChart rows={insights.monthlyChartRows} />
           <SupportTypeChart rows={insights.supportTypes} />
+        </section>
+      ) : null}
+
+      {/* ── New rich visualisations ── */}
+      <DashboardStatsInfographic insights={insights} />
+
+      {insights.monthlyChartRows.length > 0 ? (
+        <section className="chart-grid admin-chart-grid">
+          <CumulativeDisbursementChart rows={insights.monthly} />
+          <AvgPerCaseChart rows={insights.monthly} />
+          <FundingMixDonut
+            rows={insights.fundTypes}
+            totalAmount={insights.totalAmount}
+          />
+          <CategoryRadialChart categories={insights.categories} />
         </section>
       ) : null}
 

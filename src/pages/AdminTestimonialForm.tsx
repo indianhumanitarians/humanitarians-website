@@ -7,7 +7,7 @@ import {
   createAdminMentorshipTestimonial,
   emptyTestimonialFormInput,
   fetchAdminMentorshipTestimonial,
-  generateTestimonialId,
+  fetchNextTestimonialId,
   testimonialToFormInput,
   updateAdminMentorshipTestimonial,
   uploadTestimonialImage,
@@ -109,7 +109,10 @@ export const AdminTestimonialForm = () => {
     setError(undefined);
 
     try {
-      const testimonialId = form.testimonial_id.trim() || generateTestimonialId();
+      const testimonialId =
+        form.testimonial_id.trim() ||
+        (isEditing ? routeTestimonialId : undefined) ||
+        (await fetchNextTestimonialId(session.accessToken));
       const formWithId = {
         ...form,
         testimonial_id: testimonialId,

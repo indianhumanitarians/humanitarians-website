@@ -39,6 +39,7 @@ const MONTHS = new Map(
 const MONTH_INPUT_PATTERN = /^(\d{4})-(\d{2})$/;
 
 const CASE_NUMBER_PATTERN = /^HUM-(\d+)$/i;
+const TESTIMONIAL_ID_PATTERN = /^HUM-MENT-(\d+)$/i;
 
 export const emptyCaseFormInput: CaseFormInput = {
   case_number: "",
@@ -192,6 +193,25 @@ export const generateCaseNumber = (caseNumbers: string[] = []): string => {
     ) + 1;
 
   return `HUM-${String(nextSequence).padStart(3, "0")}`;
+};
+
+export const testimonialIdSequence = (testimonialId: string): number | null => {
+  const sequence = Number(
+    testimonialId.trim().match(TESTIMONIAL_ID_PATTERN)?.[1],
+  );
+  return Number.isFinite(sequence) && sequence > 0 ? sequence : null;
+};
+
+export const generateTestimonialId = (testimonialIds: string[] = []): string => {
+  const nextSequence =
+    Math.max(
+      0,
+      ...testimonialIds
+        .map(testimonialIdSequence)
+        .filter((sequence): sequence is number => sequence !== null),
+    ) + 1;
+
+  return `HUM-MENT-${String(nextSequence).padStart(3, "0")}`;
 };
 
 const toCasePayload = (input: CaseFormInput) => {
@@ -532,17 +552,6 @@ export const createCaseImages = async (
   });
 };
 
-export const generateTestimonialId = (): string => {
-  const now = new Date();
-  const stamp = [
-    now.getFullYear(),
-    String(now.getMonth() + 1).padStart(2, "0"),
-    String(now.getDate()).padStart(2, "0"),
-  ].join("");
-  const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `MENTOR-${stamp}-${suffix}`;
-};
-
 const toTestimonialPayload = (
   input: TestimonialFormInput,
   image?: TestimonialImageUpload,
@@ -596,6 +605,19 @@ export const fetchAdminMentorshipTestimonials = async (
       order: "created_at.desc",
     },
   });
+
+export const fetchNextTestimonialId = async (token: string): Promise<string> => {
+  const rows = await supabaseRestRequest<
+    Array<Pick<AdminMentorshipTestimonial, "testimonial_id">>
+  >("mentorship_testimonials", {
+    token,
+    query: {
+      select: "testimonial_id",
+    },
+  });
+
+  return generateTestimonialId(rows.map((row) => row.testimonial_id));
+};
 
 export const fetchAdminMentorshipTestimonial = async (
   token: string,
