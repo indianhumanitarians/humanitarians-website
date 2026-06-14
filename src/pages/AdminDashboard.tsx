@@ -206,7 +206,6 @@ export const AdminDashboard = () => {
                   <tr key={`${item.period_sort}-${item.period_label}`}>
                     <td className="admin-nowrap-cell">
                       <strong>{item.period_label}</strong>
-                      <span>Sort: {item.period_sort}</span>
                     </td>
                     <td className="admin-nowrap-cell">{item.total_cases}</td>
                     <td className="admin-nowrap-cell">{item.zakat_cases}</td>

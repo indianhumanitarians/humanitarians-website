@@ -70,7 +70,14 @@
     @apply min-h-[calc(100dvh-62px)] place-items-center;
   }
 
-  .admin-auth-card,
+  .admin-auth-card {
+    @apply relative mt-10 rounded-lg border border-stone-200 bg-white shadow-sm shadow-stone-950/5;
+  }
+
+  .admin-auth-card .data-badge {
+    @apply absolute -top-3.5 left-6 bg-white;
+  }
+
   .admin-shell-header,
   .admin-panel,
   .admin-kpi-grid article {
@@ -4020,8 +4027,11 @@
   }
 
   .footer-inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 36px;
+  }
+  .footer-inner > :first-child {
+    grid-column: 1 / -1;
   }
 
   .site-footer,
