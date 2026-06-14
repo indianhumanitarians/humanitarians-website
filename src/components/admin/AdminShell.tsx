@@ -51,8 +51,8 @@ export const AdminShell = ({
         </div>
       </section>
       <nav className="admin-tabs" aria-label="Admin navigation">
-        <AdminTab to="/admin" label="Dashboard" shortLabel="Dash" end />
-        <AdminTab to="/admin/cases" label="Case Ledger" shortLabel="Ledger" end />
+        <AdminTab to="/admin" label="Dashboard" shortLabel="Dashboard" end />
+        <AdminTab to="/admin/cases" label="Case Ledger" shortLabel="Case Ledger" end />
         <AdminTab to="/admin/cases/new" label="Add Case" shortLabel="Add Case" />
         <AdminTab
           to="/admin/testimonials"
@@ -63,9 +63,9 @@ export const AdminShell = ({
         <AdminTab
           to="/admin/testimonials/new"
           label="Add Testimonial"
-          shortLabel="Add Test."
+          shortLabel="Add Testimonial"
         />
-        <AdminTab to="/admin/lists" label="Settings & Lists" shortLabel="Lists" />
+        <AdminTab to="/admin/lists" label="Settings & Lists" shortLabel="Settings & Lists" />
         {profile?.role === "owner" ? (
           <AdminTab to="/admin/admins" label="Admins" shortLabel="Admins" />
         ) : null}
