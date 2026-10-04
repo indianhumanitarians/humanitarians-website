@@ -1,0 +1,7 @@
+[
+  { "rank": 1, "prize": "First prize", "name": "Hamdaan Ibn Jabir Ahmed", "score": "30/30", "time": "3:39", "slug": "first" },
+  { "rank": 2, "prize": "Second prize", "name": "Luqman Jabir Ahmed", "score": "30/30", "time": "4:02", "slug": "second" },
+  { "rank": 3, "prize": "Third prize", "name": "Abdullah Bin Moin Son of MD Moinuddin", "score": "30/30", "time": "7:12", "slug": "third" },
+  { "rank": 4, "prize": "Fourth prize", "name": "Ayan Ahmad", "score": "30/30", "time": "7:30", "slug": "fourth" },
+  { "rank": 5, "prize": "Fifth prize", "name": "Hammad", "score": "30/30", "time": "7:49", "slug": "fifth" }
+]
