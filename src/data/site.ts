@@ -19,6 +19,7 @@ export const navLinks = [
   { label: "Our Model", to: "/our-model" },
   { label: "Case Stories", to: "/case-stories" },
   { label: "Mentorship", to: "/mentorship" },
+  { label: "Certificates", to: "/quiz-certificates" },
   { label: "Reports", to: "/reports" },
   { label: "Zakat & Sadaqah", to: "/zakat-sadaqah" },
   { label: "About", to: "/about" },
