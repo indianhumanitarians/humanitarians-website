@@ -20,6 +20,7 @@ import { Home } from "./pages/Home";
 import { Mentorship } from "./pages/Mentorship";
 import { OurModel } from "./pages/OurModel";
 import { Reports } from "./pages/Reports";
+import { QuizCertificates } from "./pages/QuizCertificates";
 import { ZakatSadaqah } from "./pages/ZakatSadaqah";
 
 export const App = () => (
@@ -33,6 +34,7 @@ export const App = () => (
       <Route path="/case-stories" element={<CaseStories />} />
       <Route path="/mentorship" element={<Mentorship />} />
       <Route path="/reports" element={<Reports />} />
+      <Route path="/quiz-certificates" element={<QuizCertificates />} />
       <Route path="/zakat-sadaqah" element={<ZakatSadaqah />} />
       <Route path="/donate" element={<Donate />} />
       <Route path="/contact" element={<Contact />} />

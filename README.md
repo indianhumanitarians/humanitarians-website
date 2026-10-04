@@ -32,6 +32,7 @@ Routes are defined in `src/App.tsx`.
 - `/zakat-sadaqah` - Zakat and Sadaqah handling
 - `/about` - About and profile PDF
 - `/contact` - Contact details
+- `/quiz-certificates` - Islamic Quiz 2026 participation certificate lookup
 - `/admin/login` - Authorized admin sign-in
 - `/admin` - Private case ledger dashboard
 - `/admin/cases/new` - Add a new private case record
@@ -401,6 +402,32 @@ After buying a domain, add it in Netlify under Domain management, copy the DNS r
 ## Backend Notes
 
 This site uses Supabase as the backend for admin login, private case records, public-safe views, and case image storage. Donor records, payment reconciliation, mentor/mentee matching, and document uploads are not part of the current implementation.
+
+## Islamic Quiz 2026 Certificates
+
+The certificate page uses the enhanced `public/images/quiz-2026-certificate.png` for its preview and every personalized PDF. Names are selectable text, shaped by Chromium (including Urdu), fitted into the template, and printed at A4 landscape. The original attachment is unchanged. The built-in image tool enhanced the artwork with this prompt: “Enhance this exact participation certificate image for high quality printing, output at maximum available resolution ideally 4096 pixels wide. Faithfully preserve ALL typography, exact wording including Arabic calligraphy, logo, date 4th October 2026, layout, colors and ornaments. Sharpen edges, clean pixelation, refine thin lines. Keep the participant name area BLANK for programmatic personalization. No new elements, no changed text, no cropping. This is a restoration/upscale of the provided image, not a redesign.” The returned artwork is 1491 × 1055 pixels; it is enhanced, not a native 4K image.
+
+Private artifacts live in `.certificates-private/`, excluded from Git and the public build. The import preserves name spelling, merges only case-insensitive identical name/normalized-number pairs, and retains source-row references locally. The supplied export has 136 registrations, 125 distinct name/number pairs, and 107 mobile numbers. Shared numbers return all matching students. The lookup accepts exactly 10 digits without a country code. Stored Indian numbers map to their 10-digit national number; the Australian mobile in this export maps to its 10-digit domestic number beginning with 0. No age, parent name, city, consent response, or timestamp is imported into the lookup service.
+
+To regenerate, use Python with `openpyxl`, Node with `playwright` and `pdf-lib`, and Chromium installed:
+
+```bash
+python scripts/prepare-quiz-registrations.py '/path/to/registrations.xlsx'
+node scripts/generate-quiz-certificates.mjs
+node --test scripts/test-quiz-certificates.mjs scripts/test-quiz-endpoint.mjs
+node scripts/upload-quiz-certificates.mjs
+# After approving the private participant-data upload:
+node scripts/upload-quiz-certificates.mjs --write
+supabase functions deploy quiz-certificates --project-ref YOUR_PROJECT_REF --no-verify-jwt --use-api
+```
+
+If using a separate tools runtime, set `CERTIFICATE_NODE_MODULES` to its `node_modules` directory and `CERTIFICATE_CHROME` to a Chrome executable. The generator writes 125 individual PDFs plus `all-certificates.pdf` for batch printing. Review representative PDFs after changing the template or name-fitting rules.
+
+The `quiz-certificates-2026` Storage bucket **must remain private**, with no anonymous or authenticated read/list policies. Only the Edge Function and local importer use service credentials. The upload script checks bucket privacy, uploads PDFs first, and publishes the matching registry last. The endpoint uses POST (numbers stay out of URLs), no-store responses, and 10-minute signed PDF links. The browser contains no participant list. Knowing the registered number permits certificate retrieval; this is not SMS verification.
+
+The function permits 10 attempts per 15-minute window per gateway-forwarded address. Atomic insert-only Storage slots enforce the limit across concurrent function instances and fail closed if Storage is unavailable. IP addresses are HMACed with the server credential, never stored in plaintext. Old `limits/<window>/` objects may be removed with server/admin access after their 15-minute window ends; do not remove the current window. Monitor storage growth for this prefix. Configure `CERTIFICATE_ALLOWED_ORIGINS` as a comma-separated list when adding another site origin; defaults cover the production domain, www, and local port 5173. No database schema changes are needed.
+
+Keep `SUPABASE_SERVICE_ROLE_KEY` local or in Supabase's server environment. Never add it to a `VITE_` variable or ship it in the frontend. After upload, verify anonymous reads/listing are denied, a shared-number lookup returns all matching students, an unknown number returns an empty result, and a signed link downloads a PDF. Then deploy the frontend through the existing hosting workflow.
 
 ## Admin Data Repair
 
