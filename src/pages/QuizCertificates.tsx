@@ -1,9 +1,17 @@
 import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import winners from '../data/quizWinners.json';
+import './QuizCertificates.css';
 import { getSupabaseHeaders, isSupabaseConfigured, supabaseConfig } from '../services/supabaseConfig';
 
 type Certificate = { id: string; name: string; url: string };
+
+function certificateViewUrl(downloadUrl: string) {
+  const url = new URL(downloadUrl);
+  url.searchParams.delete('download');
+  return url.toString();
+}
 
 export const QuizCertificates = () => {
   const [phone, setPhone] = useState('');
@@ -52,7 +60,7 @@ export const QuizCertificates = () => {
       <div className="quiz-intro">
         <span className="quiz-eyebrow">ISLAMIC QUIZ COMPETITION FOR KIDS 2026</span>
         <h1>A little learning.<br /><em>A proud achievement.</em></h1>
-        <p>Thank you for learning with us. Your participation certificate is ready to celebrate your curiosity, effort, and love of knowledge.</p>
+        <p>Celebrating our quiz champions and every young learner who joined us. Explore the winning achievements and collect your participation certificate.</p>
         <span className="quiz-date">4 October 2026 <span aria-hidden="true">·</span> Team Humanitarians</span>
       </div>
       <section className="quiz-layout" aria-label="Download your participation certificate">
@@ -71,23 +79,51 @@ export const QuizCertificates = () => {
           {error && <p className="quiz-error" role="alert">{error}</p>}
           <p className="quiz-privacy">Your number is used only to find your registration. It is not displayed on the certificate.</p>
         </div>
-        <div className="quiz-preview">
+        <figure className="quiz-preview">
+          <span className="quiz-step">A KEEPSAKE OF YOUR ACHIEVEMENT</span>
           <img src="/images/quiz-2026-certificate.png" alt="Humanitarians Islamic Quiz 2026 participation certificate with a navy and gold border" width="1491" height="1055" />
-          <p>A keepsake for your learning journey.<br /><span>Personalized PDF · Ready to download and print</span></p>
-        </div>
+          <figcaption>Made for your learning journey.<span>Personalized PDF · Ready to download and print</span></figcaption>
+        </figure>
       </section>
       <div aria-live="polite" aria-busy={loading}>
         {results !== null && <section className="quiz-results">
           <h2 ref={resultHeading} tabIndex={-1}>{results.length ? `${results.length === 1 ? 'Your certificate is' : 'Your certificates are'} ready` : 'No registration found'}</h2>
           {results.length ? <>
-            <p>Choose a student below. Download links are valid for 10 minutes; search again if a link expires.</p>
+            <p>Choose a student below to view or download their certificate. Links are valid for 10 minutes; search again if a link expires.</p>
             <div className="quiz-result-list">{results.map(certificate => <article key={certificate.id} className="quiz-result">
               <div><span>Certificate of participation</span><h3 dir="auto">{certificate.name}</h3></div>
-              <a className="button button-primary" href={certificate.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" aria-label={`Download certificate for ${certificate.name}`}>Download PDF <span aria-hidden="true">↓</span></a>
+              <div className="quiz-result-actions">
+                <a className="button button-secondary" href={certificateViewUrl(certificate.url)} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" aria-label={`View certificate for ${certificate.name} (opens in a new tab)`}>View certificate <span aria-hidden="true">↗</span></a>
+                <a className="button button-primary" href={certificate.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" aria-label={`Download certificate for ${certificate.name}`}>Download PDF <span aria-hidden="true">↓</span></a>
+              </div>
             </article>)}</div>
           </> : <p>Check that you entered the 10-digit WhatsApp number used when registering. If you still need help, <Link to="/contact">contact our team</Link>.</p>}
         </section>}
       </div>
+      <section className="quiz-winners" aria-labelledby="quiz-winners-title">
+        <div className="quiz-winners-heading">
+          <span className="quiz-eyebrow">THE HONOUR ROLL</span>
+          <h2 id="quiz-winners-title">Meet our <em>quiz champions.</em></h2>
+          <p>Five outstanding achievements. Each winner answered all 30 questions correctly.</p>
+        </div>
+        <div className="quiz-winner-grid">
+          {winners.map(winner => {
+            const certificate = `/certificates/quiz-2026/${winner.slug}.pdf`;
+            return <article key={winner.rank} className={`quiz-winner-card quiz-winner-${winner.slug}`}>
+              <div className="quiz-winner-rank"><span aria-label={`Rank ${winner.rank}`}>{String(winner.rank).padStart(2, '0')}</span><strong>{winner.prize}</strong></div>
+              <a href={certificate} target="_blank" rel="noopener noreferrer" className="quiz-winner-preview" aria-label={`View ${winner.name}'s ${winner.prize.toLowerCase()} certificate`}>
+                <img src={`/certificates/quiz-2026/${winner.slug}.png`} width="900" height="637" loading="lazy" alt={`${winner.prize} certificate presented to ${winner.name}`} />
+              </a>
+              <h3>{winner.name}</h3>
+              <dl className="quiz-winner-stats"><div><dt>Score</dt><dd>{winner.score}</dd></div><div><dt>Time</dt><dd>{winner.time}</dd></div></dl>
+              <div className="quiz-winner-actions">
+                <a href={certificate} target="_blank" rel="noopener noreferrer" aria-label={`View certificate for ${winner.name}`}>View certificate <span aria-hidden="true">↗</span></a>
+                <a className="button button-secondary" href={certificate} download={`Humanitarians-2026-${winner.slug}-prize.pdf`} aria-label={`Download ${winner.name}'s certificate`}>Download PDF <span aria-hidden="true">↓</span></a>
+              </div>
+            </article>;
+          })}
+        </div>
+      </section>
       <section className="quiz-notes" aria-label="Certificate help">
         <div><h3>More than one child?</h3><p>All students registered with the same number appear together. Download a separate certificate for each child.</p></div>
         <div><h3>Printing your certificate</h3><p>Download the PDF and print on A4 paper in landscape. Choose “Fit to page” for the best result.</p></div>
